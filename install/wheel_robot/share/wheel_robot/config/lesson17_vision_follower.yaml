@@ -1,0 +1,110 @@
+/camera/astra_camera:
+  ros__parameters:
+    enable_color: true
+    enable_depth: false
+    color_device: "/dev/v4l/by-id/usb-Astra_Pro_HD_Camera_Astra_Pro_HD_Camera-video-index0"
+    color_width: 640
+    color_height: 480
+    color_fps: 30.0
+    color_pixel_format: "AUTO"
+    color_camera_name: "astra_pro_color"
+    color_camera_info_url: "package://wheel_robot/config/calibration/astra_pro_color.yaml"
+    depth_width: 640
+    depth_height: 480
+    depth_fps: 30
+    depth_unit_mm: 10.0
+    color_frame_id: "camera_color_optical_frame"
+    depth_frame_id: "camera_depth_optical_frame"
+
+lesson17_vision_follower:
+  ros__parameters:
+    # 默认安全待机；窗口按 S 或调用 /lesson17/enable 后才运动。
+    enable_motion: false
+    target_mode: "person"  # person、red_cone、blue_cone、auto
+    image_topic: "/camera/color/image_raw"
+    diagnostics_topic: "/robot_diagnostics"
+    control_rate: 20.0
+    display_rate: 30.0
+    show_debug: true
+    debug_window_name: "Lesson 17 - ROS2 Multi Target Follower"
+    # 主画面右下角显示最终二值图，窗口按 M 显示/隐藏。
+    show_binary_mask: true
+    camera_timeout: 0.60
+    diagnostic_timeout: 1.00
+    require_diagnostics: true
+    # ROS 自主控制不依赖遥控器；只忽略 SBUS/遥控器故障，其他硬件故障仍停车。
+    ignore_remote_diagnostics: true
+
+    model_directory: ""
+    # 本机实测 OpenCV DNN 使用 2 线程比 8 线程更快，也给显示线程留出 CPU。
+    opencv_num_threads: 2
+    person_confidence: 0.40
+    person_tracking_confidence: 0.25
+    person_nms_threshold: 0.35
+    person_min_area_ratio: 0.004
+    # 首次全画面找人；锁定后在人体周围方形区域识别，提高连续跟踪稳定性。
+    person_roi_expansion: 1.50
+    person_box_smoothing: 0.35
+    person_detect_interval: 2
+    person_confirm_frames: 2
+    cone_confirm_frames: 1
+    # 人体 DNN 帧率较低可保持稍久；锥桶检测快，旧框不得继续参与控制太久。
+    person_lost_timeout: 0.70
+    cone_lost_timeout: 0.25
+    target_acquire_hold_seconds: 0.10
+
+    # 人体仍使用框高比例保持距离；锥桶改用二值轮廓面积比例。
+    person_target_height_ratio: 0.50
+    person_max_linear_speed: 0.20 # 跟随人体最大速度，单位 m/s
+    cone_max_linear_speed: 0.15   # 跟随锥桶最大速度，单位 m/s
+    # 最小有效速度用于克服大底盘的静摩擦死区；设为 0 可关闭补偿。
+    person_min_linear_speed: 0.10 # 人体跟随最小前进速度，单位 m/s
+    cone_min_linear_speed: 0.10   # 锥桶跟随最小前进速度，单位 m/s
+    minimum_angular_speed: 0.18   # 最小转向角速度，单位 rad/s
+    distance_deadband: 0.045
+    center_deadband: 0.12
+    forward_center_limit: 0.32
+    linear_kp: 0.55
+    angular_kp: 0.55
+    angular_sign: -1.0
+    max_reverse_speed: 0.04 # 最大后退速度
+    max_angular_speed: 0.40
+    allow_reverse: true
+    max_linear_acceleration: 0.25
+    max_angular_acceleration: 0.70
+
+    # 锥桶完全采用参考程序的控制逻辑：质心误差转向、轮廓面积控制距离。
+    cone_center_deadband: 0.05
+    cone_slow_area_ratio: 0.025
+    cone_stop_area_ratio: 0.10
+    cone_angular_kp: 0.45
+    cone_max_angular_speed: 0.40
+    cone_steering_smoothing: 0.35
+
+    # 红色采用参考程序阈值；蓝色继续保留 Astra 实拍标定值。
+    red1_lower: [0, 100, 70]
+    red1_upper: [10, 255, 255]
+    red2_lower: [170, 100, 70]
+    red2_upper: [179, 255, 255]
+    # 录像回放标定：排除白色杂物、桌腿阴影，同时保留黄光下的暗蓝锥桶。
+    blue_lower: [78, 35, 25]
+    blue_upper: [140, 255, 255]
+
+    # 蓝色阈值保留不变。锥桶仅要求最大轮廓面积超过该值。
+    cone_minimum_area: 40.0
+    cone_blur_kernel: 5
+    cone_morph_kernel: 5
+
+    publish_posture: true
+    default_height: 0.25
+    default_roll: 0.0
+    default_pitch: 0.0
+    default_slide: 0.0
+
+    # 调试窗口按 V 开始/停止录像；录下检测框、状态、速度和诊断信息。
+    record_video: false
+    record_directory: "/home/orangepi/wheel_robot/recordings/lesson17"
+    record_fps: 15.0
+    record_codec: "MJPG"
+    record_max_seconds: 300.0
+    status_period: 0.50

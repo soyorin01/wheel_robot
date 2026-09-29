@@ -1,0 +1,4 @@
+source;share/wheeled_legged_pkg/local_setup.bash
+source;share/wheeled_legged_pkg/local_setup.dsv
+source;share/wheeled_legged_pkg/local_setup.sh
+source;share/wheeled_legged_pkg/local_setup.zsh

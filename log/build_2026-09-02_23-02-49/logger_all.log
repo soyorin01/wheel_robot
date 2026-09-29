@@ -1,0 +1,329 @@
+[0.211s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'build', '--packages-select', 'wheeled_legged_pkg']
+[0.212s] DEBUG:colcon:Parsed command line arguments: Namespace(log_base=None, log_level=None, verb_name='build', build_base='build', install_base='install', merge_install=False, symlink_install=False, test_result_base=None, continue_on_error=False, executor='parallel', parallel_workers=8, event_handlers=None, ignore_user_meta=False, metas=['./colcon.meta'], base_paths=['.'], packages_ignore=None, packages_ignore_regex=None, paths=None, packages_up_to=None, packages_up_to_regex=None, packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_select_by_dep=None, packages_skip_by_dep=None, packages_skip_up_to=None, packages_select_build_failed=False, packages_skip_build_finished=False, packages_select_test_failures=False, packages_skip_test_passed=False, packages_select=['wheeled_legged_pkg'], packages_skip=None, packages_select_regex=None, packages_skip_regex=None, packages_start=None, packages_end=None, cmake_args=None, cmake_target=None, cmake_target_skip_unavailable=False, cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, ament_cmake_args=None, catkin_cmake_args=None, catkin_skip_building_tests=False, verb_parser=<colcon_defaults.argument_parser.defaults.DefaultArgumentsDecorator object at 0x7f905339d0>, verb_extension=<colcon_core.verb.build.BuildVerb object at 0x7f906e47c0>, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0x7f906e47c0>>)
+[0.486s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[0.487s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[0.487s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[0.487s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[0.487s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) discover
+[0.487s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[0.487s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/orangepi/wheel_robot'
+[0.487s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ignore', 'ignore_ament_install']
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore'
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore_ament_install'
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_pkg']
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_pkg'
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_meta']
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_meta'
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros']
+[0.488s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros'
+[0.513s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['cmake', 'python']
+[0.513s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'cmake'
+[0.513s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python'
+[0.514s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['python_setup_py']
+[0.514s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python_setup_py'
+[0.514s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extensions ['ignore', 'ignore_ament_install']
+[0.514s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'ignore'
+[0.514s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'ignore_ament_install'
+[0.514s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extensions ['colcon_pkg']
+[0.514s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'colcon_pkg'
+[0.514s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extensions ['colcon_meta']
+[0.514s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'colcon_meta'
+[0.515s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extensions ['ros']
+[0.515s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'ros'
+[0.515s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extensions ['cmake', 'python']
+[0.515s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'cmake'
+[0.515s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'python'
+[0.515s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extensions ['python_setup_py']
+[0.515s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'python_setup_py'
+[0.515s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extensions ['ignore', 'ignore_ament_install']
+[0.515s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extension 'ignore'
+[0.515s] Level 1:colcon.colcon_core.package_identification:_identify(build) ignored
+[0.516s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extensions ['ignore', 'ignore_ament_install']
+[0.516s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extension 'ignore'
+[0.516s] Level 1:colcon.colcon_core.package_identification:_identify(install) ignored
+[0.516s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extensions ['ignore', 'ignore_ament_install']
+[0.516s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extension 'ignore'
+[0.516s] Level 1:colcon.colcon_core.package_identification:_identify(log) ignored
+[0.516s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['ignore', 'ignore_ament_install']
+[0.516s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'ignore'
+[0.516s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'ignore_ament_install'
+[0.517s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['colcon_pkg']
+[0.517s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'colcon_pkg'
+[0.517s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['colcon_meta']
+[0.517s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'colcon_meta'
+[0.517s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['ros']
+[0.517s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'ros'
+[0.517s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['cmake', 'python']
+[0.517s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'cmake'
+[0.517s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'python'
+[0.517s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extensions ['python_setup_py']
+[0.517s] Level 1:colcon.colcon_core.package_identification:_identify(src) by extension 'python_setup_py'
+[0.517s] Level 1:colcon.colcon_core.package_identification:_identify(src/lesson12_ros_conversion) by extensions ['ignore', 'ignore_ament_install']
+[0.517s] Level 1:colcon.colcon_core.package_identification:_identify(src/lesson12_ros_conversion) by extension 'ignore'
+[0.517s] Level 1:colcon.colcon_core.package_identification:_identify(src/lesson12_ros_conversion) by extension 'ignore_ament_install'
+[0.518s] Level 1:colcon.colcon_core.package_identification:_identify(src/lesson12_ros_conversion) by extensions ['colcon_pkg']
+[0.518s] Level 1:colcon.colcon_core.package_identification:_identify(src/lesson12_ros_conversion) by extension 'colcon_pkg'
+[0.518s] Level 1:colcon.colcon_core.package_identification:_identify(src/lesson12_ros_conversion) by extensions ['colcon_meta']
+[0.518s] Level 1:colcon.colcon_core.package_identification:_identify(src/lesson12_ros_conversion) by extension 'colcon_meta'
+[0.518s] Level 1:colcon.colcon_core.package_identification:_identify(src/lesson12_ros_conversion) by extensions ['ros']
+[0.518s] Level 1:colcon.colcon_core.package_identification:_identify(src/lesson12_ros_conversion) by extension 'ros'
+[0.525s] DEBUG:colcon.colcon_core.package_identification:Package 'src/lesson12_ros_conversion' with type 'ros.ament_cmake' and name 'lesson12_ros_conversion'
+[0.526s] Level 1:colcon.colcon_core.package_identification:_identify(src/motor_temperature_pkg) by extensions ['ignore', 'ignore_ament_install']
+[0.526s] Level 1:colcon.colcon_core.package_identification:_identify(src/motor_temperature_pkg) by extension 'ignore'
+[0.526s] Level 1:colcon.colcon_core.package_identification:_identify(src/motor_temperature_pkg) by extension 'ignore_ament_install'
+[0.526s] Level 1:colcon.colcon_core.package_identification:_identify(src/motor_temperature_pkg) by extensions ['colcon_pkg']
+[0.526s] Level 1:colcon.colcon_core.package_identification:_identify(src/motor_temperature_pkg) by extension 'colcon_pkg'
+[0.526s] Level 1:colcon.colcon_core.package_identification:_identify(src/motor_temperature_pkg) by extensions ['colcon_meta']
+[0.526s] Level 1:colcon.colcon_core.package_identification:_identify(src/motor_temperature_pkg) by extension 'colcon_meta'
+[0.526s] Level 1:colcon.colcon_core.package_identification:_identify(src/motor_temperature_pkg) by extensions ['ros']
+[0.526s] Level 1:colcon.colcon_core.package_identification:_identify(src/motor_temperature_pkg) by extension 'ros'
+[0.528s] DEBUG:colcon.colcon_core.package_identification:Package 'src/motor_temperature_pkg' with type 'ros.ament_cmake' and name 'motor_temperature_pkg'
+[0.528s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_legged_urdf_pkg) by extensions ['ignore', 'ignore_ament_install']
+[0.528s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_legged_urdf_pkg) by extension 'ignore'
+[0.528s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_legged_urdf_pkg) by extension 'ignore_ament_install'
+[0.528s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_legged_urdf_pkg) by extensions ['colcon_pkg']
+[0.528s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_legged_urdf_pkg) by extension 'colcon_pkg'
+[0.529s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_legged_urdf_pkg) by extensions ['colcon_meta']
+[0.529s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_legged_urdf_pkg) by extension 'colcon_meta'
+[0.529s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_legged_urdf_pkg) by extensions ['ros']
+[0.529s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_legged_urdf_pkg) by extension 'ros'
+[0.530s] DEBUG:colcon.colcon_core.package_identification:Package 'src/wheel_legged_urdf_pkg' with type 'ros.ament_cmake' and name 'wheel_legged_urdf_pkg'
+[0.530s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_robot) by extensions ['ignore', 'ignore_ament_install']
+[0.530s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_robot) by extension 'ignore'
+[0.530s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_robot) by extension 'ignore_ament_install'
+[0.531s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_robot) by extensions ['colcon_pkg']
+[0.531s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_robot) by extension 'colcon_pkg'
+[0.531s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_robot) by extensions ['colcon_meta']
+[0.531s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_robot) by extension 'colcon_meta'
+[0.531s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_robot) by extensions ['ros']
+[0.531s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_robot) by extension 'ros'
+[0.533s] DEBUG:colcon.colcon_core.package_identification:Package 'src/wheel_robot' with type 'ros.ament_cmake' and name 'wheel_robot'
+[0.533s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_robot_demos) by extensions ['ignore', 'ignore_ament_install']
+[0.534s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_robot_demos) by extension 'ignore'
+[0.534s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_robot_demos) by extension 'ignore_ament_install'
+[0.534s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_robot_demos) by extensions ['colcon_pkg']
+[0.534s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_robot_demos) by extension 'colcon_pkg'
+[0.534s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_robot_demos) by extensions ['colcon_meta']
+[0.534s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_robot_demos) by extension 'colcon_meta'
+[0.534s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_robot_demos) by extensions ['ros']
+[0.534s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheel_robot_demos) by extension 'ros'
+[0.535s] DEBUG:colcon.colcon_core.package_identification:Package 'src/wheel_robot_demos' with type 'ros.ament_cmake' and name 'wheel_robot_demos'
+[0.535s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheeled_legged_pkg) by extensions ['ignore', 'ignore_ament_install']
+[0.536s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheeled_legged_pkg) by extension 'ignore'
+[0.536s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheeled_legged_pkg) by extension 'ignore_ament_install'
+[0.536s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheeled_legged_pkg) by extensions ['colcon_pkg']
+[0.536s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheeled_legged_pkg) by extension 'colcon_pkg'
+[0.536s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheeled_legged_pkg) by extensions ['colcon_meta']
+[0.536s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheeled_legged_pkg) by extension 'colcon_meta'
+[0.536s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheeled_legged_pkg) by extensions ['ros']
+[0.536s] Level 1:colcon.colcon_core.package_identification:_identify(src/wheeled_legged_pkg) by extension 'ros'
+[0.538s] DEBUG:colcon.colcon_core.package_identification:Package 'src/wheeled_legged_pkg' with type 'ros.ament_cmake' and name 'wheeled_legged_pkg'
+[0.539s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course) by extensions ['ignore', 'ignore_ament_install']
+[0.539s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course) by extension 'ignore'
+[0.539s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course) by extension 'ignore_ament_install'
+[0.539s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course) by extensions ['colcon_pkg']
+[0.539s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course) by extension 'colcon_pkg'
+[0.539s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course) by extensions ['colcon_meta']
+[0.539s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course) by extension 'colcon_meta'
+[0.539s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course) by extensions ['ros']
+[0.539s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course) by extension 'ros'
+[0.539s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course) by extensions ['cmake', 'python']
+[0.539s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course) by extension 'cmake'
+[0.539s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course) by extension 'python'
+[0.540s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course) by extensions ['python_setup_py']
+[0.540s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course) by extension 'python_setup_py'
+[0.540s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/datasets) by extensions ['ignore', 'ignore_ament_install']
+[0.540s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/datasets) by extension 'ignore'
+[0.540s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/datasets) by extension 'ignore_ament_install'
+[0.540s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/datasets) by extensions ['colcon_pkg']
+[0.540s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/datasets) by extension 'colcon_pkg'
+[0.540s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/datasets) by extensions ['colcon_meta']
+[0.540s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/datasets) by extension 'colcon_meta'
+[0.540s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/datasets) by extensions ['ros']
+[0.540s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/datasets) by extension 'ros'
+[0.540s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/datasets) by extensions ['cmake', 'python']
+[0.541s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/datasets) by extension 'cmake'
+[0.541s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/datasets) by extension 'python'
+[0.541s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/datasets) by extensions ['python_setup_py']
+[0.541s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/datasets) by extension 'python_setup_py'
+[0.541s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images) by extensions ['ignore', 'ignore_ament_install']
+[0.541s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images) by extension 'ignore'
+[0.541s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images) by extension 'ignore_ament_install'
+[0.541s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images) by extensions ['colcon_pkg']
+[0.541s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images) by extension 'colcon_pkg'
+[0.541s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images) by extensions ['colcon_meta']
+[0.541s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images) by extension 'colcon_meta'
+[0.541s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images) by extensions ['ros']
+[0.541s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images) by extension 'ros'
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images) by extensions ['cmake', 'python']
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images) by extension 'cmake'
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images) by extension 'python'
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images) by extensions ['python_setup_py']
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images) by extension 'python_setup_py'
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images/calibration) by extensions ['ignore', 'ignore_ament_install']
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images/calibration) by extension 'ignore'
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images/calibration) by extension 'ignore_ament_install'
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images/calibration) by extensions ['colcon_pkg']
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images/calibration) by extension 'colcon_pkg'
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images/calibration) by extensions ['colcon_meta']
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images/calibration) by extension 'colcon_meta'
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images/calibration) by extensions ['ros']
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images/calibration) by extension 'ros'
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images/calibration) by extensions ['cmake', 'python']
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images/calibration) by extension 'cmake'
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images/calibration) by extension 'python'
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images/calibration) by extensions ['python_setup_py']
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/images/calibration) by extension 'python_setup_py'
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/logs) by extensions ['ignore', 'ignore_ament_install']
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/logs) by extension 'ignore'
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/logs) by extension 'ignore_ament_install'
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/logs) by extensions ['colcon_pkg']
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/logs) by extension 'colcon_pkg'
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/logs) by extensions ['colcon_meta']
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/logs) by extension 'colcon_meta'
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/logs) by extensions ['ros']
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/logs) by extension 'ros'
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/logs) by extensions ['cmake', 'python']
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/logs) by extension 'cmake'
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/logs) by extension 'python'
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/logs) by extensions ['python_setup_py']
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/logs) by extension 'python_setup_py'
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/models) by extensions ['ignore', 'ignore_ament_install']
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/models) by extension 'ignore'
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/models) by extension 'ignore_ament_install'
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/models) by extensions ['colcon_pkg']
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/models) by extension 'colcon_pkg'
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/models) by extensions ['colcon_meta']
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/models) by extension 'colcon_meta'
+[0.545s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/models) by extensions ['ros']
+[0.545s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/models) by extension 'ros'
+[0.545s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/models) by extensions ['cmake', 'python']
+[0.545s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/models) by extension 'cmake'
+[0.545s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/models) by extension 'python'
+[0.545s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/models) by extensions ['python_setup_py']
+[0.545s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/models) by extension 'python_setup_py'
+[0.545s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src) by extensions ['ignore', 'ignore_ament_install']
+[0.545s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src) by extension 'ignore'
+[0.545s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src) by extension 'ignore_ament_install'
+[0.545s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src) by extensions ['colcon_pkg']
+[0.545s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src) by extension 'colcon_pkg'
+[0.546s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src) by extensions ['colcon_meta']
+[0.546s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src) by extension 'colcon_meta'
+[0.546s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src) by extensions ['ros']
+[0.546s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src) by extension 'ros'
+[0.546s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src) by extensions ['cmake', 'python']
+[0.546s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src) by extension 'cmake'
+[0.546s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src) by extension 'python'
+[0.546s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src) by extensions ['python_setup_py']
+[0.546s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src) by extension 'python_setup_py'
+[0.546s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src/__pycache__) by extensions ['ignore', 'ignore_ament_install']
+[0.546s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src/__pycache__) by extension 'ignore'
+[0.546s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src/__pycache__) by extension 'ignore_ament_install'
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src/__pycache__) by extensions ['colcon_pkg']
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src/__pycache__) by extension 'colcon_pkg'
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src/__pycache__) by extensions ['colcon_meta']
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src/__pycache__) by extension 'colcon_meta'
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src/__pycache__) by extensions ['ros']
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src/__pycache__) by extension 'ros'
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src/__pycache__) by extensions ['cmake', 'python']
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src/__pycache__) by extension 'cmake'
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src/__pycache__) by extension 'python'
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src/__pycache__) by extensions ['python_setup_py']
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/src/__pycache__) by extension 'python_setup_py'
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/videos) by extensions ['ignore', 'ignore_ament_install']
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/videos) by extension 'ignore'
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/videos) by extension 'ignore_ament_install'
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/videos) by extensions ['colcon_pkg']
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/videos) by extension 'colcon_pkg'
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/videos) by extensions ['colcon_meta']
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/videos) by extension 'colcon_meta'
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/videos) by extensions ['ros']
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/videos) by extension 'ros'
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/videos) by extensions ['cmake', 'python']
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/videos) by extension 'cmake'
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/videos) by extension 'python'
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/videos) by extensions ['python_setup_py']
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(vision_course/videos) by extension 'python_setup_py'
+[0.548s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[0.548s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) discover
+[0.548s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) using defaults
+[0.548s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) discover
+[0.548s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) using defaults
+[0.591s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'lesson12_ros_conversion' in 'src/lesson12_ros_conversion'
+[0.591s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'motor_temperature_pkg' in 'src/motor_temperature_pkg'
+[0.591s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'wheel_legged_urdf_pkg' in 'src/wheel_legged_urdf_pkg'
+[0.591s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'wheel_robot_demos' in 'src/wheel_robot_demos'
+[0.591s] INFO:colcon.colcon_core.package_selection:Skipping not selected package 'wheel_robot' in 'src/wheel_robot'
+[0.592s] Level 5:colcon.colcon_core.verb:set package 'wheeled_legged_pkg' build argument 'cmake_args' from command line to 'None'
+[0.592s] Level 5:colcon.colcon_core.verb:set package 'wheeled_legged_pkg' build argument 'cmake_target' from command line to 'None'
+[0.592s] Level 5:colcon.colcon_core.verb:set package 'wheeled_legged_pkg' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.592s] Level 5:colcon.colcon_core.verb:set package 'wheeled_legged_pkg' build argument 'cmake_clean_cache' from command line to 'False'
+[0.592s] Level 5:colcon.colcon_core.verb:set package 'wheeled_legged_pkg' build argument 'cmake_clean_first' from command line to 'False'
+[0.592s] Level 5:colcon.colcon_core.verb:set package 'wheeled_legged_pkg' build argument 'cmake_force_configure' from command line to 'False'
+[0.592s] Level 5:colcon.colcon_core.verb:set package 'wheeled_legged_pkg' build argument 'ament_cmake_args' from command line to 'None'
+[0.592s] Level 5:colcon.colcon_core.verb:set package 'wheeled_legged_pkg' build argument 'catkin_cmake_args' from command line to 'None'
+[0.592s] Level 5:colcon.colcon_core.verb:set package 'wheeled_legged_pkg' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.592s] DEBUG:colcon.colcon_core.verb:Building package 'wheeled_legged_pkg' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/orangepi/wheel_robot/build/wheeled_legged_pkg', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/orangepi/wheel_robot/install/wheeled_legged_pkg', 'merge_install': False, 'path': '/home/orangepi/wheel_robot/src/wheeled_legged_pkg', 'symlink_install': False, 'test_result_base': None}
+[0.593s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[0.595s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[0.595s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/orangepi/wheel_robot/src/wheeled_legged_pkg' with build type 'ament_cmake'
+[0.596s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/orangepi/wheel_robot/src/wheeled_legged_pkg'
+[0.600s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[0.601s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.601s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.604s] WARNING:colcon.colcon_ros.prefix_path.ament:The path '/home/orangepi/wheel_robot/install/simple_follower_ros2' in the environment variable AMENT_PREFIX_PATH doesn't exist
+[0.664s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/orangepi/wheel_robot/build/wheeled_legged_pkg': CMAKE_PREFIX_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg:/home/orangepi/wheel_robot/install/wheel_robot:/home/orangepi/wheel_robot/install/wheeled_legged_pkg:/home/orangepi/wheel_robot/install/wheel_robot_demos:/home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg:/home/orangepi/wheel_robot/install/lesson12_ros_conversion:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble LD_LIBRARY_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg/lib:/home/orangepi/wheel_robot/install/wheel_robot/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib NODE_OPTIONS=--no-node-snapshot /usr/bin/cmake --build /home/orangepi/wheel_robot/build/wheeled_legged_pkg -- -j8 -l8
+[49.421s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/orangepi/wheel_robot/build/wheeled_legged_pkg' returned '0': CMAKE_PREFIX_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg:/home/orangepi/wheel_robot/install/wheel_robot:/home/orangepi/wheel_robot/install/wheeled_legged_pkg:/home/orangepi/wheel_robot/install/wheel_robot_demos:/home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg:/home/orangepi/wheel_robot/install/lesson12_ros_conversion:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble LD_LIBRARY_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg/lib:/home/orangepi/wheel_robot/install/wheel_robot/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib NODE_OPTIONS=--no-node-snapshot /usr/bin/cmake --build /home/orangepi/wheel_robot/build/wheeled_legged_pkg -- -j8 -l8
+[49.456s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/orangepi/wheel_robot/build/wheeled_legged_pkg': CMAKE_PREFIX_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg:/home/orangepi/wheel_robot/install/wheel_robot:/home/orangepi/wheel_robot/install/wheeled_legged_pkg:/home/orangepi/wheel_robot/install/wheel_robot_demos:/home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg:/home/orangepi/wheel_robot/install/lesson12_ros_conversion:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble LD_LIBRARY_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg/lib:/home/orangepi/wheel_robot/install/wheel_robot/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib NODE_OPTIONS=--no-node-snapshot /usr/bin/cmake --install /home/orangepi/wheel_robot/build/wheeled_legged_pkg
+[49.504s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(wheeled_legged_pkg)
+[49.512s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/orangepi/wheel_robot/build/wheeled_legged_pkg' returned '0': CMAKE_PREFIX_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg:/home/orangepi/wheel_robot/install/wheel_robot:/home/orangepi/wheel_robot/install/wheeled_legged_pkg:/home/orangepi/wheel_robot/install/wheel_robot_demos:/home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg:/home/orangepi/wheel_robot/install/lesson12_ros_conversion:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble LD_LIBRARY_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg/lib:/home/orangepi/wheel_robot/install/wheel_robot/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib NODE_OPTIONS=--no-node-snapshot /usr/bin/cmake --install /home/orangepi/wheel_robot/build/wheeled_legged_pkg
+[49.514s] Level 1:colcon.colcon_core.environment:checking '/home/orangepi/wheel_robot/install/wheeled_legged_pkg' for CMake module files
+[49.515s] Level 1:colcon.colcon_core.environment:checking '/home/orangepi/wheel_robot/install/wheeled_legged_pkg' for CMake config files
+[49.515s] Level 1:colcon.colcon_core.shell:create_environment_hook('wheeled_legged_pkg', 'cmake_prefix_path')
+[49.516s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/hook/cmake_prefix_path.ps1'
+[49.553s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/hook/cmake_prefix_path.dsv'
+[49.559s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/hook/cmake_prefix_path.sh'
+[49.561s] Level 1:colcon.colcon_core.environment:checking '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/lib'
+[49.561s] Level 1:colcon.colcon_core.environment:checking '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/bin'
+[49.561s] Level 1:colcon.colcon_core.environment:checking '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/lib/pkgconfig/wheeled_legged_pkg.pc'
+[49.565s] Level 1:colcon.colcon_core.environment:checking '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/lib/python3.10/site-packages'
+[49.566s] Level 1:colcon.colcon_core.environment:checking '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/bin'
+[49.567s] INFO:colcon.colcon_core.shell:Creating package script '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/package.ps1'
+[49.569s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/package.dsv'
+[49.570s] INFO:colcon.colcon_core.shell:Creating package script '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/package.sh'
+[49.572s] INFO:colcon.colcon_core.shell:Creating package script '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/package.bash'
+[49.574s] INFO:colcon.colcon_core.shell:Creating package script '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/package.zsh'
+[49.575s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/colcon-core/packages/wheeled_legged_pkg)
+[49.577s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(wheeled_legged_pkg)
+[49.577s] Level 1:colcon.colcon_core.environment:checking '/home/orangepi/wheel_robot/install/wheeled_legged_pkg' for CMake module files
+[49.578s] Level 1:colcon.colcon_core.environment:checking '/home/orangepi/wheel_robot/install/wheeled_legged_pkg' for CMake config files
+[49.578s] Level 1:colcon.colcon_core.shell:create_environment_hook('wheeled_legged_pkg', 'cmake_prefix_path')
+[49.579s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/hook/cmake_prefix_path.ps1'
+[49.580s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/hook/cmake_prefix_path.dsv'
+[49.581s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/hook/cmake_prefix_path.sh'
+[49.582s] Level 1:colcon.colcon_core.environment:checking '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/lib'
+[49.583s] Level 1:colcon.colcon_core.environment:checking '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/bin'
+[49.583s] Level 1:colcon.colcon_core.environment:checking '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/lib/pkgconfig/wheeled_legged_pkg.pc'
+[49.583s] Level 1:colcon.colcon_core.environment:checking '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/lib/python3.10/site-packages'
+[49.584s] Level 1:colcon.colcon_core.environment:checking '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/bin'
+[49.585s] INFO:colcon.colcon_core.shell:Creating package script '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/package.ps1'
+[49.586s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/package.dsv'
+[49.587s] INFO:colcon.colcon_core.shell:Creating package script '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/package.sh'
+[49.588s] INFO:colcon.colcon_core.shell:Creating package script '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/package.bash'
+[49.589s] INFO:colcon.colcon_core.shell:Creating package script '/home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/package.zsh'
+[49.591s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/colcon-core/packages/wheeled_legged_pkg)
+[49.594s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[49.595s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[49.595s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished with '0'
+[49.595s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[49.598s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[49.599s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/orangepi/wheel_robot/install/local_setup.ps1'
+[49.601s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/orangepi/wheel_robot/install/_local_setup_util_ps1.py'
+[49.603s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/orangepi/wheel_robot/install/setup.ps1'
+[49.606s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/orangepi/wheel_robot/install/local_setup.sh'
+[49.607s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/orangepi/wheel_robot/install/_local_setup_util_sh.py'
+[49.608s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/orangepi/wheel_robot/install/setup.sh'
+[49.611s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/orangepi/wheel_robot/install/local_setup.bash'
+[49.614s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/orangepi/wheel_robot/install/setup.bash'
+[49.617s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/orangepi/wheel_robot/install/local_setup.zsh'
+[49.618s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/orangepi/wheel_robot/install/setup.zsh'

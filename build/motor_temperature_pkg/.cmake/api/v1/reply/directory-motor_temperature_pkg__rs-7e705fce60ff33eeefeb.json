@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "motor_temperature_pkg__rs",
+		"source" : "/home/orangepi/wheel_robot/build/motor_temperature_pkg/motor_temperature_pkg__rs"
+	}
+}

@@ -1,0 +1,19 @@
+camera_viewer:
+  ros__parameters:
+    # 默认与 cv2.VideoCapture(0) 一致，让 OpenCV 自动选择可用后端。
+    camera_id: 0
+    camera_device: ""
+    image_width: 640
+    image_height: 480
+
+    # 0.0 和 AUTO 表示由摄像头后端自动协商，避免强制 V4L2/YUYV 黑帧。
+    frame_rate: 0.0
+    pixel_format: "AUTO"
+    display_rate: 30.0
+
+    # 观察画面后再按实际安装方向修改：0、90、180 或 270。
+    rotation_degrees: 0
+
+    # 可选值：none、horizontal、vertical、both。
+    mirror_mode: "none"
+    window_name: "Wheel Robot Camera (Q/Esc to quit)"

@@ -1,0 +1,17 @@
+/home/orangepi/wheel_robot/install/lesson12_ros_conversion/lib/lesson12_ros_conversion/python_number_publisher.py
+/home/orangepi/wheel_robot/install/lesson12_ros_conversion/lib/lesson12_ros_conversion/cpp_doubler
+/home/orangepi/wheel_robot/install/lesson12_ros_conversion/share/ament_index/resource_index/package_run_dependencies/lesson12_ros_conversion
+/home/orangepi/wheel_robot/install/lesson12_ros_conversion/share/ament_index/resource_index/parent_prefix_path/lesson12_ros_conversion
+/home/orangepi/wheel_robot/install/lesson12_ros_conversion/share/lesson12_ros_conversion/environment/ament_prefix_path.sh
+/home/orangepi/wheel_robot/install/lesson12_ros_conversion/share/lesson12_ros_conversion/environment/ament_prefix_path.dsv
+/home/orangepi/wheel_robot/install/lesson12_ros_conversion/share/lesson12_ros_conversion/environment/path.sh
+/home/orangepi/wheel_robot/install/lesson12_ros_conversion/share/lesson12_ros_conversion/environment/path.dsv
+/home/orangepi/wheel_robot/install/lesson12_ros_conversion/share/lesson12_ros_conversion/local_setup.bash
+/home/orangepi/wheel_robot/install/lesson12_ros_conversion/share/lesson12_ros_conversion/local_setup.sh
+/home/orangepi/wheel_robot/install/lesson12_ros_conversion/share/lesson12_ros_conversion/local_setup.zsh
+/home/orangepi/wheel_robot/install/lesson12_ros_conversion/share/lesson12_ros_conversion/local_setup.dsv
+/home/orangepi/wheel_robot/install/lesson12_ros_conversion/share/lesson12_ros_conversion/package.dsv
+/home/orangepi/wheel_robot/install/lesson12_ros_conversion/share/ament_index/resource_index/packages/lesson12_ros_conversion
+/home/orangepi/wheel_robot/install/lesson12_ros_conversion/share/lesson12_ros_conversion/cmake/lesson12_ros_conversionConfig.cmake
+/home/orangepi/wheel_robot/install/lesson12_ros_conversion/share/lesson12_ros_conversion/cmake/lesson12_ros_conversionConfig-version.cmake
+/home/orangepi/wheel_robot/install/lesson12_ros_conversion/share/lesson12_ros_conversion/package.xml

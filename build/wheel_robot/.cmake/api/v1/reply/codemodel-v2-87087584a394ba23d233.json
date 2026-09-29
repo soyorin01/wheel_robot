@@ -1,0 +1,276 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-206bea52e898daaa2578.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17,
+						18,
+						20
+					]
+				},
+				{
+					"build" : "wheel_robot__py",
+					"jsonFile" : "directory-wheel_robot__py-0c294d6cdae73c55415b.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "/home/orangepi/wheel_robot/build/wheel_robot/wheel_robot__py",
+					"targetIndexes" : 
+					[
+						7
+					]
+				},
+				{
+					"build" : "wheel_robot__rs",
+					"jsonFile" : "directory-wheel_robot__rs-915108815b1a2b83a6d6.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "/home/orangepi/wheel_robot/build/wheel_robot/wheel_robot__rs",
+					"targetIndexes" : 
+					[
+						19
+					]
+				}
+			],
+			"name" : "",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2
+					],
+					"name" : "wheel_robot",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17,
+						18,
+						19,
+						20
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ament_cmake_python_build_wheel_robot_egg::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ament_cmake_python_build_wheel_robot_egg-d8a341b97d678556822a.json",
+					"name" : "ament_cmake_python_build_wheel_robot_egg",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ament_cmake_python_copy_wheel_robot::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ament_cmake_python_copy_wheel_robot-e3096dc82a74d0f50a6c.json",
+					"name" : "ament_cmake_python_copy_wheel_robot",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "astra_camera_node::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-astra_camera_node-2efeccbb40103dadfa8c.json",
+					"name" : "astra_camera_node",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "depth_distance_node::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-depth_distance_node-ef9d611df75d03cbe391.json",
+					"name" : "depth_distance_node",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-uninstall-1768ca699212ffe90f33.json",
+					"name" : "uninstall",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "wheel_robot::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-wheel_robot-f2c71f8842b16765dea4.json",
+					"name" : "wheel_robot",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "wheel_robot__cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-wheel_robot__cpp-e4a8ce68175b12d42128.json",
+					"name" : "wheel_robot__cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "wheel_robot__py::@9a239c3175af5ebefa21",
+					"jsonFile" : "target-wheel_robot__py-5f10697d0095fc08e100.json",
+					"name" : "wheel_robot__py",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "wheel_robot__rosidl_generator_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-wheel_robot__rosidl_generator_c-86676a59c38e67163c3f.json",
+					"name" : "wheel_robot__rosidl_generator_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "wheel_robot__rosidl_generator_py::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-wheel_robot__rosidl_generator_py-5b301b4460b815e1375c.json",
+					"name" : "wheel_robot__rosidl_generator_py",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "wheel_robot__rosidl_typesupport_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-wheel_robot__rosidl_typesupport_c-71e9ca977d763b6fa934.json",
+					"name" : "wheel_robot__rosidl_typesupport_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "wheel_robot__rosidl_typesupport_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-wheel_robot__rosidl_typesupport_c__pyext-5e2fa7ee249d29c5da72.json",
+					"name" : "wheel_robot__rosidl_typesupport_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "wheel_robot__rosidl_typesupport_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-wheel_robot__rosidl_typesupport_cpp-27e9df8bf005d13eb34b.json",
+					"name" : "wheel_robot__rosidl_typesupport_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "wheel_robot__rosidl_typesupport_fastrtps_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-wheel_robot__rosidl_typesupport_fastrtps_c-8ea1a6556a492e86c0ba.json",
+					"name" : "wheel_robot__rosidl_typesupport_fastrtps_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "wheel_robot__rosidl_typesupport_fastrtps_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-wheel_robot__rosidl_typesupport_fastrtps_c__pyext-64bb1db264a8eb323a78.json",
+					"name" : "wheel_robot__rosidl_typesupport_fastrtps_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "wheel_robot__rosidl_typesupport_fastrtps_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-wheel_robot__rosidl_typesupport_fastrtps_cpp-3cef81c57d24eec13189.json",
+					"name" : "wheel_robot__rosidl_typesupport_fastrtps_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "wheel_robot__rosidl_typesupport_introspection_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-wheel_robot__rosidl_typesupport_introspection_c-9c9c59789ce42ff365a3.json",
+					"name" : "wheel_robot__rosidl_typesupport_introspection_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "wheel_robot__rosidl_typesupport_introspection_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-wheel_robot__rosidl_typesupport_introspection_c__pyext-12176fff2bb7c6f09600.json",
+					"name" : "wheel_robot__rosidl_typesupport_introspection_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "wheel_robot__rosidl_typesupport_introspection_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-wheel_robot__rosidl_typesupport_introspection_cpp-77cfb4af0596be08ccc5.json",
+					"name" : "wheel_robot__rosidl_typesupport_introspection_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "wheel_robot__rs::@eddfd24a4d9eb78f2648",
+					"jsonFile" : "target-wheel_robot__rs-0ae91be2ee3267f38e90.json",
+					"name" : "wheel_robot__rs",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "wheel_robot_uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-wheel_robot_uninstall-cd165dfd26c99609df2d.json",
+					"name" : "wheel_robot_uninstall",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/orangepi/wheel_robot/build/wheel_robot",
+		"source" : "/home/orangepi/wheel_robot/src/wheel_robot"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

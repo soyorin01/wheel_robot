@@ -1,0 +1,72 @@
+[0.026s] Invoking command in '/home/orangepi/wheel_robot/build/wheeled_legged_pkg': CMAKE_PREFIX_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg:/home/orangepi/wheel_robot/install/wheel_robot:/home/orangepi/wheel_robot/install/wheeled_legged_pkg:/home/orangepi/wheel_robot/install/wheel_robot_demos:/home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg:/home/orangepi/wheel_robot/install/lesson12_ros_conversion:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble LD_LIBRARY_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg/lib:/home/orangepi/wheel_robot/install/wheel_robot/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib /usr/bin/cmake /home/orangepi/wheel_robot/src/wheeled_legged_pkg -DCMAKE_INSTALL_PREFIX=/home/orangepi/wheel_robot/install/wheeled_legged_pkg
+[0.240s] -- The C compiler identification is GNU 11.4.0
+[0.415s] -- The CXX compiler identification is GNU 11.4.0
+[0.430s] -- Detecting C compiler ABI info
+[0.686s] -- Detecting C compiler ABI info - done
+[0.699s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.700s] -- Detecting C compile features
+[0.701s] -- Detecting C compile features - done
+[0.706s] -- Detecting CXX compiler ABI info
+[0.980s] -- Detecting CXX compiler ABI info - done
+[0.993s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.994s] -- Detecting CXX compile features
+[0.995s] -- Detecting CXX compile features - done
+[0.999s] -- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+[1.486s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[1.802s] -- Found rclcpp: 16.0.19 (/opt/ros/humble/share/rclcpp/cmake)
+[1.870s] -- Found rosidl_generator_c: 3.1.9 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[1.878s] -- Found rosidl_adapter: 3.1.9 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[1.894s] -- Found rosidl_generator_cpp: 3.1.9 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[1.916s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[1.945s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[2.025s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[2.030s] -- Found rmw_fastrtps_cpp: 6.2.10 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[2.257s] -- Found OpenSSL: /usr/lib/aarch64-linux-gnu/libcrypto.so (found version "3.0.2")  
+[2.308s] -- Found FastRTPS: /opt/ros/humble/include  
+[2.383s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[2.397s] -- Looking for pthread.h
+[2.654s] -- Looking for pthread.h - found
+[2.655s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[2.907s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[2.912s] -- Found Threads: TRUE  
+[3.056s] -- Found sensor_msgs: 4.9.1 (/opt/ros/humble/share/sensor_msgs/cmake)
+[3.124s] -- Found nav_msgs: 4.9.1 (/opt/ros/humble/share/nav_msgs/cmake)
+[3.184s] -- Found trajectory_msgs: 4.9.1 (/opt/ros/humble/share/trajectory_msgs/cmake)
+[3.247s] -- Found tf2: 0.25.20 (/opt/ros/humble/share/tf2/cmake)
+[3.280s] -- Found tf2_ros: 0.25.20 (/opt/ros/humble/share/tf2_ros/cmake)
+[3.654s] -- Found tf2_geometry_msgs: 0.25.20 (/opt/ros/humble/share/tf2_geometry_msgs/cmake)
+[3.697s] -- Found eigen3_cmake_module: 0.1.1 (/opt/ros/humble/share/eigen3_cmake_module/cmake)
+[3.701s] -- Found Eigen3: TRUE (found version "3.4.0") 
+[3.702s] -- Ensuring Eigen3 include directory is part of orocos-kdl CMake target
+[3.708s] -- Found diagnostic_msgs: 4.9.1 (/opt/ros/humble/share/diagnostic_msgs/cmake)
+[3.752s] -- Found motor_temperature_pkg: 0.1.0 (/home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake)
+[4.002s] -- Configuring done
+[4.041s] -- Generating done
+[4.053s] -- Build files have been written to: /home/orangepi/wheel_robot/build/wheeled_legged_pkg
+[4.093s] Invoked command in '/home/orangepi/wheel_robot/build/wheeled_legged_pkg' returned '0': CMAKE_PREFIX_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg:/home/orangepi/wheel_robot/install/wheel_robot:/home/orangepi/wheel_robot/install/wheeled_legged_pkg:/home/orangepi/wheel_robot/install/wheel_robot_demos:/home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg:/home/orangepi/wheel_robot/install/lesson12_ros_conversion:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble LD_LIBRARY_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg/lib:/home/orangepi/wheel_robot/install/wheel_robot/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib /usr/bin/cmake /home/orangepi/wheel_robot/src/wheeled_legged_pkg -DCMAKE_INSTALL_PREFIX=/home/orangepi/wheel_robot/install/wheeled_legged_pkg
+[4.105s] Invoking command in '/home/orangepi/wheel_robot/build/wheeled_legged_pkg': CMAKE_PREFIX_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg:/home/orangepi/wheel_robot/install/wheel_robot:/home/orangepi/wheel_robot/install/wheeled_legged_pkg:/home/orangepi/wheel_robot/install/wheel_robot_demos:/home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg:/home/orangepi/wheel_robot/install/lesson12_ros_conversion:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble LD_LIBRARY_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg/lib:/home/orangepi/wheel_robot/install/wheel_robot/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib /usr/bin/cmake --build /home/orangepi/wheel_robot/build/wheeled_legged_pkg -- -j8 -l8
+[4.369s] [ 33%] [32mBuilding CXX object CMakeFiles/wl_base_node.dir/src/robot_functions.cpp.o[0m
+[4.382s] [ 66%] [32mBuilding CXX object CMakeFiles/wl_base_node.dir/src/wl_base_node.cpp.o[0m
+[51.989s] [100%] [32m[1mLinking CXX executable wl_base_node[0m
+[56.367s] [100%] Built target wl_base_node
+[56.466s] Invoked command in '/home/orangepi/wheel_robot/build/wheeled_legged_pkg' returned '0': CMAKE_PREFIX_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg:/home/orangepi/wheel_robot/install/wheel_robot:/home/orangepi/wheel_robot/install/wheeled_legged_pkg:/home/orangepi/wheel_robot/install/wheel_robot_demos:/home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg:/home/orangepi/wheel_robot/install/lesson12_ros_conversion:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble LD_LIBRARY_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg/lib:/home/orangepi/wheel_robot/install/wheel_robot/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib /usr/bin/cmake --build /home/orangepi/wheel_robot/build/wheeled_legged_pkg -- -j8 -l8
+[56.472s] Invoking command in '/home/orangepi/wheel_robot/build/wheeled_legged_pkg': CMAKE_PREFIX_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg:/home/orangepi/wheel_robot/install/wheel_robot:/home/orangepi/wheel_robot/install/wheeled_legged_pkg:/home/orangepi/wheel_robot/install/wheel_robot_demos:/home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg:/home/orangepi/wheel_robot/install/lesson12_ros_conversion:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble LD_LIBRARY_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg/lib:/home/orangepi/wheel_robot/install/wheel_robot/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib /usr/bin/cmake --install /home/orangepi/wheel_robot/build/wheeled_legged_pkg
+[56.511s] -- Install configuration: ""
+[56.512s] -- Installing: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/lib/wheeled_legged_pkg/wl_base_node
+[56.535s] -- Set runtime path of "/home/orangepi/wheel_robot/install/wheeled_legged_pkg/lib/wheeled_legged_pkg/wl_base_node" to ""
+[56.536s] -- Installing: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/ament_index/resource_index/package_run_dependencies/wheeled_legged_pkg
+[56.536s] -- Installing: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/ament_index/resource_index/parent_prefix_path/wheeled_legged_pkg
+[56.537s] -- Installing: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/environment/ament_prefix_path.sh
+[56.537s] -- Installing: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/environment/ament_prefix_path.dsv
+[56.537s] -- Installing: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/environment/path.sh
+[56.538s] -- Installing: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/environment/path.dsv
+[56.538s] -- Installing: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/local_setup.bash
+[56.539s] -- Installing: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/local_setup.sh
+[56.539s] -- Installing: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/local_setup.zsh
+[56.540s] -- Installing: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/local_setup.dsv
+[56.542s] -- Installing: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/package.dsv
+[56.543s] -- Installing: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/ament_index/resource_index/packages/wheeled_legged_pkg
+[56.543s] -- Installing: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/cmake/wheeled_legged_pkgConfig.cmake
+[56.544s] -- Installing: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/cmake/wheeled_legged_pkgConfig-version.cmake
+[56.544s] -- Installing: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/package.xml
+[56.545s] Invoked command in '/home/orangepi/wheel_robot/build/wheeled_legged_pkg' returned '0': CMAKE_PREFIX_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg:/home/orangepi/wheel_robot/install/wheel_robot:/home/orangepi/wheel_robot/install/wheeled_legged_pkg:/home/orangepi/wheel_robot/install/wheel_robot_demos:/home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg:/home/orangepi/wheel_robot/install/lesson12_ros_conversion:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble LD_LIBRARY_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg/lib:/home/orangepi/wheel_robot/install/wheel_robot/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib /usr/bin/cmake --install /home/orangepi/wheel_robot/build/wheeled_legged_pkg

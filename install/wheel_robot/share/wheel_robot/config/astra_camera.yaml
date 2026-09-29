@@ -1,0 +1,44 @@
+/camera/astra_camera:
+  ros__parameters:
+    enable_color: true
+    enable_depth: true
+
+    # by-id 路径不会随 /dev/video 编号变化；index0 是 Astra Pro 彩色流。
+    color_device: "/dev/v4l/by-id/usb-Astra_Pro_HD_Camera_Astra_Pro_HD_Camera-video-index0"
+    color_width: 640
+    color_height: 480
+    color_fps: 30.0
+    # AUTO 使用本机已验证可用的 OpenCV 自动协商路径。
+    color_pixel_format: "AUTO"
+    color_camera_name: "astra_pro_color"
+    color_camera_info_url: "package://wheel_robot/config/calibration/astra_pro_color.yaml"
+
+    # Astra Pro 官方 legacy SDK 的 Y11 数据转换为 ROS 16UC1，单位为毫米。
+    depth_width: 640
+    depth_height: 480
+    depth_fps: 30
+    # 旧 Astra Pro 固件的 Y11 实测为厘米级原始值：51 对应约 510 mm。
+    depth_unit_mm: 10.0
+
+    color_frame_id: "camera_color_optical_frame"
+    depth_frame_id: "camera_depth_optical_frame"
+
+/camera/depth_distance:
+  ros__parameters:
+    # 三个区域覆盖深度图的主要前方视野。
+    roi_width: 180
+    roi_height: 180
+    # 取有效像素中靠近相机的 10% 分位，兼顾小障碍检测与噪声抑制。
+    distance_percentile: 0.10
+    min_valid_pixels: 50
+    temporal_window: 3
+    min_distance_m: 0.15
+    max_distance_m: 8.0
+    field_of_view_rad: 0.27
+
+    stop_distance_m: 0.60
+    caution_distance_m: 1.00
+    # 自动按当前画面拉伸伪彩色，5cm 台阶才看得出棱。白线是深度边缘。
+    visualization_auto_range: true
+    visualization_max_distance_m: 1.20
+    visualization_median_size: 5

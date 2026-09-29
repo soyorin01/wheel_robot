@@ -1,0 +1,91 @@
+shiwai:
+  ros__parameters:
+    # 先保持 false 做识别检查；确认画面正常后再 enable_motion:=true。
+    enable_motion: false
+
+    camera_backend: "v4l2"
+    camera_id: 0
+    camera_device: "/dev/video0"
+    image_width: 640
+    image_height: 480
+    capture_frame_rate: 30.0
+    pixel_format: "YUYV"
+    rotation_degrees: 0
+    mirror_mode: "none"
+    camera_retry_seconds: 1.0
+    image_timeout_seconds: 0.35
+
+    control_rate: 15.0
+    show_debug: true
+    debug_window_name: "ShiWai Track (Q/Esc to stop)"
+
+    # 前视摄像头：黄线在画面中部成对，底部经常只剩地面。
+    search_top_ratio: 0.24
+    search_bottom_ratio: 0.86
+    search_left_ratio: 0.0
+    search_right_ratio: 1.0
+
+    # 现场泡沫黄线偏浅，饱和度不要设太高。
+    yellow_h_min: 12
+    yellow_h_max: 42
+    yellow_s_min: 50
+    yellow_v_min: 70
+    min_boundary_lane_contrast: 18.0
+    morphology_kernel: 3
+
+    min_line_width_ratio: 0.012
+    max_line_width_ratio: 0.50
+    expected_line_width_ratio: 0.08
+    width_tolerance_ratio: 0.08
+
+    min_lane_width_ratio: 0.32
+    max_lane_width_ratio: 0.82
+    expected_lane_width_ratio: 0.72
+    lane_width_tolerance_ratio: 0.30
+    max_center_jump_ratio: 0.04
+    min_valid_row_fraction: 0.12
+    min_confidence: 0.38
+    target_offset_pixels: 0.0
+
+    # 人行道黑条与黄黑胶带识别。
+    black_value_max: 95
+    black_saturation_max: 110
+    crosswalk_top_ratio: 0.52
+    crosswalk_bottom_ratio: 0.86
+    hazard_top_ratio: 0.08
+    hazard_bottom_ratio: 0.72
+    side_margin_ratio: 0.03
+    min_crosswalk_stripes: 4
+    min_hazard_transitions: 1.8
+    crosswalk_confirm_frames: 4.0
+    hazard_confirm_frames: 4.0
+    hazard_gone_frames: 12.0
+
+    # 人行道停稳后再计时；腿高和下蹲。现场请改 scripts/shiwai.py 文件开头。
+    sidewalk_stop_seconds: 5.0
+    stand_height: 0.25
+    crouch_height: 0.16
+    height_rate: 0.10
+    min_crouch_seconds: 5.0
+    # 入口黄黑胶带消失后再蹲行这段时间，避免在隧道内起身。
+    tunnel_pass_seconds: 4.0
+    max_crouch_seconds: 14.0
+    bridge_speed_scale: 1.00
+    tunnel_speed_scale: 0.70
+    lost_line_grace_seconds: 0.50
+    tunnel_lost_line_grace_seconds: 1.80
+
+    # 下列速度/停车/下蹲会被 shiwai.py 文件开头的常量覆盖。
+    forward_speed: 0.18
+    minimum_forward_speed: 0.07
+    linear_direction_sign: 1.0
+    steering_kp: 1.00
+    steering_kd: 0.025
+    steering_sign: -1.0
+    max_angular_speed: 0.40
+    max_linear_acceleration: 0.25
+    max_angular_acceleration: 1.00
+    max_error_derivative: 3.0
+    error_filter_alpha: 0.45
+    curve_slowdown: 0.60
+    status_log_period: 1.0

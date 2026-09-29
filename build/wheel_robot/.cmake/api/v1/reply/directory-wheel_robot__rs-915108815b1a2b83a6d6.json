@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "wheel_robot__rs",
+		"source" : "/home/orangepi/wheel_robot/build/wheel_robot/wheel_robot__rs"
+	}
+}

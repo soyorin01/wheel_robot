@@ -1,0 +1,4 @@
+source;share/wheel_robot/local_setup.bash
+source;share/wheel_robot/local_setup.dsv
+source;share/wheel_robot/local_setup.sh
+source;share/wheel_robot/local_setup.zsh

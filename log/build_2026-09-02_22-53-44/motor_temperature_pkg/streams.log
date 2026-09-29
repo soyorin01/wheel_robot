@@ -1,0 +1,238 @@
+[0.086s] Invoking command in '/home/orangepi/wheel_robot/build/motor_temperature_pkg': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble /usr/bin/cmake /home/orangepi/wheel_robot/src/motor_temperature_pkg -DCMAKE_INSTALL_PREFIX=/home/orangepi/wheel_robot/install/motor_temperature_pkg
+[0.419s] -- The C compiler identification is GNU 11.4.0
+[0.639s] -- The CXX compiler identification is GNU 11.4.0
+[0.650s] -- Detecting C compiler ABI info
+[0.956s] -- Detecting C compiler ABI info - done
+[0.996s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.998s] -- Detecting C compile features
+[0.999s] -- Detecting C compile features - done
+[1.005s] -- Detecting CXX compiler ABI info
+[1.233s] -- Detecting CXX compiler ABI info - done
+[1.280s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[1.281s] -- Detecting CXX compile features
+[1.283s] -- Detecting CXX compile features - done
+[1.311s] -- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+[1.903s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[2.216s] -- Found rosidl_default_generators: 1.2.1 (/opt/ros/humble/share/rosidl_default_generators/cmake)
+[2.233s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[2.268s] -- Found rosidl_adapter: 3.1.9 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[2.339s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[2.408s] -- Found std_msgs: 4.9.1 (/opt/ros/humble/share/std_msgs/cmake)
+[3.256s] -- Found ament_cmake_ros: 0.10.0 (/opt/ros/humble/share/ament_cmake_ros/cmake)
+[3.797s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[4.569s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[4.618s] -- Found PythonInterp: /usr/bin/python3 (found suitable version "3.10.12", minimum required is "3.6") 
+[4.620s] -- Found python_cmake_module: 0.10.0 (/opt/ros/humble/share/python_cmake_module/cmake)
+[4.699s] -- Found PythonLibs: /usr/lib/aarch64-linux-gnu/libpython3.10.so (found suitable version "3.10.12", minimum required is "3.5") 
+[4.700s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[4.700s] -- Using PYTHON_INCLUDE_DIRS: /usr/include/python3.10
+[4.701s] -- Using PYTHON_LIBRARIES: /usr/lib/aarch64-linux-gnu/libpython3.10.so
+[4.771s] -- Found PythonExtra: .so  
+[5.151s] -- Configuring done
+[5.226s] -- Generating done
+[5.251s] -- Build files have been written to: /home/orangepi/wheel_robot/build/motor_temperature_pkg
+[5.273s] Invoked command in '/home/orangepi/wheel_robot/build/motor_temperature_pkg' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble /usr/bin/cmake /home/orangepi/wheel_robot/src/motor_temperature_pkg -DCMAKE_INSTALL_PREFIX=/home/orangepi/wheel_robot/install/motor_temperature_pkg
+[5.279s] Invoking command in '/home/orangepi/wheel_robot/build/motor_temperature_pkg': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble /usr/bin/cmake --build /home/orangepi/wheel_robot/build/motor_temperature_pkg -- -j8 -l8
+[5.488s] [  3%] [34m[1mGenerating C code for ROS interfaces[0m
+[5.533s] [  9%] [34m[1mGenerating Rust code for ROS interfaces[0m
+[5.534s] [  9%] [34m[1mGenerating C++ code for ROS interfaces[0m
+[5.550s] [  9%] Built target ament_cmake_python_copy_motor_temperature_pkg
+[6.269s] [ 12%] [32mBuilding C object CMakeFiles/motor_temperature_pkg__rosidl_generator_c.dir/rosidl_generator_c/motor_temperature_pkg/msg/detail/motor_temperatures__functions.c.o[0m
+[6.440s] running egg_info
+[6.442s] creating motor_temperature_pkg.egg-info
+[6.443s] writing motor_temperature_pkg.egg-info/PKG-INFO
+[6.444s] writing dependency_links to motor_temperature_pkg.egg-info/dependency_links.txt
+[6.445s] writing top-level names to motor_temperature_pkg.egg-info/top_level.txt
+[6.445s] writing manifest file 'motor_temperature_pkg.egg-info/SOURCES.txt'
+[6.451s] reading manifest file 'motor_temperature_pkg.egg-info/SOURCES.txt'
+[6.452s] writing manifest file 'motor_temperature_pkg.egg-info/SOURCES.txt'
+[6.591s] [ 15%] [32m[1mLinking C shared library libmotor_temperature_pkg__rosidl_generator_c.so[0m
+[6.598s] [ 15%] Built target ament_cmake_python_build_motor_temperature_pkg_egg
+[6.843s] [ 15%] Built target motor_temperature_pkg__rosidl_generator_c
+[6.890s] [ 21%] [34m[1mGenerating C type support dispatch for ROS interfaces[0m
+[6.890s] [ 21%] Built target motor_temperature_pkg__cpp
+[6.891s] [ 21%] [34m[1mGenerating C introspection for ROS interfaces[0m
+[6.892s] [ 25%] [34m[1mGenerating C type support for eProsima Fast-RTPS[0m
+[6.927s] [ 28%] [34m[1mGenerating C++ type support for eProsima Fast-RTPS[0m
+[6.943s] [ 31%] [34m[1mGenerating C++ type support dispatch for ROS interfaces[0m
+[6.944s] [ 34%] [34m[1mGenerating C++ introspection for ROS interfaces[0m
+[7.286s] [ 34%] Built target motor_temperature_pkg__rs
+[7.699s] [ 37%] [32mBuilding CXX object CMakeFiles/motor_temperature_pkg__rosidl_typesupport_c.dir/rosidl_typesupport_c/motor_temperature_pkg/msg/motor_temperatures__type_support.cpp.o[0m
+[7.856s] [ 40%] [32m[1mLinking CXX shared library libmotor_temperature_pkg__rosidl_typesupport_c.so[0m
+[8.076s] [ 40%] Built target motor_temperature_pkg__rosidl_typesupport_c
+[8.077s] [ 43%] [32mBuilding CXX object CMakeFiles/motor_temperature_pkg__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/motor_temperature_pkg/msg/detail/motor_temperatures__type_support_c.cpp.o[0m
+[8.250s] [ 46%] [32mBuilding CXX object CMakeFiles/motor_temperature_pkg__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/motor_temperature_pkg/msg/motor_temperatures__type_support.cpp.o[0m
+[8.827s] [ 50%] [32mBuilding CXX object CMakeFiles/motor_temperature_pkg__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/motor_temperature_pkg/msg/detail/motor_temperatures__type_support.cpp.o[0m
+[8.849s] [ 53%] [32mBuilding CXX object CMakeFiles/motor_temperature_pkg__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/motor_temperature_pkg/msg/detail/dds_fastrtps/motor_temperatures__type_support.cpp.o[0m
+[8.892s] [ 56%] [32mBuilding C object CMakeFiles/motor_temperature_pkg__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/motor_temperature_pkg/msg/detail/motor_temperatures__type_support.c.o[0m
+[9.154s] [ 59%] [32m[1mLinking CXX shared library libmotor_temperature_pkg__rosidl_typesupport_fastrtps_c.so[0m
+[9.176s] [ 62%] [32m[1mLinking C shared library libmotor_temperature_pkg__rosidl_typesupport_introspection_c.so[0m
+[9.344s] [ 62%] Built target motor_temperature_pkg__rosidl_typesupport_introspection_c
+[9.767s] [ 62%] Built target motor_temperature_pkg__rosidl_typesupport_fastrtps_c
+[10.230s] [ 65%] [32m[1mLinking CXX shared library libmotor_temperature_pkg__rosidl_typesupport_cpp.so[0m
+[10.431s] [ 65%] Built target motor_temperature_pkg__rosidl_typesupport_cpp
+[10.573s] [ 68%] [32m[1mLinking CXX shared library libmotor_temperature_pkg__rosidl_typesupport_fastrtps_cpp.so[0m
+[11.098s] [ 68%] Built target motor_temperature_pkg__rosidl_typesupport_fastrtps_cpp
+[11.113s] [ 71%] [32m[1mLinking CXX shared library libmotor_temperature_pkg__rosidl_typesupport_introspection_cpp.so[0m
+[11.361s] [ 71%] Built target motor_temperature_pkg__rosidl_typesupport_introspection_cpp
+[11.438s] [ 71%] Built target motor_temperature_pkg
+[11.501s] [ 75%] [34m[1mGenerating Python code for ROS interfaces[0m
+[12.249s] [ 75%] Built target motor_temperature_pkg__py
+[12.315s] [ 78%] [32mBuilding C object CMakeFiles/motor_temperature_pkg__rosidl_generator_py.dir/rosidl_generator_py/motor_temperature_pkg/msg/_motor_temperatures_s.c.o[0m
+[12.631s] [ 81%] [32m[1mLinking C shared library rosidl_generator_py/motor_temperature_pkg/libmotor_temperature_pkg__rosidl_generator_py.so[0m
+[12.800s] [ 81%] Built target motor_temperature_pkg__rosidl_generator_py
+[12.880s] [ 90%] [32mBuilding C object CMakeFiles/motor_temperature_pkg__rosidl_typesupport_fastrtps_c__pyext.dir/rosidl_generator_py/motor_temperature_pkg/_motor_temperature_pkg_s.ep.rosidl_typesupport_fastrtps_c.c.o[0m
+[12.881s] [ 90%] [32mBuilding C object CMakeFiles/motor_temperature_pkg__rosidl_typesupport_c__pyext.dir/rosidl_generator_py/motor_temperature_pkg/_motor_temperature_pkg_s.ep.rosidl_typesupport_c.c.o[0m
+[12.881s] [ 90%] [32mBuilding C object CMakeFiles/motor_temperature_pkg__rosidl_typesupport_introspection_c__pyext.dir/rosidl_generator_py/motor_temperature_pkg/_motor_temperature_pkg_s.ep.rosidl_typesupport_introspection_c.c.o[0m
+[13.106s] [ 93%] [32m[1mLinking C shared library rosidl_generator_py/motor_temperature_pkg/motor_temperature_pkg_s__rosidl_typesupport_introspection_c.cpython-310-aarch64-linux-gnu.so[0m
+[13.211s] [ 96%] [32m[1mLinking C shared library rosidl_generator_py/motor_temperature_pkg/motor_temperature_pkg_s__rosidl_typesupport_fastrtps_c.cpython-310-aarch64-linux-gnu.so[0m
+[13.290s] [100%] [32m[1mLinking C shared library rosidl_generator_py/motor_temperature_pkg/motor_temperature_pkg_s__rosidl_typesupport_c.cpython-310-aarch64-linux-gnu.so[0m
+[13.297s] [100%] Built target motor_temperature_pkg__rosidl_typesupport_introspection_c__pyext
+[13.363s] [100%] Built target motor_temperature_pkg__rosidl_typesupport_fastrtps_c__pyext
+[13.449s] [100%] Built target motor_temperature_pkg__rosidl_typesupport_c__pyext
+[13.484s] Invoked command in '/home/orangepi/wheel_robot/build/motor_temperature_pkg' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble /usr/bin/cmake --build /home/orangepi/wheel_robot/build/motor_temperature_pkg -- -j8 -l8
+[13.489s] Invoking command in '/home/orangepi/wheel_robot/build/motor_temperature_pkg': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble /usr/bin/cmake --install /home/orangepi/wheel_robot/build/motor_temperature_pkg
+[13.522s] -- Install configuration: ""
+[13.523s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/ament_index/resource_index/rosidl_interfaces/motor_temperature_pkg
+[13.524s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg
+[13.525s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg
+[13.526s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/rosidl_generator_c__visibility_control.h
+[13.527s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/detail
+[13.529s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/detail/motor_temperatures__functions.h
+[13.530s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/detail/motor_temperatures__functions.c
+[13.531s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/detail/motor_temperatures__type_support.h
+[13.532s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/detail/motor_temperatures__struct.h
+[13.533s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/motor_temperatures.h
+[13.534s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/environment/library_path.sh
+[13.535s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/environment/library_path.dsv
+[13.536s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/lib/libmotor_temperature_pkg__rosidl_generator_c.so
+[13.536s] -- Set runtime path of "/home/orangepi/wheel_robot/install/motor_temperature_pkg/lib/libmotor_temperature_pkg__rosidl_generator_c.so" to ""
+[13.537s] -- Up-to-date: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg
+[13.537s] -- Up-to-date: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg
+[13.538s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/rosidl_typesupport_fastrtps_c__visibility_control.h
+[13.539s] -- Up-to-date: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/detail
+[13.539s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/detail/motor_temperatures__rosidl_typesupport_fastrtps_c.h
+[13.540s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/lib/libmotor_temperature_pkg__rosidl_typesupport_fastrtps_c.so
+[13.541s] -- Set runtime path of "/home/orangepi/wheel_robot/install/motor_temperature_pkg/lib/libmotor_temperature_pkg__rosidl_typesupport_fastrtps_c.so" to ""
+[13.541s] -- Up-to-date: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg
+[13.542s] -- Up-to-date: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg
+[13.542s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/rosidl_typesupport_introspection_c__visibility_control.h
+[13.543s] -- Up-to-date: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/detail
+[13.543s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/detail/motor_temperatures__type_support.c
+[13.544s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/detail/motor_temperatures__rosidl_typesupport_introspection_c.h
+[13.544s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/lib/libmotor_temperature_pkg__rosidl_typesupport_introspection_c.so
+[13.545s] -- Set runtime path of "/home/orangepi/wheel_robot/install/motor_temperature_pkg/lib/libmotor_temperature_pkg__rosidl_typesupport_introspection_c.so" to ""
+[13.546s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/lib/libmotor_temperature_pkg__rosidl_typesupport_c.so
+[13.546s] -- Set runtime path of "/home/orangepi/wheel_robot/install/motor_temperature_pkg/lib/libmotor_temperature_pkg__rosidl_typesupport_c.so" to ""
+[13.547s] -- Up-to-date: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg
+[13.547s] -- Up-to-date: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg
+[13.548s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/rosidl_generator_cpp__visibility_control.hpp
+[13.548s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/motor_temperatures.hpp
+[13.549s] -- Up-to-date: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/detail
+[13.549s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/detail/motor_temperatures__struct.hpp
+[13.550s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/detail/motor_temperatures__builder.hpp
+[13.550s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/detail/motor_temperatures__traits.hpp
+[13.551s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/detail/motor_temperatures__type_support.hpp
+[13.551s] -- Up-to-date: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg
+[13.552s] -- Up-to-date: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg
+[13.552s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h
+[13.553s] -- Up-to-date: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/detail
+[13.553s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/detail/dds_fastrtps
+[13.554s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/detail/motor_temperatures__rosidl_typesupport_fastrtps_cpp.hpp
+[13.554s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/lib/libmotor_temperature_pkg__rosidl_typesupport_fastrtps_cpp.so
+[13.555s] -- Set runtime path of "/home/orangepi/wheel_robot/install/motor_temperature_pkg/lib/libmotor_temperature_pkg__rosidl_typesupport_fastrtps_cpp.so" to ""
+[13.555s] -- Up-to-date: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg
+[13.556s] -- Up-to-date: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg
+[13.556s] -- Up-to-date: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/detail
+[13.557s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/detail/motor_temperatures__type_support.cpp
+[13.557s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/include/motor_temperature_pkg/motor_temperature_pkg/msg/detail/motor_temperatures__rosidl_typesupport_introspection_cpp.hpp
+[13.558s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/lib/libmotor_temperature_pkg__rosidl_typesupport_introspection_cpp.so
+[13.558s] -- Set runtime path of "/home/orangepi/wheel_robot/install/motor_temperature_pkg/lib/libmotor_temperature_pkg__rosidl_typesupport_introspection_cpp.so" to ""
+[13.559s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/lib/libmotor_temperature_pkg__rosidl_typesupport_cpp.so
+[13.559s] -- Set runtime path of "/home/orangepi/wheel_robot/install/motor_temperature_pkg/lib/libmotor_temperature_pkg__rosidl_typesupport_cpp.so" to ""
+[13.560s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/environment/pythonpath.sh
+[13.561s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/environment/pythonpath.dsv
+[13.561s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg-0.1.0-py3.10.egg-info
+[13.562s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg-0.1.0-py3.10.egg-info/top_level.txt
+[13.562s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg-0.1.0-py3.10.egg-info/SOURCES.txt
+[13.563s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg-0.1.0-py3.10.egg-info/dependency_links.txt
+[13.564s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg-0.1.0-py3.10.egg-info/PKG-INFO
+[13.564s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg
+[13.565s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg/libmotor_temperature_pkg__rosidl_generator_py.so
+[13.565s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg/__init__.py
+[13.566s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg/_motor_temperature_pkg_s.ep.rosidl_typesupport_c.c
+[13.567s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg/msg
+[13.567s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg/msg/_motor_temperatures_s.c
+[13.568s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg/msg/__init__.py
+[13.568s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg/msg/_motor_temperatures.py
+[13.569s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg/motor_temperature_pkg_s__rosidl_typesupport_fastrtps_c.cpython-310-aarch64-linux-gnu.so
+[13.569s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg/_motor_temperature_pkg_s.ep.rosidl_typesupport_introspection_c.c
+[13.570s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg/motor_temperature_pkg_s__rosidl_typesupport_c.cpython-310-aarch64-linux-gnu.so
+[13.571s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg/motor_temperature_pkg_s__rosidl_typesupport_introspection_c.cpython-310-aarch64-linux-gnu.so
+[13.571s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg/_motor_temperature_pkg_s.ep.rosidl_typesupport_fastrtps_c.c
+[13.633s] Listing '/home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg'...
+[13.634s] Compiling '/home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg/__init__.py'...
+[13.635s] Listing '/home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg/msg'...
+[13.636s] Compiling '/home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg/msg/__init__.py'...
+[13.637s] Compiling '/home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg/msg/_motor_temperatures.py'...
+[13.657s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg/motor_temperature_pkg_s__rosidl_typesupport_fastrtps_c.cpython-310-aarch64-linux-gnu.so
+[13.659s] -- Set runtime path of "/home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg/motor_temperature_pkg_s__rosidl_typesupport_fastrtps_c.cpython-310-aarch64-linux-gnu.so" to ""
+[13.660s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg/motor_temperature_pkg_s__rosidl_typesupport_introspection_c.cpython-310-aarch64-linux-gnu.so
+[13.661s] -- Set runtime path of "/home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg/motor_temperature_pkg_s__rosidl_typesupport_introspection_c.cpython-310-aarch64-linux-gnu.so" to ""
+[13.662s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg/motor_temperature_pkg_s__rosidl_typesupport_c.cpython-310-aarch64-linux-gnu.so
+[13.663s] -- Set runtime path of "/home/orangepi/wheel_robot/install/motor_temperature_pkg/local/lib/python3.10/dist-packages/motor_temperature_pkg/motor_temperature_pkg_s__rosidl_typesupport_c.cpython-310-aarch64-linux-gnu.so" to ""
+[13.663s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/lib/libmotor_temperature_pkg__rosidl_generator_py.so
+[13.664s] -- Set runtime path of "/home/orangepi/wheel_robot/install/motor_temperature_pkg/lib/libmotor_temperature_pkg__rosidl_generator_py.so" to ""
+[13.664s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/ament_index/resource_index/rust_packages/motor_temperature_pkg
+[13.664s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/rust
+[13.665s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/rust/Cargo.toml
+[13.665s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/rust/src
+[13.665s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/rust/src/msg.rs
+[13.666s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/rust/src/msg
+[13.666s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/rust/src/msg/rmw.rs
+[13.667s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/rust/src/lib.rs
+[13.667s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/rust/build.rs
+[13.667s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/msg/MotorTemperatures.idl
+[13.668s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/msg/MotorTemperatures.msg
+[13.668s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/lib/motor_temperature_pkg/motor_temperature_monitor
+[13.669s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/ament_index/resource_index/package_run_dependencies/motor_temperature_pkg
+[13.670s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/ament_index/resource_index/parent_prefix_path/motor_temperature_pkg
+[13.671s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/environment/ament_prefix_path.sh
+[13.672s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/environment/ament_prefix_path.dsv
+[13.673s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/environment/path.sh
+[13.674s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/environment/path.dsv
+[13.675s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/local_setup.bash
+[13.676s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/local_setup.sh
+[13.677s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/local_setup.zsh
+[13.677s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/local_setup.dsv
+[13.678s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/package.dsv
+[13.679s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/ament_index/resource_index/packages/motor_temperature_pkg
+[13.679s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/export_motor_temperature_pkg__rosidl_generator_cExport.cmake
+[13.680s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/export_motor_temperature_pkg__rosidl_generator_cExport-noconfig.cmake
+[13.681s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/export_motor_temperature_pkg__rosidl_typesupport_fastrtps_cExport.cmake
+[13.684s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/export_motor_temperature_pkg__rosidl_typesupport_fastrtps_cExport-noconfig.cmake
+[13.685s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/motor_temperature_pkg__rosidl_typesupport_introspection_cExport.cmake
+[13.686s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/motor_temperature_pkg__rosidl_typesupport_introspection_cExport-noconfig.cmake
+[13.686s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/motor_temperature_pkg__rosidl_typesupport_cExport.cmake
+[13.687s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/motor_temperature_pkg__rosidl_typesupport_cExport-noconfig.cmake
+[13.688s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/export_motor_temperature_pkg__rosidl_generator_cppExport.cmake
+[13.689s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/export_motor_temperature_pkg__rosidl_typesupport_fastrtps_cppExport.cmake
+[13.689s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/export_motor_temperature_pkg__rosidl_typesupport_fastrtps_cppExport-noconfig.cmake
+[13.690s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/motor_temperature_pkg__rosidl_typesupport_introspection_cppExport.cmake
+[13.691s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/motor_temperature_pkg__rosidl_typesupport_introspection_cppExport-noconfig.cmake
+[13.691s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/motor_temperature_pkg__rosidl_typesupport_cppExport.cmake
+[13.692s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/motor_temperature_pkg__rosidl_typesupport_cppExport-noconfig.cmake
+[13.692s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/export_motor_temperature_pkg__rosidl_generator_pyExport.cmake
+[13.693s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/export_motor_temperature_pkg__rosidl_generator_pyExport-noconfig.cmake
+[13.693s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/rosidl_cmake-extras.cmake
+[13.693s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/ament_cmake_export_dependencies-extras.cmake
+[13.694s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/ament_cmake_export_include_directories-extras.cmake
+[13.694s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/ament_cmake_export_libraries-extras.cmake
+[13.696s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/ament_cmake_export_targets-extras.cmake
+[13.697s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake
+[13.698s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake
+[13.700s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/rosidl_cmake_aggregate_target-extras.cmake
+[13.701s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/motor_temperature_pkgConfig.cmake
+[13.701s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/cmake/motor_temperature_pkgConfig-version.cmake
+[13.703s] -- Installing: /home/orangepi/wheel_robot/install/motor_temperature_pkg/share/motor_temperature_pkg/package.xml
+[13.704s] Invoked command in '/home/orangepi/wheel_robot/build/motor_temperature_pkg' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble /usr/bin/cmake --install /home/orangepi/wheel_robot/build/motor_temperature_pkg

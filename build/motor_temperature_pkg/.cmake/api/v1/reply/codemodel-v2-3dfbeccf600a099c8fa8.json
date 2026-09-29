@@ -1,0 +1,258 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-1a21c4cd24b587f74dfc.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						17,
+						18
+					]
+				},
+				{
+					"build" : "motor_temperature_pkg__py",
+					"jsonFile" : "directory-motor_temperature_pkg__py-00e935140a0766d4fcbc.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "/home/orangepi/wheel_robot/build/motor_temperature_pkg/motor_temperature_pkg__py",
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"build" : "motor_temperature_pkg__rs",
+					"jsonFile" : "directory-motor_temperature_pkg__rs-7e705fce60ff33eeefeb.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "/home/orangepi/wheel_robot/build/motor_temperature_pkg/motor_temperature_pkg__rs",
+					"targetIndexes" : 
+					[
+						16
+					]
+				}
+			],
+			"name" : "",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2
+					],
+					"name" : "motor_temperature_pkg",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17,
+						18
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ament_cmake_python_build_motor_temperature_pkg_egg::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ament_cmake_python_build_motor_temperature_pkg_egg-7f65a926e5576bd4b35e.json",
+					"name" : "ament_cmake_python_build_motor_temperature_pkg_egg",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ament_cmake_python_copy_motor_temperature_pkg::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ament_cmake_python_copy_motor_temperature_pkg-b84aff53a3fd5d1cf6d2.json",
+					"name" : "ament_cmake_python_copy_motor_temperature_pkg",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "motor_temperature_pkg::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-motor_temperature_pkg-753786249215c9026722.json",
+					"name" : "motor_temperature_pkg",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "motor_temperature_pkg__cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-motor_temperature_pkg__cpp-97509dfdb805e5e37a74.json",
+					"name" : "motor_temperature_pkg__cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "motor_temperature_pkg__py::@a379a0e03f58e2047a1e",
+					"jsonFile" : "target-motor_temperature_pkg__py-720e13786da34d735a32.json",
+					"name" : "motor_temperature_pkg__py",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "motor_temperature_pkg__rosidl_generator_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-motor_temperature_pkg__rosidl_generator_c-0a6df6dde6132da3d038.json",
+					"name" : "motor_temperature_pkg__rosidl_generator_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "motor_temperature_pkg__rosidl_generator_py::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-motor_temperature_pkg__rosidl_generator_py-8d308df845839cc9f5c4.json",
+					"name" : "motor_temperature_pkg__rosidl_generator_py",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "motor_temperature_pkg__rosidl_typesupport_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-motor_temperature_pkg__rosidl_typesupport_c-1a8bef0d6fff170809fc.json",
+					"name" : "motor_temperature_pkg__rosidl_typesupport_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "motor_temperature_pkg__rosidl_typesupport_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-motor_temperature_pkg__rosidl_typesupport_c__pyext-7914b8292d78950b8e2f.json",
+					"name" : "motor_temperature_pkg__rosidl_typesupport_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "motor_temperature_pkg__rosidl_typesupport_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-motor_temperature_pkg__rosidl_typesupport_cpp-d2cc6ccf3ecccd344ced.json",
+					"name" : "motor_temperature_pkg__rosidl_typesupport_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "motor_temperature_pkg__rosidl_typesupport_fastrtps_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-motor_temperature_pkg__rosidl_typesupport_fastrtps_c-5945ebb18da33da353ac.json",
+					"name" : "motor_temperature_pkg__rosidl_typesupport_fastrtps_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "motor_temperature_pkg__rosidl_typesupport_fastrtps_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-motor_temperature_pkg__rosidl_typesupport_fastrtps_c__pyext-78535280e8c8f3f41019.json",
+					"name" : "motor_temperature_pkg__rosidl_typesupport_fastrtps_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "motor_temperature_pkg__rosidl_typesupport_fastrtps_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-motor_temperature_pkg__rosidl_typesupport_fastrtps_cpp-45ac6162c5f872859baf.json",
+					"name" : "motor_temperature_pkg__rosidl_typesupport_fastrtps_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "motor_temperature_pkg__rosidl_typesupport_introspection_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-motor_temperature_pkg__rosidl_typesupport_introspection_c-1cbb2f622821627c4560.json",
+					"name" : "motor_temperature_pkg__rosidl_typesupport_introspection_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "motor_temperature_pkg__rosidl_typesupport_introspection_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-motor_temperature_pkg__rosidl_typesupport_introspection_c__pyext-486dfaac9676acb3915b.json",
+					"name" : "motor_temperature_pkg__rosidl_typesupport_introspection_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "motor_temperature_pkg__rosidl_typesupport_introspection_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-motor_temperature_pkg__rosidl_typesupport_introspection_cpp-4910b25aab7b66b54041.json",
+					"name" : "motor_temperature_pkg__rosidl_typesupport_introspection_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "motor_temperature_pkg__rs::@195579e34c19a5ae6a32",
+					"jsonFile" : "target-motor_temperature_pkg__rs-a1d74c096d3ccdd5b0dd.json",
+					"name" : "motor_temperature_pkg__rs",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "motor_temperature_pkg_uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-motor_temperature_pkg_uninstall-c5577076adc41fefcab3.json",
+					"name" : "motor_temperature_pkg_uninstall",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-uninstall-3a34367d27f3b167419d.json",
+					"name" : "uninstall",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/orangepi/wheel_robot/build/motor_temperature_pkg",
+		"source" : "/home/orangepi/wheel_robot/src/motor_temperature_pkg"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

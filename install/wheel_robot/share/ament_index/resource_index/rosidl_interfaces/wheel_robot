@@ -1,0 +1,6 @@
+msg/ObstacleStatus.idl
+msg/ObstacleStatus.msg
+msg/StepApproachStatus.idl
+msg/StepApproachStatus.msg
+msg/StepDetection.idl
+msg/StepDetection.msg

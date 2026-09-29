@@ -1,0 +1,19 @@
+[35m[1mConsolidate compiler generated dependencies of target wl_base_node[0m
+[100%] Built target wl_base_node
+-- Install configuration: ""
+-- Up-to-date: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/lib/wheeled_legged_pkg/wl_base_node
+-- Up-to-date: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/ament_index/resource_index/package_run_dependencies/wheeled_legged_pkg
+-- Up-to-date: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/ament_index/resource_index/parent_prefix_path/wheeled_legged_pkg
+-- Up-to-date: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/environment/ament_prefix_path.sh
+-- Up-to-date: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/environment/ament_prefix_path.dsv
+-- Up-to-date: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/environment/path.sh
+-- Up-to-date: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/environment/path.dsv
+-- Up-to-date: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/local_setup.bash
+-- Up-to-date: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/local_setup.sh
+-- Up-to-date: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/local_setup.zsh
+-- Up-to-date: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/local_setup.dsv
+-- Installing: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/package.dsv
+-- Up-to-date: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/ament_index/resource_index/packages/wheeled_legged_pkg
+-- Up-to-date: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/cmake/wheeled_legged_pkgConfig.cmake
+-- Up-to-date: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/cmake/wheeled_legged_pkgConfig-version.cmake
+-- Up-to-date: /home/orangepi/wheel_robot/install/wheeled_legged_pkg/share/wheeled_legged_pkg/package.xml

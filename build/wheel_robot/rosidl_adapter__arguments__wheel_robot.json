@@ -1,0 +1,8 @@
+{
+  "package_name": "wheel_robot",
+  "non_idl_tuples": [
+    "/home/orangepi/wheel_robot/src/wheel_robot:msg/ObstacleStatus.msg",
+    "/home/orangepi/wheel_robot/src/wheel_robot:msg/StepApproachStatus.msg",
+    "/home/orangepi/wheel_robot/src/wheel_robot:msg/StepDetection.msg"
+  ]
+}

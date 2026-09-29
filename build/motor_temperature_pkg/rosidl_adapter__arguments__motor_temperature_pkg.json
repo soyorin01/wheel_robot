@@ -1,0 +1,6 @@
+{
+  "package_name": "motor_temperature_pkg",
+  "non_idl_tuples": [
+    "/home/orangepi/wheel_robot/src/motor_temperature_pkg:msg/MotorTemperatures.msg"
+  ]
+}

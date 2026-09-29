@@ -1,0 +1,108 @@
+wheelleg_vision_race:
+  ros__parameters:
+    runtime:
+      # 正式跑设 true；架空调试可设 false。
+      enable_motion: true
+      # HDMI/远程桌面显示调试画面；比赛卡顿时可设 false。
+      show_debug: true
+      # 保存原始录像和带标记录像，方便赛后看问题。
+      record_raw_video: true
+      record_debug_video: true
+
+    camera:
+      backend: "v4l2"
+      id: 0
+      device: "/dev/video0"
+      width: 640
+      height: 480
+      fps: 30.0
+      pixel_format: "YUYV"
+      rotation_degrees: 0
+      mirror_mode: "none"
+      control_rate: 15.0
+
+    drive:
+      # 普通巡线速度；直道想快主要调这个。
+      forward_speed: 0.25
+      # 弯道最低速度。
+      min_forward_speed: 0.10
+      # 普通巡线最大转向速度；弯道转不过去就加大。
+      max_turn_speed: 0.70
+      # 弯道降速强度；弯道冲出去就加大。
+      curve_slowdown: 0.72
+      # 加减速平滑；一般不用动。
+      linear_accel: 0.38
+      angular_accel: 2.50
+      # 90度大弯短时间看不到线时，继续按上一次方向找线。
+      big_turn_loss_seconds: 1.20
+      big_turn_loss_speed: 0.075
+      big_turn_loss_turn: 0.34
+
+    roundabout:
+      # 环岛固定左转阶段速度。
+      forward_speed: 0.19
+      # 环岛转弯半径：想半径小就加大，想半径大就减小。
+      left_turn_speed: 0.34
+      # 每圈起步后先走多远才允许识别环岛；误触发就加大。
+      arm_after_start_distance: 1.00
+      # 看到环岛后还往前接近多远再进环；进早加大，进晚减小。
+      first_lap_approach_distance: 1.20
+      second_lap_approach_distance: 1.20
+      # false 表示第二圈也必须重新看见环岛线。
+      second_lap_use_first_position: false
+      second_lap_advance: 0.00
+      # 进环固定左转保持距离；没进去加大，绕过头减小。
+      entry_turn_distance: 1.00
+      entry_max_seconds: 7.0
+      # 进去了没出来就减小；太早出环又回环岛就加大。
+      follow_max_seconds: 28.0
+      # 出环后保护时间；出环后又拐回去就加大。
+      exit_commit_seconds: 1.20
+      exit_speed: 0.105
+      blind_recovery_speed: 0.10
+      blind_recovery_left_turn: 0.16
+      blue_guard_speed: 0.045
+      blue_guard_turn_speed: 0.30
+
+    crosswalk:
+      detect_delay_after_roundabout: 1.50
+      confirm_frames: 2
+      # 识别人行道后继续走的距离；压线/越过就减小，停太早就加大。
+      approach_distance: 0.30
+      stop_seconds: 5.0
+
+    yellow_line:
+      total_laps: 2
+      confirm_frames: 2
+      detect_delay_after_crosswalk: 0.45
+      # false 表示必须先完成“人行道停车”，再允许黄线换圈/结束。
+      accept_while_seek_crosswalk: false
+      # 第二圈看到黄线后继续冲过的距离；停太早加大。
+      finish_pass_distance: 1.50
+
+    step:
+      # 调参保护：到起跳点先停车，按回车才跳；正式比赛可设 false。
+      manual_confirm_before_jump: true
+      # 台阶冲刺和跳跃速度；单独测试稳定就别乱动。
+      approach_speed: 0.50
+      jump_forward_speed: 0.50
+      # 跳不上去适当加大 max；弹太高/落地不稳就减小。
+      jump_min_height: 0.15
+      jump_max_height: 0.33
+      # 固定冲刺总距离；跳早加大，跳晚减小。
+      sprint_distance: 0.61
+      # 提前触发量；跳早减小，跳晚加大。
+      jump_trigger_lead: 0.055
+      # 深度到这个距离开始冲刺；一般不动。
+      start_depth: 0.70
+      # 台阶太早接管就加大；一直不接管就减小。
+      arm_min_seek_distance: 1.25
+      arm_max_seek_distance: 3.20
+      # 第二圈台阶前普通巡线限速。
+      second_lap_speed_cap: 0.16
+      # 跳完偏左/偏右后慢速找线。
+      post_reacquire_seconds: 3.8
+      post_reacquire_distance: 0.38
+      post_reacquire_speed: 0.055
+      # 跳完偏左找不回线：负数向右找；偏右则改正数。
+      post_reacquire_turn: -0.24

@@ -1,0 +1,33 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from wheel_robot/msg/ObstacleStatus.msg
+// generated code does not contain a copyright notice
+
+#include "std_msgs/msg/Header.idl"
+
+module wheel_robot {
+  module msg {
+    module ObstacleStatus_Constants {
+      const uint8 UNKNOWN = 0;
+      const uint8 CLEAR = 1;
+      const uint8 CAUTION = 2;
+      const uint8 STOP = 3;
+    };
+    struct ObstacleStatus {
+      std_msgs::msg::Header header;
+
+      uint8 status;
+
+      uint8 left_status;
+
+      uint8 center_status;
+
+      uint8 right_status;
+
+      float left_distance;
+
+      float center_distance;
+
+      float right_distance;
+    };
+  };
+};

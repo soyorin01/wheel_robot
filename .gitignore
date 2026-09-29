@@ -1,0 +1,4 @@
+# Downloaded by wheel_robot/tools/fetch_orbbec_sdk.sh; pinned source is not vendored.
+src/wheel_robot/vendor/OrbbecSDK_ROS2/
+__pycache__/
+*.pyc

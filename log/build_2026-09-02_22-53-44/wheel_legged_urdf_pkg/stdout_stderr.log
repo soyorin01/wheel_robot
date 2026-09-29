@@ -1,0 +1,59 @@
+-- The C compiler identification is GNU 11.4.0
+-- The CXX compiler identification is GNU 11.4.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+-- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/orangepi/wheel_robot/build/wheel_legged_urdf_pkg
+-- Install configuration: ""
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/config
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/config/display.rviz
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/config/joint_names_wheel_legged_urdf_pkg.yaml
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/launch
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/launch/gazebo.launch
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/launch/display.launch.py
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/launch/display.launch
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/left_back_motor_link.STL
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/right_back_motor_link.STL
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/right_l1_link.STL
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/imu_link.STL
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/base_link.STL
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/right_l3_link.STL
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/left_wheel_motor_link.STL
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/right_front_motor_link.STL
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/lidar_link.STL
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/right_l4_link.STL
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/left_l4_link.STL
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/left_front_motor_link.STL
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/right_wheel_motor_link.STL
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/left_l3_link.STL
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/left_l1_link.STL
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/urdf
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/urdf/wheel_legged_urdf_pkg.urdf
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/urdf/wheel_legged_urdf_pkg.csv
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/ament_index/resource_index/package_run_dependencies/wheel_legged_urdf_pkg
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/ament_index/resource_index/parent_prefix_path/wheel_legged_urdf_pkg
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/environment/ament_prefix_path.sh
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/environment/ament_prefix_path.dsv
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/environment/path.sh
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/environment/path.dsv
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/local_setup.bash
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/local_setup.sh
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/local_setup.zsh
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/local_setup.dsv
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/package.dsv
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/ament_index/resource_index/packages/wheel_legged_urdf_pkg
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/cmake/wheel_legged_urdf_pkgConfig.cmake
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/cmake/wheel_legged_urdf_pkgConfig-version.cmake
+-- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/package.xml

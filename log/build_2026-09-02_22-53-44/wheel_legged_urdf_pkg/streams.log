@@ -1,0 +1,65 @@
+[0.079s] Invoking command in '/home/orangepi/wheel_robot/build/wheel_legged_urdf_pkg': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble /usr/bin/cmake /home/orangepi/wheel_robot/src/wheel_legged_urdf_pkg -DCMAKE_INSTALL_PREFIX=/home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg
+[0.384s] -- The C compiler identification is GNU 11.4.0
+[0.568s] -- The CXX compiler identification is GNU 11.4.0
+[0.612s] -- Detecting C compiler ABI info
+[0.889s] -- Detecting C compiler ABI info - done
+[0.932s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.932s] -- Detecting C compile features
+[0.933s] -- Detecting C compile features - done
+[0.938s] -- Detecting CXX compiler ABI info
+[1.273s] -- Detecting CXX compiler ABI info - done
+[1.315s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[1.316s] -- Detecting CXX compile features
+[1.318s] -- Detecting CXX compile features - done
+[1.324s] -- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+[1.970s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[2.579s] -- Configuring done
+[2.591s] -- Generating done
+[2.601s] -- Build files have been written to: /home/orangepi/wheel_robot/build/wheel_legged_urdf_pkg
+[2.617s] Invoked command in '/home/orangepi/wheel_robot/build/wheel_legged_urdf_pkg' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble /usr/bin/cmake /home/orangepi/wheel_robot/src/wheel_legged_urdf_pkg -DCMAKE_INSTALL_PREFIX=/home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg
+[2.627s] Invoking command in '/home/orangepi/wheel_robot/build/wheel_legged_urdf_pkg': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble /usr/bin/cmake --build /home/orangepi/wheel_robot/build/wheel_legged_urdf_pkg -- -j8 -l8
+[2.747s] Invoked command in '/home/orangepi/wheel_robot/build/wheel_legged_urdf_pkg' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble /usr/bin/cmake --build /home/orangepi/wheel_robot/build/wheel_legged_urdf_pkg -- -j8 -l8
+[2.788s] Invoking command in '/home/orangepi/wheel_robot/build/wheel_legged_urdf_pkg': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble /usr/bin/cmake --install /home/orangepi/wheel_robot/build/wheel_legged_urdf_pkg
+[2.820s] -- Install configuration: ""
+[2.821s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/config
+[2.827s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/config/display.rviz
+[2.828s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/config/joint_names_wheel_legged_urdf_pkg.yaml
+[2.828s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/launch
+[2.830s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/launch/gazebo.launch
+[2.830s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/launch/display.launch.py
+[2.831s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/launch/display.launch
+[2.831s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes
+[2.832s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/left_back_motor_link.STL
+[2.833s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/right_back_motor_link.STL
+[2.834s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/right_l1_link.STL
+[2.837s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/imu_link.STL
+[2.871s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/base_link.STL
+[3.393s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/right_l3_link.STL
+[3.494s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/left_wheel_motor_link.STL
+[3.504s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/right_front_motor_link.STL
+[3.510s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/lidar_link.STL
+[3.517s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/right_l4_link.STL
+[3.522s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/left_l4_link.STL
+[3.525s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/left_front_motor_link.STL
+[3.527s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/right_wheel_motor_link.STL
+[3.535s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/left_l3_link.STL
+[3.637s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/meshes/left_l1_link.STL
+[3.641s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/urdf
+[3.642s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/urdf/wheel_legged_urdf_pkg.urdf
+[3.642s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/urdf/wheel_legged_urdf_pkg.csv
+[3.650s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/ament_index/resource_index/package_run_dependencies/wheel_legged_urdf_pkg
+[3.651s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/ament_index/resource_index/parent_prefix_path/wheel_legged_urdf_pkg
+[3.652s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/environment/ament_prefix_path.sh
+[3.652s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/environment/ament_prefix_path.dsv
+[3.653s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/environment/path.sh
+[3.653s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/environment/path.dsv
+[3.654s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/local_setup.bash
+[3.655s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/local_setup.sh
+[3.655s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/local_setup.zsh
+[3.656s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/local_setup.dsv
+[3.656s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/package.dsv
+[3.657s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/ament_index/resource_index/packages/wheel_legged_urdf_pkg
+[3.657s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/cmake/wheel_legged_urdf_pkgConfig.cmake
+[3.658s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/cmake/wheel_legged_urdf_pkgConfig-version.cmake
+[3.658s] -- Installing: /home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg/share/wheel_legged_urdf_pkg/package.xml
+[3.667s] Invoked command in '/home/orangepi/wheel_robot/build/wheel_legged_urdf_pkg' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble /usr/bin/cmake --install /home/orangepi/wheel_robot/build/wheel_legged_urdf_pkg

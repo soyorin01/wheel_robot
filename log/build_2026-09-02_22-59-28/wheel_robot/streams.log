@@ -1,0 +1,283 @@
+[0.030s] Invoking command in '/home/orangepi/wheel_robot/build/wheel_robot': CMAKE_PREFIX_PATH=/home/orangepi/wheel_robot/install/wheeled_legged_pkg:/home/orangepi/wheel_robot/install/motor_temperature_pkg:/home/orangepi/wheel_robot/install/wheel_robot:/home/orangepi/wheel_robot/install/wheel_robot_demos:/home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg:/home/orangepi/wheel_robot/install/lesson12_ros_conversion:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble LD_LIBRARY_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg/lib:/home/orangepi/wheel_robot/install/wheel_robot/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib /usr/bin/cmake --build /home/orangepi/wheel_robot/build/wheel_robot -- -j8 -l8
+[0.168s] [35m[1mConsolidate compiler generated dependencies of target wheel_robot__rosidl_generator_c[0m
+[0.170s] [35m[1mConsolidate compiler generated dependencies of target astra_camera_node[0m
+[0.190s] [  1%] Built target wheel_robot__rs
+[0.194s] [  3%] Built target wheel_robot__cpp
+[0.218s] [35m[1mConsolidate compiler generated dependencies of target wheel_robot__rosidl_typesupport_fastrtps_cpp[0m
+[0.220s] [ 13%] Built target wheel_robot__rosidl_generator_c
+[0.245s] [35m[1mConsolidate compiler generated dependencies of target wheel_robot__rosidl_typesupport_cpp[0m
+[0.246s] [35m[1mConsolidate compiler generated dependencies of target wheel_robot__rosidl_typesupport_introspection_cpp[0m
+[0.248s] [35m[1mConsolidate compiler generated dependencies of target wheel_robot__rosidl_typesupport_introspection_c[0m
+[0.249s] [ 23%] Built target wheel_robot__rosidl_typesupport_fastrtps_cpp
+[0.250s] [ 26%] Built target astra_camera_node
+[0.261s] [ 26%] Built target ament_cmake_python_copy_wheel_robot
+[0.266s] [35m[1mConsolidate compiler generated dependencies of target wheel_robot__rosidl_typesupport_c[0m
+[0.269s] [35m[1mConsolidate compiler generated dependencies of target wheel_robot__rosidl_typesupport_fastrtps_c[0m
+[0.279s] [ 36%] Built target wheel_robot__rosidl_typesupport_cpp
+[0.287s] [ 46%] Built target wheel_robot__rosidl_typesupport_introspection_c
+[0.292s] [ 55%] Built target wheel_robot__rosidl_typesupport_introspection_cpp
+[0.314s] [ 65%] Built target wheel_robot__rosidl_typesupport_c
+[0.317s] [35m[1mConsolidate compiler generated dependencies of target depth_distance_node[0m
+[0.321s] [ 75%] Built target wheel_robot__rosidl_typesupport_fastrtps_c
+[0.351s] [ 78%] Built target depth_distance_node
+[0.397s] [ 78%] Built target wheel_robot
+[0.476s] [ 80%] Built target wheel_robot__py
+[0.517s] [35m[1mConsolidate compiler generated dependencies of target wheel_robot__rosidl_generator_py[0m
+[0.564s] [ 88%] Built target wheel_robot__rosidl_generator_py
+[0.603s] [35m[1mConsolidate compiler generated dependencies of target wheel_robot__rosidl_typesupport_fastrtps_c__pyext[0m
+[0.604s] [35m[1mConsolidate compiler generated dependencies of target wheel_robot__rosidl_typesupport_c__pyext[0m
+[0.604s] [35m[1mConsolidate compiler generated dependencies of target wheel_robot__rosidl_typesupport_introspection_c__pyext[0m
+[0.653s] [100%] Built target wheel_robot__rosidl_typesupport_fastrtps_c__pyext
+[0.654s] [100%] Built target wheel_robot__rosidl_typesupport_introspection_c__pyext
+[0.654s] [100%] Built target wheel_robot__rosidl_typesupport_c__pyext
+[0.784s] running egg_info
+[0.786s] writing wheel_robot.egg-info/PKG-INFO
+[0.786s] writing dependency_links to wheel_robot.egg-info/dependency_links.txt
+[0.793s] writing top-level names to wheel_robot.egg-info/top_level.txt
+[0.800s] reading manifest file 'wheel_robot.egg-info/SOURCES.txt'
+[0.800s] writing manifest file 'wheel_robot.egg-info/SOURCES.txt'
+[0.912s] [100%] Built target ament_cmake_python_build_wheel_robot_egg
+[0.949s] Invoked command in '/home/orangepi/wheel_robot/build/wheel_robot' returned '0': CMAKE_PREFIX_PATH=/home/orangepi/wheel_robot/install/wheeled_legged_pkg:/home/orangepi/wheel_robot/install/motor_temperature_pkg:/home/orangepi/wheel_robot/install/wheel_robot:/home/orangepi/wheel_robot/install/wheel_robot_demos:/home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg:/home/orangepi/wheel_robot/install/lesson12_ros_conversion:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble LD_LIBRARY_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg/lib:/home/orangepi/wheel_robot/install/wheel_robot/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib /usr/bin/cmake --build /home/orangepi/wheel_robot/build/wheel_robot -- -j8 -l8
+[0.953s] Invoking command in '/home/orangepi/wheel_robot/build/wheel_robot': CMAKE_PREFIX_PATH=/home/orangepi/wheel_robot/install/wheeled_legged_pkg:/home/orangepi/wheel_robot/install/motor_temperature_pkg:/home/orangepi/wheel_robot/install/wheel_robot:/home/orangepi/wheel_robot/install/wheel_robot_demos:/home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg:/home/orangepi/wheel_robot/install/lesson12_ros_conversion:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble LD_LIBRARY_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg/lib:/home/orangepi/wheel_robot/install/wheel_robot/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib /usr/bin/cmake --install /home/orangepi/wheel_robot/build/wheel_robot
+[0.985s] -- Install configuration: ""
+[0.985s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/ament_index/resource_index/rosidl_interfaces/wheel_robot
+[0.986s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot
+[0.986s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg
+[0.987s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/rosidl_generator_c__visibility_control.h
+[0.987s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/obstacle_status.h
+[0.988s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/step_detection.h
+[0.988s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/step_approach_status.h
+[0.989s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail
+[0.989s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_approach_status__struct.h
+[0.990s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_detection__functions.c
+[0.990s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_approach_status__type_support.h
+[0.991s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/obstacle_status__type_support.h
+[0.991s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/obstacle_status__functions.c
+[0.991s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_approach_status__functions.h
+[0.992s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_detection__type_support.h
+[0.992s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_approach_status__functions.c
+[0.993s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/obstacle_status__struct.h
+[0.993s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/obstacle_status__functions.h
+[0.993s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_detection__struct.h
+[0.994s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_detection__functions.h
+[0.994s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/environment/library_path.sh
+[0.994s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/environment/library_path.dsv
+[0.995s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/libwheel_robot__rosidl_generator_c.so
+[0.995s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot
+[0.995s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg
+[0.996s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/rosidl_typesupport_fastrtps_c__visibility_control.h
+[0.996s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail
+[0.997s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_approach_status__rosidl_typesupport_fastrtps_c.h
+[0.997s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/obstacle_status__rosidl_typesupport_fastrtps_c.h
+[0.997s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_detection__rosidl_typesupport_fastrtps_c.h
+[0.998s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/libwheel_robot__rosidl_typesupport_fastrtps_c.so
+[0.998s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot
+[0.998s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg
+[0.999s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/rosidl_generator_cpp__visibility_control.hpp
+[0.999s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/obstacle_status.hpp
+[0.999s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/step_approach_status.hpp
+[1.000s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail
+[1.000s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_detection__traits.hpp
+[1.001s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/obstacle_status__builder.hpp
+[1.001s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/obstacle_status__traits.hpp
+[1.001s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_approach_status__builder.hpp
+[1.002s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_approach_status__traits.hpp
+[1.002s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_detection__builder.hpp
+[1.003s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_approach_status__struct.hpp
+[1.003s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_detection__struct.hpp
+[1.003s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/obstacle_status__type_support.hpp
+[1.004s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_approach_status__type_support.hpp
+[1.004s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_detection__type_support.hpp
+[1.005s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/obstacle_status__struct.hpp
+[1.005s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/step_detection.hpp
+[1.005s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot
+[1.006s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg
+[1.006s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h
+[1.006s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail
+[1.007s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_detection__rosidl_typesupport_fastrtps_cpp.hpp
+[1.007s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_approach_status__rosidl_typesupport_fastrtps_cpp.hpp
+[1.007s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/dds_fastrtps
+[1.008s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/obstacle_status__rosidl_typesupport_fastrtps_cpp.hpp
+[1.008s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/libwheel_robot__rosidl_typesupport_fastrtps_cpp.so
+[1.009s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot
+[1.009s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg
+[1.009s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/rosidl_typesupport_introspection_c__visibility_control.h
+[1.010s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail
+[1.010s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_approach_status__type_support.c
+[1.010s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/obstacle_status__rosidl_typesupport_introspection_c.h
+[1.011s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/obstacle_status__type_support.c
+[1.011s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_detection__type_support.c
+[1.011s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_detection__rosidl_typesupport_introspection_c.h
+[1.012s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_approach_status__rosidl_typesupport_introspection_c.h
+[1.012s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/libwheel_robot__rosidl_typesupport_introspection_c.so
+[1.013s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/libwheel_robot__rosidl_typesupport_c.so
+[1.013s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot
+[1.013s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg
+[1.014s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail
+[1.014s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/obstacle_status__type_support.cpp
+[1.014s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/obstacle_status__rosidl_typesupport_introspection_cpp.hpp
+[1.015s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_detection__type_support.cpp
+[1.015s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_approach_status__rosidl_typesupport_introspection_cpp.hpp
+[1.015s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_approach_status__type_support.cpp
+[1.016s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/include/wheel_robot/wheel_robot/msg/detail/step_detection__rosidl_typesupport_introspection_cpp.hpp
+[1.016s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/libwheel_robot__rosidl_typesupport_introspection_cpp.so
+[1.017s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/libwheel_robot__rosidl_typesupport_cpp.so
+[1.017s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/environment/pythonpath.sh
+[1.017s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/environment/pythonpath.dsv
+[1.018s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot-0.1.0-py3.10.egg-info
+[1.018s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot-0.1.0-py3.10.egg-info/top_level.txt
+[1.018s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot-0.1.0-py3.10.egg-info/SOURCES.txt
+[1.019s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot-0.1.0-py3.10.egg-info/dependency_links.txt
+[1.019s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot-0.1.0-py3.10.egg-info/PKG-INFO
+[1.019s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot
+[1.020s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot/_wheel_robot_s.ep.rosidl_typesupport_introspection_c.c
+[1.020s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot/_wheel_robot_s.ep.rosidl_typesupport_fastrtps_c.c
+[1.021s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot/__init__.py
+[1.021s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot/wheel_robot_s__rosidl_typesupport_c.cpython-310-aarch64-linux-gnu.so
+[1.021s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot/libwheel_robot__rosidl_generator_py.so
+[1.022s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot/msg
+[1.022s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot/msg/_obstacle_status_s.c
+[1.022s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot/msg/__init__.py
+[1.023s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot/msg/_step_approach_status_s.c
+[1.023s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot/msg/_obstacle_status.py
+[1.023s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot/msg/_step_detection_s.c
+[1.024s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot/msg/_step_approach_status.py
+[1.024s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot/msg/_step_detection.py
+[1.025s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot/wheel_robot_s__rosidl_typesupport_introspection_c.cpython-310-aarch64-linux-gnu.so
+[1.025s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot/_wheel_robot_s.ep.rosidl_typesupport_c.c
+[1.025s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot/wheel_robot_s__rosidl_typesupport_fastrtps_c.cpython-310-aarch64-linux-gnu.so
+[1.071s] Listing '/home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot'...
+[1.072s] Listing '/home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot/msg'...
+[1.090s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot/wheel_robot_s__rosidl_typesupport_fastrtps_c.cpython-310-aarch64-linux-gnu.so
+[1.091s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot/wheel_robot_s__rosidl_typesupport_introspection_c.cpython-310-aarch64-linux-gnu.so
+[1.092s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/local/lib/python3.10/dist-packages/wheel_robot/wheel_robot_s__rosidl_typesupport_c.cpython-310-aarch64-linux-gnu.so
+[1.093s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/libwheel_robot__rosidl_generator_py.so
+[1.094s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/ament_index/resource_index/rust_packages/wheel_robot
+[1.095s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/rust
+[1.096s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/rust/Cargo.toml
+[1.096s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/rust/src
+[1.097s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/rust/src/msg.rs
+[1.097s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/rust/src/msg
+[1.098s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/rust/src/msg/rmw.rs
+[1.098s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/rust/src/lib.rs
+[1.099s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/rust/build.rs
+[1.099s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/msg/ObstacleStatus.idl
+[1.099s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/msg/StepApproachStatus.idl
+[1.100s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/msg/StepDetection.idl
+[1.100s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/msg/ObstacleStatus.msg
+[1.101s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/msg/StepApproachStatus.msg
+[1.102s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/msg/StepDetection.msg
+[1.104s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/keyboard_teleop.py
+[1.105s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/lessop16_opencv.py
+[1.106s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/diagnostics_monitor.py
+[1.107s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/leg_height_feedback.py
+[1.107s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/step_detector_node.py
+[1.108s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/step_preview.py
+[1.108s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/step_approach_test.py
+[1.109s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/camera_viewer.py
+[1.109s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/camera_recorder.py
+[1.110s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/depth_preview.py
+[1.110s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/line_follower.py
+[1.111s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/dual_line_follower.py
+[1.111s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/icn.py
+[1.111s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/shiwai.py
+[1.112s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/lesson17_vision_follower.py
+[1.112s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/lesson18_person_patrol.py
+[1.113s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/models
+[1.114s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/models/mobilenet_iter_73000.caffemodel
+[1.115s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/models/deploy.prototxt
+[1.116s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/astra_camera_node
+[1.117s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/depth_distance_node
+[1.118s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/libOrbbecSDK.so
+[1.119s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/libOrbbecSDK.so.1.10
+[1.120s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/libOrbbecSDK.so.1.10.37
+[1.121s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/libdepthengine.so
+[1.122s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/libdepthengine.so.2.0
+[1.123s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/liblive555.so
+[1.124s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/libob_usb.so
+[1.124s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch
+[1.125s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/camera_view.launch.py
+[1.126s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/shiwai.launch.py
+[1.127s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/step_approach_test.launch.py
+[1.127s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/__pycache__
+[1.129s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/__pycache__/icn.launch.cpython-310.pyc
+[1.131s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/__pycache__/calibrate_color.launch.cpython-310.pyc
+[1.132s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/__pycache__/step_jump.launch.cpython-310.pyc
+[1.133s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/__pycache__/dual_line_follow.launch.cpython-310.pyc
+[1.134s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/__pycache__/lesson18_person_patrol.launch.cpython-310.pyc
+[1.135s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/__pycache__/lesson17_vision_follower.launch.cpython-310.pyc
+[1.136s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/__pycache__/step_approach_test.launch.cpython-310.pyc
+[1.137s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/__pycache__/astra_camera.launch.cpython-310.pyc
+[1.138s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/__pycache__/base.launch.cpython-310.pyc
+[1.138s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/__pycache__/small_jump_test.launch.cpython-310.pyc
+[1.140s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/__pycache__/pid_tuning.launch.cpython-310.pyc
+[1.141s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/__pycache__/jump_height_test.launch.cpython-310.pyc
+[1.142s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/__pycache__/camera_view.launch.cpython-310.pyc
+[1.142s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/icn.launch.py
+[1.143s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/base.launch.py
+[1.143s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/lesson17_vision_follower.launch.py
+[1.146s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/race_step_support.launch.py
+[1.147s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/calibrate_color.launch.py
+[1.148s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/.gitkeep
+[1.148s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/astra_camera.launch.py
+[1.149s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/line_follow.launch.py
+[1.149s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/lesson18_person_patrol.launch.py
+[1.150s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/launch/dual_line_follow.launch.py
+[1.150s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/config
+[1.151s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/config/99-astra-pro.rules
+[1.151s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/config/step_approach_test.yaml
+[1.151s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/config/dual_line_follower.yaml
+[1.152s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/config/calibration
+[1.152s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/config/calibration/astra_pro_color.yaml
+[1.153s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/config/calibration/backup
+[1.153s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/config/calibration/backup/astra_pro_color_2026-08-17.tar.gz
+[1.154s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/config/camera_viewer.yaml
+[1.154s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/config/shiwai.yaml
+[1.154s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/config/astra_camera.yaml
+[1.156s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/config/line_follower.yaml
+[1.157s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/config/step_jump.yaml
+[1.157s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/config/.gitkeep
+[1.158s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/config/icn.yaml
+[1.159s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/config/lesson17_vision_follower.yaml
+[1.160s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/config/lesson18_person_patrol.yaml
+[1.161s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/ament_index/resource_index/package_run_dependencies/wheel_robot
+[1.161s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/ament_index/resource_index/parent_prefix_path/wheel_robot
+[1.162s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/environment/ament_prefix_path.sh
+[1.162s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/environment/ament_prefix_path.dsv
+[1.163s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/environment/path.sh
+[1.164s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/environment/path.dsv
+[1.165s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/local_setup.bash
+[1.166s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/local_setup.sh
+[1.166s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/local_setup.zsh
+[1.168s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/local_setup.dsv
+[1.169s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/package.dsv
+[1.170s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/ament_index/resource_index/packages/wheel_robot
+[1.171s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/export_wheel_robot__rosidl_generator_cExport.cmake
+[1.174s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/export_wheel_robot__rosidl_generator_cExport-noconfig.cmake
+[1.175s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/export_wheel_robot__rosidl_typesupport_fastrtps_cExport.cmake
+[1.176s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/export_wheel_robot__rosidl_typesupport_fastrtps_cExport-noconfig.cmake
+[1.178s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/export_wheel_robot__rosidl_generator_cppExport.cmake
+[1.178s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/export_wheel_robot__rosidl_typesupport_fastrtps_cppExport.cmake
+[1.180s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/export_wheel_robot__rosidl_typesupport_fastrtps_cppExport-noconfig.cmake
+[1.181s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/wheel_robot__rosidl_typesupport_introspection_cExport.cmake
+[1.182s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/wheel_robot__rosidl_typesupport_introspection_cExport-noconfig.cmake
+[1.183s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/wheel_robot__rosidl_typesupport_cExport.cmake
+[1.184s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/wheel_robot__rosidl_typesupport_cExport-noconfig.cmake
+[1.185s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/wheel_robot__rosidl_typesupport_introspection_cppExport.cmake
+[1.186s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/wheel_robot__rosidl_typesupport_introspection_cppExport-noconfig.cmake
+[1.186s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/wheel_robot__rosidl_typesupport_cppExport.cmake
+[1.187s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/wheel_robot__rosidl_typesupport_cppExport-noconfig.cmake
+[1.189s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/export_wheel_robot__rosidl_generator_pyExport.cmake
+[1.189s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/export_wheel_robot__rosidl_generator_pyExport-noconfig.cmake
+[1.190s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/rosidl_cmake-extras.cmake
+[1.190s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/ament_cmake_export_dependencies-extras.cmake
+[1.191s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/ament_cmake_export_include_directories-extras.cmake
+[1.191s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/ament_cmake_export_libraries-extras.cmake
+[1.191s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/ament_cmake_export_targets-extras.cmake
+[1.192s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake
+[1.192s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake
+[1.193s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/rosidl_cmake_aggregate_target-extras.cmake
+[1.193s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/wheel_robotConfig.cmake
+[1.193s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/cmake/wheel_robotConfig-version.cmake
+[1.194s] -- Up-to-date: /home/orangepi/wheel_robot/install/wheel_robot/share/wheel_robot/package.xml
+[1.194s] Invoked command in '/home/orangepi/wheel_robot/build/wheel_robot' returned '0': CMAKE_PREFIX_PATH=/home/orangepi/wheel_robot/install/wheeled_legged_pkg:/home/orangepi/wheel_robot/install/motor_temperature_pkg:/home/orangepi/wheel_robot/install/wheel_robot:/home/orangepi/wheel_robot/install/wheel_robot_demos:/home/orangepi/wheel_robot/install/wheel_legged_urdf_pkg:/home/orangepi/wheel_robot/install/lesson12_ros_conversion:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble LD_LIBRARY_PATH=/home/orangepi/wheel_robot/install/motor_temperature_pkg/lib:/home/orangepi/wheel_robot/install/wheel_robot/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib /usr/bin/cmake --install /home/orangepi/wheel_robot/build/wheel_robot

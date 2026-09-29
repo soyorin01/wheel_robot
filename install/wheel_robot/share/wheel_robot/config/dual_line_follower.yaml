@@ -1,0 +1,13 @@
+dual_white_line_follower:
+  ros__parameters:
+    # 安全和显示开关
+    enable_motion: true
+    show_debug_window: false
+
+    # 速度参数：线速度 m/s，角速度 rad/s。
+    normal_speed: 0.60
+    min_speed: 0.60
+    max_angular_speed: 0.56
+    curve_slowdown: 0.45
+    lost_search_speed: 0.055
+    lost_search_angular: 0.18

@@ -1,0 +1,10 @@
+/home/orangepi/wheel_robot/build/lesson12_ros_conversion/CMakeFiles/uninstall.dir
+/home/orangepi/wheel_robot/build/lesson12_ros_conversion/CMakeFiles/lesson12_ros_conversion_uninstall.dir
+/home/orangepi/wheel_robot/build/lesson12_ros_conversion/CMakeFiles/cpp_doubler.dir
+/home/orangepi/wheel_robot/build/lesson12_ros_conversion/CMakeFiles/test.dir
+/home/orangepi/wheel_robot/build/lesson12_ros_conversion/CMakeFiles/edit_cache.dir
+/home/orangepi/wheel_robot/build/lesson12_ros_conversion/CMakeFiles/rebuild_cache.dir
+/home/orangepi/wheel_robot/build/lesson12_ros_conversion/CMakeFiles/list_install_components.dir
+/home/orangepi/wheel_robot/build/lesson12_ros_conversion/CMakeFiles/install.dir
+/home/orangepi/wheel_robot/build/lesson12_ros_conversion/CMakeFiles/install/local.dir
+/home/orangepi/wheel_robot/build/lesson12_ros_conversion/CMakeFiles/install/strip.dir

@@ -1,0 +1,127 @@
+rate_hz: 40.0
+repeat: 1
+
+defaults:
+  height: 0.25
+  roll: 0.0
+  pitch: 0.0
+  slide: 0.0
+  yaw: 0.0
+  linear: 0.0
+
+limits:
+  height_min: 0.15
+  height_max: 0.36
+  # 课堂演示采用温和幅度，先保证稳定和可观察性。
+  roll_abs_deg: 15.0
+  pitch_abs_deg: 10.0
+  slide_abs_m: 0.08
+  yaw_abs_rad_s: 0.50
+  linear_abs_m_s: 0.0
+
+sequence:
+  - name: 预备站稳
+    duration: 1.5
+    hold: 0.5
+    target:
+      height: 0.25
+      roll: 0.0
+      pitch: 0.0
+      slide: 0.0
+      yaw: 0.0
+
+  - name: 左右摆身 1
+    duration: 0.5
+    hold: 0.1
+    target:
+      roll: -6.0
+  - name: 左右摆身 2
+    duration: 0.5
+    hold: 0.1
+    target:
+      roll: 6.0
+  - name: 左右摆身回中
+    duration: 0.5
+    hold: 0.1
+    target:
+      roll: 0.0
+
+  - name: 机身点头 1
+    duration: 0.5
+    hold: 0.1
+    target:
+      pitch: -10.0
+  - name: 机身点头 2
+    duration: 0.5
+    hold: 0.1
+    target:
+      pitch: 10.0
+  - name: 机身点头回中
+    duration: 0.8
+    hold: 0.1
+    target:
+      pitch: 0.0
+
+  - name: 左滑步
+    duration: 0.5
+    hold: 0.1
+    target:
+      slide: -0.08
+  - name: 右滑步
+    duration: 0.5
+    hold: 0.1
+    target:
+      slide: 0.08
+  - name: 滑步回中
+    duration: 0.9
+    hold: 0.15
+    target:
+      slide: 0.0
+
+  - name: 原地慢转左
+    duration: 0.5
+    hold: 0.4
+    target:
+      yaw: 0.50
+  - name: 原地慢转右
+    duration: 0.5
+    hold: 0.4
+    target:
+      yaw: -0.50
+  - name: 原地转向停止
+    duration: 0.6
+    hold: 0.2
+    target:
+      yaw: 0.0
+
+  - name: 下蹲
+    duration: 0.5
+    hold: 0.1
+    target:
+      height: 0.15
+  - name: 起身
+    duration: 0.5
+    hold: 0.1
+    target:
+      height: 0.35
+  - name: 回到默认高度
+    duration: 0.9
+    hold: 0.15
+    target:
+      height: 0.25
+
+  - name: 鞠躬
+    duration: 0.8
+    hold: 0.4
+    target:
+      pitch: 5.0
+      height: 0.24
+  - name: 结束归零
+    duration: 1.0
+    hold: 0.5
+    target:
+      height: 0.25
+      roll: 0.0
+      pitch: 0.0
+      slide: 0.0
+      yaw: 0.0

@@ -1,0 +1,1 @@
+rclcpp;camera_info_manager;sensor_msgs;std_msgs;opencv;rclpy;geometry_msgs;nav_msgs;diagnostic_msgs;std_srvs;python3-opencv;python3-numpy;launch;launch_ros;rqt_image_view;camera_calibration;rosidl_default_runtime;wheeled_legged_pkg;ament_cmake_pytest;python3-pytest

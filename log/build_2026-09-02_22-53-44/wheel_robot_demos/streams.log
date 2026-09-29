@@ -1,0 +1,46 @@
+[0.081s] Invoking command in '/home/orangepi/wheel_robot/build/wheel_robot_demos': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble /usr/bin/cmake /home/orangepi/wheel_robot/src/wheel_robot_demos -DCMAKE_INSTALL_PREFIX=/home/orangepi/wheel_robot/install/wheel_robot_demos
+[0.344s] -- The C compiler identification is GNU 11.4.0
+[0.593s] -- The CXX compiler identification is GNU 11.4.0
+[0.620s] -- Detecting C compiler ABI info
+[0.910s] -- Detecting C compiler ABI info - done
+[0.950s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.951s] -- Detecting C compile features
+[0.952s] -- Detecting C compile features - done
+[0.959s] -- Detecting CXX compiler ABI info
+[1.236s] -- Detecting CXX compiler ABI info - done
+[1.279s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[1.279s] -- Detecting CXX compile features
+[1.280s] -- Detecting CXX compile features - done
+[1.283s] -- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+[1.913s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[2.573s] -- Configuring done
+[2.585s] -- Generating done
+[2.594s] -- Build files have been written to: /home/orangepi/wheel_robot/build/wheel_robot_demos
+[2.627s] Invoked command in '/home/orangepi/wheel_robot/build/wheel_robot_demos' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble /usr/bin/cmake /home/orangepi/wheel_robot/src/wheel_robot_demos -DCMAKE_INSTALL_PREFIX=/home/orangepi/wheel_robot/install/wheel_robot_demos
+[2.634s] Invoking command in '/home/orangepi/wheel_robot/build/wheel_robot_demos': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble /usr/bin/cmake --build /home/orangepi/wheel_robot/build/wheel_robot_demos -- -j8 -l8
+[2.788s] Invoked command in '/home/orangepi/wheel_robot/build/wheel_robot_demos' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble /usr/bin/cmake --build /home/orangepi/wheel_robot/build/wheel_robot_demos -- -j8 -l8
+[2.795s] Invoking command in '/home/orangepi/wheel_robot/build/wheel_robot_demos': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble /usr/bin/cmake --install /home/orangepi/wheel_robot/build/wheel_robot_demos
+[2.811s] -- Install configuration: ""
+[2.812s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot_demos/lib/wheel_robot_demos/dance_demo.py
+[2.819s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot_demos/share/wheel_robot_demos/config
+[2.822s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot_demos/share/wheel_robot_demos/config/dance_sequence.yaml
+[2.825s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot_demos/share/wheel_robot_demos/launch
+[2.826s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot_demos/share/wheel_robot_demos/launch/__pycache__
+[2.826s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot_demos/share/wheel_robot_demos/launch/__pycache__/dance_demo.launch.cpython-310.pyc
+[2.827s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot_demos/share/wheel_robot_demos/launch/dance_demo.launch.py
+[2.828s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot_demos/share/ament_index/resource_index/package_run_dependencies/wheel_robot_demos
+[2.830s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot_demos/share/ament_index/resource_index/parent_prefix_path/wheel_robot_demos
+[2.831s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot_demos/share/wheel_robot_demos/environment/ament_prefix_path.sh
+[2.832s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot_demos/share/wheel_robot_demos/environment/ament_prefix_path.dsv
+[2.833s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot_demos/share/wheel_robot_demos/environment/path.sh
+[2.834s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot_demos/share/wheel_robot_demos/environment/path.dsv
+[2.835s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot_demos/share/wheel_robot_demos/local_setup.bash
+[2.838s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot_demos/share/wheel_robot_demos/local_setup.sh
+[2.841s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot_demos/share/wheel_robot_demos/local_setup.zsh
+[2.844s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot_demos/share/wheel_robot_demos/local_setup.dsv
+[2.845s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot_demos/share/wheel_robot_demos/package.dsv
+[2.847s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot_demos/share/ament_index/resource_index/packages/wheel_robot_demos
+[2.848s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot_demos/share/wheel_robot_demos/cmake/wheel_robot_demosConfig.cmake
+[2.849s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot_demos/share/wheel_robot_demos/cmake/wheel_robot_demosConfig-version.cmake
+[2.850s] -- Installing: /home/orangepi/wheel_robot/install/wheel_robot_demos/share/wheel_robot_demos/package.xml
+[2.852s] Invoked command in '/home/orangepi/wheel_robot/build/wheel_robot_demos' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/orangepi/wheel_robot/install/simple_follower_ros2:/opt/ros/humble /usr/bin/cmake --install /home/orangepi/wheel_robot/build/wheel_robot_demos

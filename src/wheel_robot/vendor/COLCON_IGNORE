@@ -1,0 +1,1 @@
+# Keep the downloaded vendor repository out of colcon package discovery.
