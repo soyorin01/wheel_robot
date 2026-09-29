@@ -2,3 +2,10 @@
 src/wheel_robot/vendor/OrbbecSDK_ROS2/
 __pycache__/
 *.pyc
+*.avi
+build/
+devel/
+install/
+log/
+*.bag
+*.db
