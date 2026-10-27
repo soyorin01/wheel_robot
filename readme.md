@@ -468,3 +468,45 @@ spole需要改，pos怪怪的
   → pos 被压到 -0.45
   → 行驶线整体横向偏移
   → 黄泡沫不再落在 CW 框里 ← /home/orangepi/wheel_robot/recordings/shiwai_20261025_190415.avi这个turn是不错的，需要改
+
+---
+
+# 10.27 `shiwai_lin_line.py` 大弯 + 隧道 + 终点
+
+**4303 行，SHA256 `6302cd521c5834f6eb047ffdae27170c3c53ca41bd6e132caf6fced0dceaea5c`**
+（上面 4138 行 / `a78deabd…` 那份已作废）
+
+验收：`shiwai_20261027_185159.avi` —— 大弯 → 出弯回正 → 斑马线停车 → 隧道，跑通。
+
+## 当天改的参数
+
+| 参数 | 旧 → 新 | 为什么 |
+|---|---:|---|
+| `TURN_WAIT_SPEED` | 0.30 → **0.16** | WAIT 冲太快，进弯时车身还在 0.30 |
+| `TURN_MIN_SPEED` | 0.11 → **0.18** | 转弯半径 0.32m → 0.47m，不再原地打转 |
+| `TURN_HEADING_RAMP_FRAMES` | 新增 **8** | 入弯首帧 `dir` 阶跃，`w` 撞限幅 → 丢线 |
+| `TURN_ENTRY_NEAR_ROW_RATIO` | 0.75 → **0.70** | 旧值 row 差 6 行到不了就丢线 |
+| 出弯 arming | `bx≥480` → **`dir≥0.60`，一次性** | 480 永远到不了，exit 永远 N |
+| `TURN_EXIT_MAX_TURN_STRENGTH` | 0.60 → **0.15** | 车还在满量程硬转就判出弯 |
+| `TURN_EXIT_MAX_LATERAL` | 0.60 → **0.35** | `pos=0.58` 时不该放行 |
+| `TURN_EXIT_SLOPE_GAIN` / `_REF` | 0 / 0.45 → **0.45 / 2.00** | 出弯后唯一的航向项被乘 0 关掉了；实测斜率 1.0~2.2，旧尺子饱和 |
+| `TURN_EXIT_SLOPE_MAX` / `_FRAMES` | 新增 **0.30 / 45** | 限幅 + 3s 归零，不许变永久偏置 |
+| `TURN_EXIT_SPEED` | 新增 **0.12** | 出弯压速，别冲过斑马线 |
+| `BRIDGE_SETTLE_*` | 新增 | 下桥先等车身稳住再进 WAIT |
+| `TUNNEL_SPEED_SCALE` | 2.0 → **1.2** | 0.60 m/s 刹车距 0.70m > 终点带 0.28m |
+| `FINISH_CONFIRM_FRAMES` | 6.0 → **3.0** | `FN` 稳定 HIT 只有 5 帧，6 帧凑不齐 |
+| `FINISH_IN_TUNNEL_MIN_SECONDS` | 4.0 → **2.0** | 终点字在隧道末段就出，等 `_passed_tunnel` 晚 2.7s |
+
+## 三个坑
+
+1. **arming 必须 `if not self._curve_exit_armed:` 外层判断。**
+   兜底条件写进 `if (... or frames>=45)` 会每帧清零计数器，exit 永远不落 Y。
+2. **`FN 4` 不等于终点字。** 191729 24.3s 是隧道口胶带，192546 28.9s 才是真字，
+   两次 `blobs` 都是 4 ——「下蹲满 N 秒」这道时间门必须留着。
+3. **`TURN_EXIT_SLOPE_REF` 别设小。** 0.45 会饱和成常值偏置，`pos` 被压死。
+
+## 还没解决
+
+- `dir` 有 55° 死区，出弯后完全失明，现在靠 slope 顶
+- `bx` 只剩 HUD，可以删
+- 隧道模式 7.6s 偏长，卡在 `hazard_gone_frames = 12.0`

@@ -97,6 +97,12 @@ TURN_FALLBACK_MAX_ERROR = 0.95  # 饱和中心不作为可靠循迹依据。
 
 # 桥后慢速模式的比例；稳定直线恢复 FORWARD_SPEED，不再整段固定乘 0.55。
 TURN_SPEED_SCALE = 0.55
+# 转弯段速度地板。旧值走 minimum_forward_speed*TURN_SPEED_SCALE=0.2*0.55=0.11，
+# 170516/173351/174315 三次实测转弯段 v 全都卡在 0.11~0.14。
+# 174315 实测 12.8~17.6s w 恒在 -0.34 rad/s、v=0.11，转弯半径 0.11/0.34=0.32m，
+# 等于原地小圈打转（这正是「turn 基本都是原地在转」）。
+# 抬到 0.18 后同样 w 下半径 0.18/0.34=0.53m，才是边前进边转。
+TURN_MIN_SPEED = 0.18
 POST_BRIDGE_STABLE_SECONDS = 0.60
 POST_BRIDGE_HISTORY_SECONDS = 0.80
 POST_BRIDGE_MAX_SAMPLE_GAP = 0.25
@@ -152,38 +158,76 @@ CURVE_SHARP_WEIGHTS = (0.20, 0.30, 0.50)
 CURVE_HEADING_START_DEG = 55.0
 CURVE_HEADING_FULL_DEG = 85.0
 CURVE_HEADING_GAIN = 0.40
+# 方向项不能阶跃打开。174315 实测 9.6s dir=+0.00、10.0s 入弯瞬间 dir 直接跳到
+# +0.86，err 从 0.157 蹦到 0.826，w 立刻饱和到 -0.38，v 同时掉到 0.11，
+# 0.4s 后（10.4s）就丢线开始原地转 1.4s。
+# 所以入弯后让方向项在 TURN_HEADING_RAMP_FRAMES 帧内从 0 线性升到满量程。
+# 15fps 下 8 帧≈0.53s，w 会从 0.12 平滑升到 0.36 而不是一帧跳到 0.38。
+TURN_HEADING_RAMP_FRAMES = 8
 # 出桥看见弯道不等于车轮已到弯口：WAIT 保持出桥航向直行，不使用黄线误差。
 # 近处条件只看画面中央 30% 内的实测点，不能用补点或近处的侧边端点触发。
 # 181332 录像实测 row 轨迹（15 fps，这段约 10 px/帧）：8.4s=316 8.6s=335 8.8s=353
 # 9.0s=377 9.2s=407 9.4s=445。旧的 0.9(432) 要等到 9.5s，那时 pos 已 +0.72、
 # 边界 0.4 s 后就消失；0.5(240) 出桥第一帧就退太早；0.7(336) 也还偏早。
 # 实测合适的入弯点是泡沫进入人行道检测框（CROSSWALK_TOP_RATIO=0.72，第 346 行）
-# 之后再走约两帧，故取 0.80(=384)：3 帧确认正好在 9.2s / dist=1.73m / row=407 完成。
-TURN_ENTRY_NEAR_ROW_RATIO = 0.8  # 480 高时 need=384。
+# 之后再走约两帧。20261027 两次实测：
+#   170516：到 row=390 才入弯，太晚，入弯后 0.8s 泡沫就被甩出画面丢了线
+#   173351：用 0.75(=360) 时 row 最高只到 354，差 6 行没到 360，然后又丢线
+# 故取 0.70(=336)：173351 约 8.9s 就能入弯，赶在 10s 丢线之前。
+# 0.5(240) 已验证是明显太早。
+TURN_ENTRY_NEAR_ROW_RATIO = 0.70  # 480 高时 need=336。
 TURN_ENTRY_CENTER_HALF_RATIO = 0.15
 TURN_ENTRY_MIN_X_SPAN_RATIO = 0.10
 TURN_ENTRY_CONFIRM_FRAMES = 3
 TURN_ENTRY_MAX_W = 0.12  # rad/s，仅限制 WAIT 的 IMU 航向纠偏，不再读取黄线误差。
-TURN_WAIT_HEADING_KP = 1.0  # 航向误差用弧度；速度直接使用正常巡线 forward_speed。
+TURN_WAIT_HEADING_KP = 1.0  # 航向误差用弧度。
+# WAIT 段前进速度。原来直接复用 forward_speed(0.30)，太大：
+# 174315 实测 7.6s 出稳定、9.6s 就 row=352 触发入弯，2.2s 内冲了 0.36m，
+# 车身带着 0.30 的速度一头撞进弯口，入弯后 0.4s 泡沫就被甩出画面。
+TURN_WAIT_SPEED = 0.16
 # ---- 出弯判定 + 出弯摆正 ----
-# 190415 录像实测：左泡沫在斑马线框（行 346~451）内的最右端，
-# 13.8s=617 14.6s=553 15.2s=511 15.4s=319 16.2s=257，之后不再回升。
-# 也就是泡沫右端从框右侧退到画面中线左侧时，大弯实际已经走完。
-# 但 12.8~13.6s 框内最右端只有 319（泡沫还没铺满右侧），所以必须先「armed」：
-# 只有它真的伸到 0.75 宽以右之后，再退到 0.50 宽以左才算数。
-TURN_EXIT_ARM_X_RATIO = 0.75
-TURN_EXIT_BOX_X_RATIO = 0.50
+# 旧方案靠「框内最右端 bx」两步：先 bx>=0.75W(=480) 置 armed，再 bx<0.50W(=320)
+# 才计数。实测这个 arming 根本到不了，四条录像 bx 峰值：
+#   173351: 375   174315: 243   175158: 379   175657: 309
+# 全部 < 480，所以 exit 永远是 N。175657 跑到 17.6~19.2s 已经 dir=+0.00、
+# pos=+0.04~+0.19（弯早就走完了）还在 TURN，结果 19.6s 又被判成 cruise
+# 直接加速到 v=0.30 冲出去。
+# 改成用方向项自己当 arming：真的进过弯（strength 到过 0.6）才允许判出弯。
+# bx 不再参与判定，只留 HUD 观察。
+TURN_EXIT_ARM_STRENGTH = 0.60   # 方向项曾经到过这个强度才算「进过弯」（一次性）
+TURN_EXIT_ARM_FRAMES = 45       # 兜底：弯里磨了 3s 还没 armed 就直接置上，防卡死
 TURN_EXIT_CONFIRM_FRAMES = 3
-# 光看框内最右端不够：194528 录像 14.2s 泡沫还没完全出框就判成 Y（pos=+0.17 dir=+0.73），
+# 194528 录像 14.2s 泡沫还没完全出框就判成 Y（pos=+0.17 dir=+0.73），
 # 而你要的 15.0s 是 pos=-0.00 dir=+0.54。所以再加两道 HUD 可见的守卫。
-TURN_EXIT_MAX_TURN_STRENGTH = 0.60   # 方向项必须已衰减到这个值以下
-TURN_EXIT_MAX_LATERAL = 0.60         # 只做粗筛，防止车已经飞出赛道还判出弯；不能设小，
-                                     # 否则出弯一直不触发时 pos 在弯里本来就可能到 0.4，
-                                     # 这道门会永远过不去、把 exit 卡死。
+# 方向项跑到 0.15 以下才算弯走完，四条录像实测：
+#   175158: 14.8s=0.53 15.6s=0.36 16.0s=0.18 16.4s=0.10 16.8s=0.00
+#   175657: 15.6s=0.55 16.0s=0.49 16.4s=0.32 16.8s=0.15 17.2s=0.00
+# 0.15 会在 16.4~16.8s 落 Y，用户点名的是 17.0s，正好。
+TURN_EXIT_MAX_TURN_STRENGTH = 0.15   # 方向项必须已衰到这个值以下
+TURN_EXIT_MAX_LATERAL = 0.35         # pos 也要收敛到中线附近。0.6 太松：
+                                     # 175657 在 12.0s pos=+0.58、w 还在 -0.38
+                                     # 满量程，那时过这道门就是误判。
 # 出弯后用近端中心线斜率当航向误差把车身摆正：
 # 车对准直道时斜率≈ 0，所以它是零偏置的真误差，不像 turn_strength 那样是常值偏置。
+#
+# 为什么必须打开它（183635 录像实测）：出弯后 err 只剩 pos 一个 P 项，
+# 因为 dir 有 55° 死区（16.8s 后恒为 +0.00），而 slope 被乘 0 丢掉了。
+# 纯 P 的横向项不能让车摆正，只能让它绕着线画圈：
+#   16.4s exit=Y 后 w 一直 -0.11~-0.15 持续 3s（差 0.30rad≈17°），
+#   pos 在 0.03~0.22 来回晃不收敛，末端 24.0s 直接跑成 pos=+0.48。
+#
+# 为什么要改 REF：从 183635 录像里量出近端真实 |slope| = 1.0~2.2 px/row，
+# 旧的 0.45 让它 2~5 倍饱和，恒为 +1.00 —— 这正是 194528 那次把 pos
+# 压到 -0.45 的原因。不是斜率错，是 REF 尺子错了。
 TURN_EXIT_SLOPE_GAIN = 0.45
-TURN_EXIT_SLOPE_REF = 0.45   # px/row，斜率到这个值算满量程。
+TURN_EXIT_SLOPE_REF = 2.00   # px/row，按实测 1.0~2.2 取满量程
+TURN_EXIT_SLOPE_MAX = 0.30   # 斜率项对 err 的最大贡献，防出弯那一帧阶跃到 0.45
+TURN_EXIT_SLOPE_FRAMES = 45  # 3s 后自动归零，绝不允许变成永久横向偏置
+# 出弯后限速：斑马线就在前方，若让 _post_bridge_speed 判成 stable 会直接加速到
+# forward_speed(0.30)，一路冲过人行道。173351 实测出弯后 4s 内 v 从 0.14 涨到 0.30，
+# 然后 dist 4.20m 仍在下 CRUISE，全程没停。
+# 不用 v=0：停在斑马线前会让 _detect_crosswalk 看不到条纹、永远不触发停车。
+TURN_EXIT_SPEED = 0.12
 # 近处半宽先验的参考行；真正宽度只从同帧双边实测更新。
 LANE_HALF_RATIO_REFERENCE = 0.30
 LANE_WIDTH_HORIZON_RATIO = 0.10
@@ -238,15 +282,15 @@ STRIPE_COMPONENT_MIN_OVERLAP = 0.15  # 黄色连通块至少 15% 受到条纹支
 FORWARD_SPEED = 0.30   #0.3
 
 # 转弯自动降速后的最低前进速度（m/s）。
-MINIMUM_FORWARD_SPEED = 0.20
+MINIMUM_FORWARD_SPEED = 0.2  #0.2
 
 # 最大转向角速度（rad/s）。弯道转不过去就略增大。
-MAX_ANGULAR_SPEED = 0.45  #0.4，0.55
+MAX_ANGULAR_SPEED = 0.38  #0.4，0.55，0.45，0.4
 
 # 转向比例增益：err=1 时输出的角速度 = STEERING_KP × MAX_ANGULAR_SPEED。
 # 偏大 → 左右画龙（实测峰峰 40cm 以上），冲桥会被甩下去；
 # 偏小 → 回正慢、进弯切内圈。画龙降 0.7，抢弯提 0.9。
-STEERING_KP = 0.75
+STEERING_KP = 0.72  #0.75
 
 # 转弯减速比例，范围 0~1。越大，转弯时越慢。
 CURVE_SLOWDOWN = 0.60
@@ -283,6 +327,15 @@ BRIDGE_EXIT_RETILT_SECONDS = 0.15
 BRIDGE_MIN_CROSS_SECONDS = 0.80
 BRIDGE_MIN_DISTANCE = 0.35     # 仅附加约束：轮式里程会受打滑影响。
 BRIDGE_EXIT_CLEARANCE = 0.04   # 回平后的小段离桥余量；仍须满足总跨桥距离。
+# 过桥后额外要求车身真的稳下来，才把控制权交回桥后 WAIT。
+# BridgeTraversal 的 done 只要求 0.30 s 累计平稳 + 4 cm 余量，实测下桥后仍有
+# 横滚余摆；带着摆动进 WAIT 会把参考航向记歪，直行段一开始就是斜的。
+BRIDGE_SETTLE_SECONDS = 0.80      # 连续平稳这么久才放行
+BRIDGE_SETTLE_ROLL_DEG = 2.0
+BRIDGE_SETTLE_PITCH_DEG = 3.0
+BRIDGE_SETTLE_RATE_DEG = 10.0
+BRIDGE_SETTLE_TIMEOUT = 2.50      # 长时间稳不下来也要放行，不能一直卡在过桥后
+BRIDGE_SETTLE_SPEED = 0.10        # 稳定确认期间的低速直行速度
 BRIDGE_PROGRESS_SPEED = 0.04
 BRIDGE_APPROACH_TIMEOUT = 15.0
 BRIDGE_CROSS_TIMEOUT = 12.0    # 超时是异常停车，绝不设置“已过桥”。
@@ -316,7 +369,12 @@ BRIDGE_ON_RAMP_SPEED_SCALE = 1.50
 BRIDGE_SPEED_SCALE = 1.00
 
 # 隧道下蹲通过时的速度比例。
-TUNNEL_SPEED_SCALE = 2.0
+# 2.0 → 0.60 m/s 太狠：185159 实测 27.7~28.3s 一直是 v=0.57~0.59，
+# 终点三个大字就是在这段被甩过去的。而且 0.60 m/s 在 max_linear_acceleration
+# =0.25 m/s² 下刷到停要 2.36s、滑行 0.70m，而 FINISH_DRIVE_IN_SECONDS=2.0
+# @0.14 只有 0.28m 余量 —— 就算立刻认出终点也停不住。
+# 降到 1.2(0.36 m/s)：刷车距离 0.26m，刚好在余量内。
+TUNNEL_SPEED_SCALE = 1.2
 
 # ---------- 人行道 ----------
 # 停稳后再计时的秒数。规则要求停车 5 秒。
@@ -356,13 +414,24 @@ POST_TUNNEL_LOST_GRACE_SECONDS = 1.5
 # TOP 越大越靠近车才停。太小会在终点前就停，太大可能压过终点才停。
 FINISH_TOP_RATIO = 0.80
 FINISH_BOTTOM_RATIO = 0.96
-FINISH_CONFIRM_FRAMES = 6.0
+# 6 → 3。192546 实测 FN 稳定 HIT 只有 433~437 这 5 帧（0.33s），
+# 434 帧那一下会断，6 帧永远凑不齐 —— 就差这一帧没过。
+# _detect_finish 自己已经要求 2~6 个黑块、跨度>=0.38W、平边<=2.4、
+# 近端带黑像素>=8%、黑像素占比 0.07~0.62，3 帧足够把误报滤掉。
+FINISH_CONFIRM_FRAMES = 3.0
 # 黑字必须落到搜索框下部（靠近车）才算到达，只看见远处大字不算。
 FINISH_NEAR_RATIO = 0.40
 # 出隧道后再走这么多秒才允许认终点，避免把隧道口虚线/远处大字当成终点。
-FINISH_AFTER_TUNNEL_SECONDS = 8.0
+# 8.0 太晚：185159 里 _passed_tunnel 到 30.6s 才置 Y，闸门要到 38.6s 才开，
+# 而终点字 28.0~28.8s 就已经过去了。降到 2.0，配合下面隧道内就开始认。
+FINISH_AFTER_TUNNEL_SECONDS = 2.0
+# 隧道内下蹲超过这么多秒后就开始允许认终点：终点字可能就在隧道末段/出口，
+# 等 _passed_tunnel 置位已经太晚（185159 实测差 2.6s）。
+# 4.0 → 2.0：192546 下蹲起于 24.2s，终点字 28.9s 才出现，2.0 已经够用；
+# 而且 2.0 仍然能挡住隧道口那团黄黑胶带（191729 在 24.0~24.3s 就误命中过）。
+FINISH_IN_TUNNEL_MIN_SECONDS = 2.0
 # 认出终点后再往前拱这么久再停，把车身开进终点带。太短会停在字前，太长会冲出垫子。
-FINISH_DRIVE_IN_SECONDS = 2.0
+FINISH_DRIVE_IN_SECONDS = 2.0 #2.0
 FINISH_DRIVE_IN_SPEED = 0.14
 
 # ---------- 识别画面录像 ----------
@@ -491,9 +560,11 @@ class DualYellowLineDetector:
         self._curve_width_key = None
         self._curve_turn_entry_ready = False
         self._curve_turn_entry_count = 0
+        self._curve_turn_entry_frames = 0
         self._curve_exit_armed = False
         self._curve_exit_ready = False
         self._curve_exit_count = 0
+        self._curve_exit_frames = 0
         self._hud_cx: Optional[float] = None
         self._hud_cy: Optional[float] = None
 
@@ -1254,11 +1325,15 @@ class DualYellowLineDetector:
         if not self.expected_turn_direction:
             self._curve_turn_entry_ready = False
             self._curve_turn_entry_count = 0
+            self._curve_turn_entry_frames = 0
             self._curve_exit_armed = False
             self._curve_exit_ready = False
             self._curve_exit_count = 0
+            self._curve_exit_frames = 0
             return False, 0.0
         if self._curve_turn_entry_ready:
+            # 入弯后逐帧累计，供方向项软启动使用。
+            self._curve_turn_entry_frames += 1
             return True, 0.0
         measured = np.concatenate([c['measured'] for c in selected]) + [x0, y0]
         central = measured[np.abs(measured[:, 0] - 0.5*width)
@@ -1270,6 +1345,7 @@ class DualYellowLineDetector:
         close = supported and row >= TURN_ENTRY_NEAR_ROW_RATIO*height and strength > 0.0
         self._curve_turn_entry_count = self._curve_turn_entry_count + 1 if close else 0
         self._curve_turn_entry_ready = self._curve_turn_entry_count >= TURN_ENTRY_CONFIRM_FRAMES
+        self._curve_turn_entry_frames = 1 if self._curve_turn_entry_ready else 0
         return self._curve_turn_entry_ready, row
 
     def _detect_columns(self, frame: np.ndarray) -> DetectionResult:
@@ -1292,9 +1368,11 @@ class DualYellowLineDetector:
             self._curve_left_return_frames = 0
             self._curve_turn_entry_ready = False
             self._curve_turn_entry_count = 0
+            self._curve_turn_entry_frames = 0
             self._curve_exit_armed = False
             self._curve_exit_ready = False
             self._curve_exit_count = 0
+            self._curve_exit_frames = 0
             self._curve_track_key = track_key
         self._curve_debug = dict(boundaries=[], center_path=np.empty((0, 2)),
                                  x0=x0, x1=x1, y0=y0, y1=y1)
@@ -1375,42 +1453,54 @@ class DualYellowLineDetector:
             self._curve_turn_entry_count = 0
             turn_ready, turn_row = self._curve_turn_entry_ready, 0.0
         applied_strength = stage_strength if turn_ready else 0.0
-        heading_error = float(np.sign(direction[0])*applied_strength)
+        # 方向项软启动：入弯第一帧不能满量程，否则 err 阶跃导致 w 饱和打转。
+        heading_ramp = min(1.0, self._curve_turn_entry_frames
+                           / float(TURN_HEADING_RAMP_FRAMES))
+        heading_error = float(np.sign(direction[0])*applied_strength*heading_ramp)
         # 不把横向弯沿突然改成直线权重，否则位置项会无故向左跳。
         # 入弯前的早转由方向项门控和控制限幅抑制，不篡改当前几何误差。
         weights, effective_weights = self._curve_weights(path, quality, stage_strength)
         target_x = 0.5*width + self.target_offset_pixels
         lane_center = float(np.sum(weights*(path[:, 0]+x0)))
         lateral_error = float((lane_center-target_x)/(0.5*width))
-        # ---- 出弯判定：泡沫在斑马线框内先伸到右侧、再退回画面中线左侧 ----
-        # 除框内位置外，还要求方向项已衰减、车身已回到中线附近（见 TURN_EXIT_MAX_*）。
+        # ---- 出弯判定：方向项进过弯（strength 到过 0.6）之后又掉到 0.15 以下 ----
+        # 并要求车身已回到中线附近，见 TURN_EXIT_MAX_*。bx 仅用于 HUD 观察，不参与判定。
         box_measured = np.concatenate([c['measured'] for c in selected])
         box_rows = box_measured[(box_measured[:, 1] >= CROSSWALK_TOP_RATIO*height)
                                 & (box_measured[:, 1] <= CROSSWALK_BOTTOM_RATIO*height)]
         box_x_max = float(box_rows[:, 0].max()) if len(box_rows) else 0.0
         if self.expected_turn_direction and len(box_rows) >= CURVE_MIN_POINTS:
-            if box_x_max >= TURN_EXIT_ARM_X_RATIO*width:
-                self._curve_exit_armed = True
-                self._curve_exit_count = 0
-            elif (self._curve_exit_armed
-                  and box_x_max < TURN_EXIT_BOX_X_RATIO*width
-                  and stage_strength <= TURN_EXIT_MAX_TURN_STRENGTH
+            # armed 必须是一次性置位。若把兜底条件写在 if 里（不带 not armed），
+            # 进弯 3s 后 _curve_turn_entry_frames>=45 会每帧都成立，
+            # 于是每帧都把 _curve_exit_count 清零，exit 永远落不了 Y。
+            if not self._curve_exit_armed:
+                if (stage_strength >= TURN_EXIT_ARM_STRENGTH
+                        or self._curve_turn_entry_frames >= TURN_EXIT_ARM_FRAMES):
+                    self._curve_exit_armed = True
+                    self._curve_exit_count = 0
+            elif (stage_strength <= TURN_EXIT_MAX_TURN_STRENGTH
                   and abs(lateral_error) <= TURN_EXIT_MAX_LATERAL):
                 self._curve_exit_count += 1
                 if self._curve_exit_count >= TURN_EXIT_CONFIRM_FRAMES:
                     self._curve_exit_ready = True
             else:
                 self._curve_exit_count = 0
+        if self._curve_exit_ready:
+            # 出弯后逐帧累计，供斜率项限时使用。
+            self._curve_exit_frames += 1
         # 出弯后近端中心线斜率当航向误差：车摆正时斜率≈0，不会像方向项那样变成常值偏置。
         slope_error = 0.0
-        if self._curve_exit_ready and len(path) >= 12:
+        if (self._curve_exit_ready and self._curve_exit_frames < TURN_EXIT_SLOPE_FRAMES
+                and len(path) >= 12):
             near_path = path[path[:, 1] >= np.percentile(path[:, 1], 55)]
             if len(near_path) >= 8 and float(np.ptp(near_path[:, 1])) >= 8.0:
                 slope = float(np.polyfit(near_path[:, 1], near_path[:, 0], 1)[0])
                 slope_error = float(np.sign(direction[0])
                                     * np.clip(abs(slope)/TURN_EXIT_SLOPE_REF, 0.0, 1.0))
+        slope_term = float(np.clip(TURN_EXIT_SLOPE_GAIN*slope_error,
+                                   -TURN_EXIT_SLOPE_MAX, TURN_EXIT_SLOPE_MAX))
         error = float(np.clip(lateral_error + CURVE_HEADING_GAIN*heading_error
-                              + TURN_EXIT_SLOPE_GAIN*slope_error, -1.0, 1.0))
+                              + slope_term, -1.0, 1.0))
 
         rejected_points = sum(c['rejected_points'] for c in selected)
         line_rows = {side: sum(len(np.unique(c['measured'][:, 1].astype(int)))
@@ -2452,6 +2542,9 @@ class ShiWaiFollower(Node):
         self._bridge_seen_at: Optional[float] = None
         self._bridge_engaged = False
         self._bridge_engaged_at: Optional[float] = None
+        # done 之后的稳定确认：车身平稳够久才交回 WAIT。
+        self._bridge_done_at: Optional[float] = None
+        self._bridge_settle_since: Optional[float] = None
         # 近端胶带「消失」的连续帧计数，用于判定已到桥头
         self._hazard_near_gone_frames = 0
         self._near_gone_at: Optional[float] = None
@@ -3148,15 +3241,18 @@ class ShiWaiFollower(Node):
                 self._announce("已出隧道，恢复站立，继续巡线")
 
         tunnel_ready_for_finish = (
-            self._passed_tunnel
-            and self._passed_tunnel_at is not None
-            and (now - self._passed_tunnel_at) >= FINISH_AFTER_TUNNEL_SECONDS
+            (self._passed_tunnel
+             and self._passed_tunnel_at is not None
+             and (now - self._passed_tunnel_at) >= FINISH_AFTER_TUNNEL_SECONDS)
+            # 终点字可能就在隧道末段：下蹲够久就允许认，不再等 _passed_tunnel。
+            or (self._mode == self.MODE_CROUCH
+                and self._crouch_started is not None
+                and now - self._crouch_started >= FINISH_IN_TUNNEL_MIN_SECONDS)
         )
         finish_confirmed = self._confirm(
             "_finish_frames",
             scene.finish
             and tunnel_ready_for_finish
-            and self._mode != self.MODE_CROUCH
             and not self._passed_finish,
             FINISH_CONFIRM_FRAMES,
         )
@@ -3227,14 +3323,75 @@ class ShiWaiFollower(Node):
             if b.state in messages:
                 self._announce(messages[b.state])
         if b.state == "done" and not self._cleared_bridge:
+            if self._turn_wait_heading is None and math.isfinite(b.yaw):
+                # 记录完成离桥时的航向：稳定确认期间用它保航向。
+                self._turn_wait_heading = float(b.yaw)
+            if not self._bridge_settle_ready(now):
+                return
             self._cleared_bridge = True
             self._cleared_at = now
-            # 记录完成离桥时的航向，不复用最初上桥航向，不逐帧重置。
-            self._turn_wait_heading = float(b.yaw)
+            # 车身已经稳了，用稳定后的航向作为 WAIT 参考，不复用上桥航向。
+            if math.isfinite(b.yaw):
+                self._turn_wait_heading = float(b.yaw)
             self._bridge_climb_ended = True
             self._left_line_locked = False
             self._have_error = False
             self._lost_since = None
+
+    def _bridge_settle_ready(self, now: float) -> bool:
+        """done 之后确认车身真的稳了；超过 BRIDGE_SETTLE_TIMEOUT 也放行。"""
+        b = self._bridge
+        if self._bridge_done_at is None:
+            self._bridge_done_at = now
+        if now - self._bridge_done_at >= BRIDGE_SETTLE_TIMEOUT:
+            return True
+        if b.baseline is None or b.imu_at is None:
+            return False
+        if not 0.0 <= now - b.imu_at <= BRIDGE_SENSOR_TIMEOUT:
+            self._bridge_settle_since = None
+            return False
+        dr = abs(b.angle_delta(b.roll, b.baseline[0]))
+        dp = abs(b.angle_delta(b.pitch, b.baseline[1]))
+        calm = (dr <= BRIDGE_SETTLE_ROLL_DEG and dp <= BRIDGE_SETTLE_PITCH_DEG
+                and abs(b.roll_rate) <= BRIDGE_SETTLE_RATE_DEG)
+        if not calm:
+            self._bridge_settle_since = None
+            return False
+        if self._bridge_settle_since is None:
+            self._bridge_settle_since = now
+        return now - self._bridge_settle_since >= BRIDGE_SETTLE_SECONDS
+
+    def _bridge_settle_command(self, result: DetectionResult, now: float) -> None:
+        """过桥后低速直行等车身稳住；稳住后才交回 WAIT。"""
+        b = self._bridge
+        self._have_error = False
+        heading = self._turn_wait_heading
+        if heading is None or not math.isfinite(heading):
+            heading = self._turn_wait_heading = (
+                float(b.yaw) if math.isfinite(b.yaw) else 0.0)
+        imu_ok = (b.imu_at is not None
+                  and 0.0 <= now - b.imu_at <= BRIDGE_SENSOR_TIMEOUT
+                  and math.isfinite(b.yaw))
+        if imu_ok:
+            error = math.radians(b.angle_delta(heading, b.yaw))
+            angular = float(np.clip(TURN_WAIT_HEADING_KP*error,
+                                    -TURN_ENTRY_MAX_W, TURN_ENTRY_MAX_W))
+            linear = float(BRIDGE_SETTLE_SPEED)
+        else:
+            # 没有 IMU 就不动，避免盲走。
+            linear = angular = 0.0
+        if self.enable_motion:
+            command = self._rate_limit(linear, angular, now)
+            self._publish(*command)
+            self._last_command, self._last_command_valid = command, True
+        else:
+            command = (linear, angular)
+            self._publish_zero("motion_disabled")
+        self._update_height(now)
+        dr = 0.0 if b.baseline is None else b.angle_delta(b.roll, b.baseline[0])
+        dp = 0.0 if b.baseline is None else b.angle_delta(b.pitch, b.baseline[1])
+        self._show(result, *command, self.enable_motion,
+                   extra=f"BRIDGE SETTLE droll={dr:+.1f} dpitch={dp:+.1f}")
 
     def _bridge_steering(self, result: DetectionResult) -> Tuple[float, str]:
         """复用当前检测：双边沿用原修正，可靠单边主导纠偏，其余保持航向。"""
@@ -3365,7 +3522,8 @@ class ShiWaiFollower(Node):
         self._update_bridge_target()
         result = self._detect_lane(frame)
         scene = self.scene_detector.detect(
-            frame, result.debug_frame, prefer_finish=self._passed_tunnel
+            frame, result.debug_frame,
+            prefer_finish=(self._passed_tunnel or self._mode == self.MODE_CROUCH),
         )
         self._update_mission(scene, now)
         self._log_status(now, result, scene)
@@ -3383,6 +3541,10 @@ class ShiWaiFollower(Node):
             return
         if self._bridge.crossing:
             self._bridge_command(result, now)
+            return
+        if self._bridge.state == "done" and not self._cleared_bridge:
+            # 过桥后先低速直行等车身稳住，再进 WAIT。
+            self._bridge_settle_command(result, now)
             return
 
         if self._should_search_after_bridge(result, now):
@@ -3446,12 +3608,16 @@ class ShiWaiFollower(Node):
         else:
             turn_ratio = min(1.0, abs(angular) / self.max_angular_speed)
             target = max(
-                self.minimum_forward_speed * TURN_SPEED_SCALE,
+                TURN_MIN_SPEED,
                 self.forward_speed * TURN_SPEED_SCALE * (1.0-self.curve_slowdown*turn_ratio),
             )
             self._post_bridge_speed_mode = (
                 "weak-line" if not quality else ("settling" if straight else "turn")
             )
+        # 出弯后压到低速，避免越过斑马线。
+        if result.turn_exit_ready and target > TURN_EXIT_SPEED:
+            target = TURN_EXIT_SPEED
+            self._post_bridge_speed_mode = "exit-crawl"
         self._post_bridge_speed_target = target
         return target
 
@@ -3477,7 +3643,7 @@ class ShiWaiFollower(Node):
         error = math.radians(b.angle_delta(heading, b.yaw))
         angular = float(np.clip(TURN_WAIT_HEADING_KP*error,
                                 -TURN_ENTRY_MAX_W, TURN_ENTRY_MAX_W))
-        linear = float(self.forward_speed)
+        linear = float(TURN_WAIT_SPEED)
         self._reset_post_bridge_speed("entry-yaw")
         self._post_bridge_speed_target = linear
         if self.enable_motion:
