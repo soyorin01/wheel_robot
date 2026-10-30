@@ -36,7 +36,7 @@ WHEEL_TRACK_CM = 43.0
 # 过单边桥时相对黄泡沫中点的偏移（厘米）。
 # 正数往左，负数往右。桥在右侧：右轮上桥、左轮在地面。
 # 从左侧棱滑下去就把负数再加大（更往右），例如 -12。
-BRIDGE_OFFSET_CM = 0 #-10
+BRIDGE_OFFSET_CM = 5 #-10，5
 
 # 过单边桥时的横滚（度）。负数为左倾（左腿压低、右腿抬高），正数为右倾。
 # 桥在右侧：左横滚让右轮更容易上到桥面。下桥后自动回到 0。
@@ -86,8 +86,8 @@ TURN_STOP_SECONDS = 0.0
 TURN_MIN_SPIN_SECONDS = 0.0  # 兼容旧配置；不再强制旋转一段时间。
 TURN_SEARCH_SECONDS = 5.0  # 首次没有可用边线时，最多旋转搜索五秒。
 TURN_LOST_GRACE_SECONDS = 9.0
-# 桥后丢线搜索目标：前进速度降为零，按原有策略低速旋转找线。
-TURN_LOST_SPEED = 0.0
+# 桥后丢线搜索目标：低速往前拱着找线，不再原地停转（于萧阳 10.29）。
+TURN_LOST_SPEED = 0.10
 TURN_LOST_ANGULAR = 0.22
 # 锁左海绵时，其内沿必须在画面左侧。内圈黄块在右边，不能当左线。
 TURN_LEFT_MAX_X_RATIO = 0.42
@@ -102,7 +102,11 @@ TURN_SPEED_SCALE = 0.55
 # 174315 实测 12.8~17.6s w 恒在 -0.34 rad/s、v=0.11，转弯半径 0.11/0.34=0.32m，
 # 等于原地小圈打转（这正是「turn 基本都是原地在转」）。
 # 抬到 0.18 后同样 w 下半径 0.18/0.34=0.53m，才是边前进边转。
-TURN_MIN_SPEED = 0.18
+#
+# 0.18 → 0.23（提速一档）：转弯耗时 t = 转角/角速度，转角是赛道定的（170334
+# 实测 148.5°），只能加角速度。v 必须跟着 ω 一起加，保持 R = v/ω 不変，
+# 否则走线会变。旧 R = 0.18/0.38 = 0.474，新 R = 0.23/0.48 = 0.479。
+TURN_MIN_SPEED = 0.23  #0.18->0.23（提速一档，要回退改回 0.18）
 POST_BRIDGE_STABLE_SECONDS = 0.60
 POST_BRIDGE_HISTORY_SECONDS = 0.80
 POST_BRIDGE_MAX_SAMPLE_GAP = 0.25
@@ -164,6 +168,12 @@ CURVE_HEADING_GAIN = 0.40
 # 所以入弯后让方向项在 TURN_HEADING_RAMP_FRAMES 帧内从 0 线性升到满量程。
 # 15fps 下 8 帧≈0.53s，w 会从 0.12 平滑升到 0.36 而不是一帧跳到 0.38。
 TURN_HEADING_RAMP_FRAMES = 8
+# 方向项（"劲"）的释放加一阶惯性，不逐帧等于瞬时值。
+# 1827 圈实测：出弯段 dir 0.9→0.7→0 只用了两帧，紧接着左侧泡沫出框丢线 2 秒，
+# 而 lost_hold 重发的"上一条指令"此时已经是 err≈0 的直行 —— 车就笔直滑出去。
+# 乘以这个系数让它按时间常数朝瞬时值收敛（15fps 下 0.08≈0.8s）：
+# 永远在收敛，所以不是锁死，是动态释放（于萧阳 10.29）。
+TURN_FF_LAG = 0.08
 # 出桥看见弯道不等于车轮已到弯口：WAIT 保持出桥航向直行，不使用黄线误差。
 # 近处条件只看画面中央 30% 内的实测点，不能用补点或近处的侧边端点触发。
 # 181332 录像实测 row 轨迹（15 fps，这段约 10 px/帧）：8.4s=316 8.6s=335 8.8s=353
@@ -184,7 +194,17 @@ TURN_WAIT_HEADING_KP = 1.0  # 航向误差用弧度。
 # WAIT 段前进速度。原来直接复用 forward_speed(0.30)，太大：
 # 174315 实测 7.6s 出稳定、9.6s 就 row=352 触发入弯，2.2s 内冲了 0.36m，
 # 车身带着 0.30 的速度一头撞进弯口，入弯后 0.4s 泡沫就被甩出画面。
-TURN_WAIT_SPEED = 0.16
+#
+# 但 0.16 又太小了：221612 实测 5.2~8.5s 指令一直 0.16，
+# 里程计 6.0s→8.0s 只涨了 0.04m（≈0.02 m/s），车在桥下原地打滑推不动，
+# 而 HUD 画的是指令值所以一直显示 0.16 —— 看着像停住。
+# 同一趟 15~17.5s 用 0.12 在平地上里程涨了 0.32m，说明不是速度死区，
+# 是桥下那一段需要更大的劲儿才能从静止推起来（入弯用的 0.23 实测能推动）。
+TURN_WAIT_SPEED = 0.24  # 0.16 -> 0.24，前提是桥下那段能一直滚着不起来。
+# WAIT 至少跑这么久才允许入弯。_cleared_at 是离开 BRIDGE SETTLE、真正开始
+# WAIT 的时刻；没有这道门时，只要 row 一过线就立刻 TURN，车身还没摆正就进弯。
+# 184532 实测：10.0s 刚出稳定、10.4s 就 entry=TURN，WAIT 只跑了 0.4s。
+TURN_WAIT_MIN_SECONDS = 1.8 #0.8
 # ---- 出弯判定 + 出弯摆正 ----
 # 旧方案靠「框内最右端 bx」两步：先 bx>=0.75W(=480) 置 armed，再 bx<0.50W(=320)
 # 才计数。实测这个 arming 根本到不了，四条录像 bx 峰值：
@@ -285,7 +305,11 @@ FORWARD_SPEED = 0.30   #0.3
 MINIMUM_FORWARD_SPEED = 0.2  #0.2
 
 # 最大转向角速度（rad/s）。弯道转不过去就略增大。
-MAX_ANGULAR_SPEED = 0.38  #0.4，0.55，0.45，0.4
+# 0.38 → 0.48（提速一档）：170334 实测弯中 74 帧顶在 0.38 上，它是转弯耗时的
+# 唯一瓶颈（t = 转角/角速度）。0.48 大约让大弯从 7.55s 缩到 6.0s。
+# 风险：泡沫出境更快，若出现 TURN LOST 就先退回 0.43 或把
+# TURN_HEADING_RAMP_FRAMES 从 8 加到 10。回退就是改回 0.38。
+MAX_ANGULAR_SPEED = 0.48  #0.4，0.55，0.45，0.4，0.38 -> 0.48
 
 # 转向比例增益：err=1 时输出的角速度 = STEERING_KP × MAX_ANGULAR_SPEED。
 # 偏大 → 左右画龙（实测峰峰 40cm 以上），冲桥会被甩下去；
@@ -293,10 +317,10 @@ MAX_ANGULAR_SPEED = 0.38  #0.4，0.55，0.45，0.4
 STEERING_KP = 0.72  #0.75
 
 # 转弯减速比例，范围 0~1。越大，转弯时越慢。
-CURVE_SLOWDOWN = 0.60
+CURVE_SLOWDOWN = 0.40 #0.6
 
 # 看见单边桥黄黑胶带后冲上桥面的速度（m/s），应比 FORWARD_SPEED 大。
-BRIDGE_CLIMB_SPEED = 0.45  #0.4
+BRIDGE_CLIMB_SPEED = 0.5  #0.4，0.45
 
 # 视觉预告 + IMU 上桥/回平确认。所有新参数只在 lin 文件内维护。
 BRIDGE_IMU_LEGACY_ORDER = True  # 当前桥接 x,y,z,w 中实际存的是 q0,q1,q2,q3。
@@ -318,9 +342,16 @@ BRIDGE_EXIT_ROLL_RATE_DEG = 15.0
 BRIDGE_EXIT_PITCH_RATE_DEG = 20.0
 BRIDGE_EXIT_STABLE_SECONDS = 0.30  # 有效新 IMU 样本的累计平稳时间。
 BRIDGE_EXIT_SPEED = 0.16          # m/s，离桥确认不再请求冲桥速度。
-BRIDGE_EXIT_TIMEOUT = 1.20        # 前进确认预算；用完先停车回平，不直接判故障。
-BRIDGE_EXIT_MAX_DISTANCE = 0.25   # 轮式里程仅限制继续直冲，不单独判定故障。
-BRIDGE_EXIT_SETTLE_TIMEOUT = 3.0  # 停车确认仍不回平才报故障；不强判离桥。
+# exit_slow 的前进预算。预算用完进 exit_hold，以前那里是直接发 0。
+# 1.20 → 2.00 / 0.25 → 0.50：给够时间让它在滚动中确认回平、直接进 done，
+# 尽量连 exit_hold 都不进。
+BRIDGE_EXIT_TIMEOUT = 2.00        # 前进确认预算（秒）；用完转低速滚行确认。
+BRIDGE_EXIT_MAX_DISTANCE = 0.50   # 轮式里程仅限制继续直冲，不单独判定故障。
+# exit_hold 不再停车：保持这个速度滚行，一边滚一边回平确认。
+# 211948 实测原来那里直接发 0，4.533s→4.600s 一帧从 0.24 砸到 0.00
+# （等效 −3.6 m/s²），接着又从 0 以 0.25 m/s² 爬回 0.16 —— 这就是下桥顿挫。
+BRIDGE_EXIT_HOLD_SPEED = 0.16
+BRIDGE_EXIT_SETTLE_TIMEOUT = 3.0  # 滚行确认一直不回平才报故障；不强判离桥。
 BRIDGE_EXIT_RETILT_ROLL_DEG = 6.0
 BRIDGE_EXIT_RETILT_PITCH_DEG = 12.0
 BRIDGE_EXIT_RETILT_SECONDS = 0.15
@@ -330,7 +361,7 @@ BRIDGE_EXIT_CLEARANCE = 0.04   # 回平后的小段离桥余量；仍须满足�
 # 过桥后额外要求车身真的稳下来，才把控制权交回桥后 WAIT。
 # BridgeTraversal 的 done 只要求 0.30 s 累计平稳 + 4 cm 余量，实测下桥后仍有
 # 横滚余摆；带着摆动进 WAIT 会把参考航向记歪，直行段一开始就是斜的。
-BRIDGE_SETTLE_SECONDS = 0.80      # 连续平稳这么久才放行
+BRIDGE_SETTLE_SECONDS = 0.0      # 连续平稳这么久才放行0.8
 BRIDGE_SETTLE_ROLL_DEG = 2.0
 BRIDGE_SETTLE_PITCH_DEG = 3.0
 BRIDGE_SETTLE_RATE_DEG = 10.0
@@ -374,18 +405,24 @@ BRIDGE_SPEED_SCALE = 1.00
 # =0.25 m/s² 下刷到停要 2.36s、滑行 0.70m，而 FINISH_DRIVE_IN_SECONDS=2.0
 # @0.14 只有 0.28m 余量 —— 就算立刻认出终点也停不住。
 # 降到 1.2(0.36 m/s)：刷车距离 0.26m，刚好在余量内。
-TUNNEL_SPEED_SCALE = 1.2
+TUNNEL_SPEED_SCALE = 1.8 #1.2
 
 # ---------- 人行道 ----------
 # 停稳后再计时的秒数。规则要求停车 5 秒。
-SIDEWALK_STOP_SECONDS = 5.0
+SIDEWALK_STOP_SECONDS = 3.0 #5
 
 # 斑马线搜索框（0=画面顶远处，1=画面底近处）。
 # TOP 越大，越要斑马线靠近车才停车。太小会在进入停车区之前就停。
 CROSSWALK_TOP_RATIO = 0.72
 CROSSWALK_BOTTOM_RATIO = 0.94
 CROSSWALK_CONFIRM_FRAMES = 6.0
-MIN_CROSSWALK_STRIPES = 5
+# 5 → 4：164509 最后一次只数到 4 条（条数够停车了，是门槛把 4 拒掉了）。
+# yaml 里写的也是 min_crosswalk_stripes: 4，只是被 _apply_field_tuning 覆盖成 5。
+MIN_CROSSWALK_STRIPES = 4
+# 框内允许的黄像素占比。旧值 0.16 太严：164509 第 315 帧斑马线 6 条完整在框里，
+# 但左侧那大块黄泡沫（斜向白带）占了框的 ~24%，`yellow_frac > 0.16` 直接 early
+# return，HUD 就显示 CW 0，一整个 16~25s 都没停车。0.35 仍然能把“整框黄”拒掉。
+CROSSWALK_MAX_YELLOW_FRAC = 0.35
 
 # ---------- 腿高 / 隧道下蹲 ----------
 # 正常站立腿高（米）。底盘默认约 0.25，允许范围大约 0.14~0.36。
@@ -414,11 +451,11 @@ POST_TUNNEL_LOST_GRACE_SECONDS = 1.5
 # TOP 越大越靠近车才停。太小会在终点前就停，太大可能压过终点才停。
 FINISH_TOP_RATIO = 0.80
 FINISH_BOTTOM_RATIO = 0.96
-# 6 → 3。192546 实测 FN 稳定 HIT 只有 433~437 这 5 帧（0.33s），
-# 434 帧那一下会断，6 帧永远凑不齐 —— 就差这一帧没过。
-# _detect_finish 自己已经要求 2~6 个黑块、跨度>=0.38W、平边<=2.4、
-# 近端带黑像素>=8%、黑像素占比 0.07~0.62，3 帧足够把误报滤掉。
-FINISH_CONFIRM_FRAMES = 3.0
+# 6 → 3 → 2。204944 实测：真终点字（`FN 3 HIT`）只活了 410、411 两帧（0.13s），
+# TUNNEL_SPEED_SCALE=2.0 → v=0.59，字在 FINISH 框里一闪就过。3 帧永远差一帧。
+# _detect_finish 自己要求 2~6 个黑块、跨度>=0.38W、平边<=2.4、近端>=8%、
+# 黑像素 0.07~0.62，加上下面 2.5s 时间门挡住隧道口胶带，2 帧够用。
+FINISH_CONFIRM_FRAMES = 2.0
 # 黑字必须落到搜索框下部（靠近车）才算到达，只看见远处大字不算。
 FINISH_NEAR_RATIO = 0.40
 # 出隧道后再走这么多秒才允许认终点，避免把隧道口虚线/远处大字当成终点。
@@ -427,12 +464,22 @@ FINISH_NEAR_RATIO = 0.40
 FINISH_AFTER_TUNNEL_SECONDS = 2.0
 # 隧道内下蹲超过这么多秒后就开始允许认终点：终点字可能就在隧道末段/出口，
 # 等 _passed_tunnel 置位已经太晚（185159 实测差 2.6s）。
-# 4.0 → 2.0：192546 下蹲起于 24.2s，终点字 28.9s 才出现，2.0 已经够用；
-# 而且 2.0 仍然能挡住隧道口那团黄黑胶带（191729 在 24.0~24.3s 就误命中过）。
-FINISH_IN_TUNNEL_MIN_SECONDS = 2.0
+# 4.0 → 2.0：192546 下蹲起于 24.2s，终点字 28.9s 才出现，2.0 已经够用。
+# 2.0 → 5.0（于萧阳 10.29）：实测车从斑马线停稳起步，2 秒只走约 0.3m，
+# 斑马线/隧道口胶带的黑块还在画面底部，满足 _detect_finish → 连续 3 帧就误判终点。
+# 5.0 → 2.5（204944 实测）：真终点字出现在下蹲后 3.5s，5.0 的闸门比它晚 1.5s，
+# 字一帧都录不到确认就过了；而隧道口胶带那波误报在下蹲后 0.8~1.4s，
+# 2.5 正好卡在两者中间：胶带进不来，真字来得及。
+FINISH_IN_TUNNEL_MIN_SECONDS = 3.5  #2.0->5.0->2.5
 # 认出终点后再往前拱这么久再停，把车身开进终点带。太短会停在字前，太长会冲出垫子。
-FINISH_DRIVE_IN_SECONDS = 2.0 #2.0
-FINISH_DRIVE_IN_SPEED = 0.14
+FINISH_DRIVE_IN_SECONDS = 1.2 #2.0
+# ⚠ 这个值不是"低速"，是"拱入速度"。原来 0.14 比隧道巡航(0.33~0.36)低太多，
+# 加上 _rate_limit 里减速是 3 倍率（lin_step *= 3.0），实测 184532 录像：
+#   f454 v=0.33 → f456 v=0.29 → f458 v=0.18 → f460 v=0.14（0.27s 内掉完）
+# 之后 1.9s 一直只有 0.14，全程只走了约 0.34m，看起来就是"认到终点立刻停住"。
+# 而且同一帧 h 从 0.16 抬到 0.20，起身 + 掉速叠在一起更像急刹。
+# 抬到 0.30 后：0.33→0.30 一帧完成，2s × 0.30 = 0.60m，才是真往前走 2 秒。
+FINISH_DRIVE_IN_SPEED = 0.30  #0.14
 
 # ---------- 识别画面录像 ----------
 # 默认把带框的调试画面录下来，跑完一圈后把程序停掉即可。
@@ -551,6 +598,10 @@ class DualYellowLineDetector:
         self.expected_turn_direction = 0  # 0=通用；+1=桥后到人行道前的唯一右弯。
         self.prefer_left_line = True
         self.pre_bridge_guard = False
+        # >0 表示 WAIT 还没跑够时间，剩余秒数；此时不允许累计入弯计数。
+        self.turn_entry_hold = 0.0
+        # 斑马线被拒的原因，只写 HUD。
+        self.cw_reason = ''
         self.width_profile = "standing"
         self._curve_tracks = {}
         self._curve_track_key = None
@@ -565,6 +616,7 @@ class DualYellowLineDetector:
         self._curve_exit_ready = False
         self._curve_exit_count = 0
         self._curve_exit_frames = 0
+        self._turn_ff_strength = 0.0
         self._hud_cx: Optional[float] = None
         self._hud_cy: Optional[float] = None
 
@@ -1330,6 +1382,13 @@ class DualYellowLineDetector:
             self._curve_exit_ready = False
             self._curve_exit_count = 0
             self._curve_exit_frames = 0
+            self._turn_ff_strength = 0.0
+            return False, 0.0
+        if self.turn_entry_hold > 0.0:
+            # WAIT 还没跑够 TURN_WAIT_MIN_SECONDS：计数清零，强制停在 WAIT。
+            self._curve_turn_entry_count = 0
+            self._curve_turn_entry_ready = False
+            self._curve_turn_entry_frames = 0
             return False, 0.0
         if self._curve_turn_entry_ready:
             # 入弯后逐帧累计，供方向项软启动使用。
@@ -1373,6 +1432,7 @@ class DualYellowLineDetector:
             self._curve_exit_ready = False
             self._curve_exit_count = 0
             self._curve_exit_frames = 0
+            self._turn_ff_strength = 0.0
             self._curve_track_key = track_key
         self._curve_debug = dict(boundaries=[], center_path=np.empty((0, 2)),
                                  x0=x0, x1=x1, y0=y0, y1=y1)
@@ -1452,7 +1512,13 @@ class DualYellowLineDetector:
         else:
             self._curve_turn_entry_count = 0
             turn_ready, turn_row = self._curve_turn_entry_ready, 0.0
-        applied_strength = stage_strength if turn_ready else 0.0
+        # 方向前馈按一阶惯性跟随瞬时值，不逐帧相等。
+        # 瞬时劲在圆弧变对称 / 左侧直线段漏出时会自己塌掉，一帧归零就等于
+        # 出弯判定把转向权威一刀切掉，slope 项（摆正用，硬夹 ±0.30）补不上。
+        # 它永远朝瞬时值收敛，所以不是锁死，是动态释放（于萧阳 10.29）。
+        ff_target = stage_strength if turn_ready else 0.0
+        self._turn_ff_strength += (ff_target - self._turn_ff_strength) * TURN_FF_LAG
+        applied_strength = self._turn_ff_strength
         # 方向项软启动：入弯第一帧不能满量程，否则 err 阶跃导致 w 饱和打转。
         heading_ramp = min(1.0, self._curve_turn_entry_frames
                            / float(TURN_HEADING_RAMP_FRAMES))
@@ -1465,7 +1531,8 @@ class DualYellowLineDetector:
         lateral_error = float((lane_center-target_x)/(0.5*width))
         # ---- 出弯判定：方向项进过弯（strength 到过 0.6）之后又掉到 0.15 以下 ----
         # 并要求车身已回到中线附近，见 TURN_EXIT_MAX_*。bx 仅用于 HUD 观察，不参与判定。
-        box_measured = np.concatenate([c['measured'] for c in selected])
+        # measured 是 ROI 局部坐标，须先换算回全图坐标，否则下面的全图比例门限永不成立（于萧阳 10.29）
+        box_measured = np.concatenate([c['measured'] for c in selected]) + [x0, y0]
         box_rows = box_measured[(box_measured[:, 1] >= CROSSWALK_TOP_RATIO*height)
                                 & (box_measured[:, 1] <= CROSSWALK_BOTTOM_RATIO*height)]
         box_x_max = float(box_rows[:, 0].max()) if len(box_rows) else 0.0
@@ -1538,7 +1605,8 @@ class DualYellowLineDetector:
         if self.expected_turn_direction:
             entry = 'TURN' if turn_ready else 'WAIT'
             row_label = f'{turn_row:.0f}' if turn_row else '-'
-            cv2.putText(debug, f'entry={entry} row={row_label} need={TURN_ENTRY_NEAR_ROW_RATIO*height:.0f}'
+            hold = f' hold={self.turn_entry_hold:.1f}s' if self.turn_entry_hold > 0.0 else ''
+            cv2.putText(debug, f'entry={entry} row={row_label} need={TURN_ENTRY_NEAR_ROW_RATIO*height:.0f}{hold}'
                                f' exit={"Y" if self._curve_exit_ready else "N"} slope={slope_error:+.2f} bx={box_x_max:.0f}',
                         (8, 127), cv2.FONT_HERSHEY_SIMPLEX, .42, (0, 220, 255), 1, cv2.LINE_AA)
         return DetectionResult(confidence >= self.min_confidence, error, confidence, reason, debug,
@@ -1931,6 +1999,11 @@ class TrackSceneDetector:
         self.side_margin_ratio = side_margin_ratio
         self.min_crosswalk_stripes = min_crosswalk_stripes
         self.min_hazard_transitions = min_hazard_transitions
+        # 框内允许的黄像素占比。直接取模块常量，不走构造参数：
+        # 它只在 _detect_crosswalk 里用，不需要 YAML 暴露。
+        # 注意：必须在 TrackSceneDetector.__init__ 里赋，不能只在节点的
+        # _apply_field_tuning 里赋，否则 _detect_crosswalk 拿不到（AttributeError）。
+        self.crosswalk_max_yellow_frac = float(CROSSWALK_MAX_YELLOW_FRAC)
 
     def _masks(self, hsv: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         yellow = cv2.inRange(
@@ -2013,7 +2086,7 @@ class TrackSceneDetector:
         cv2.rectangle(debug, (x0, cw_y0), (x1, cw_y1), (box_tone, box_tone, box_tone), 1)
         cv2.putText(
             debug,
-            f"CW {stripe_count}" + (" HIT" if crosswalk else ""),
+            f"CW {stripe_count}" + (" HIT" if crosswalk else f" {self.cw_reason}"),
             (x0 + 8, min(height - 12, cw_y0 + 20)),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.48,
@@ -2166,12 +2239,17 @@ class TrackSceneDetector:
         black_bin = black > 0
         yellow_frac = float(np.mean(yellow > 0))
         black_frac = float(np.mean(black_bin))
-        if black_frac < 0.06 or black_frac > 0.58 or yellow_frac > 0.16:
+        # cw_reason 只用于 HUD：以前所有 early return 都把 stripe_count 写死 0，
+        # 画面上明明有 6 条也只会显示 CW 0，根本看不出是哪一道门拒的。
+        self.cw_reason = f'b={black_frac:.2f} y={yellow_frac:.2f}'
+        if (black_frac < 0.06 or black_frac > 0.58
+                or yellow_frac > self.crosswalk_max_yellow_frac):
             return False, 0, 0.0, black
         # 斑马线必须落到画面下部（靠近车），只看见远处条纹不算进入停车区。
         roi_h, roi_w = black_bin.shape
         near = black_bin[int(0.55 * roi_h) :, :]
         if near.size == 0 or float(np.mean(near)) < 0.10:
+            self.cw_reason += ' near'
             return False, 0, 0.0, black
 
         row_fill = black_bin.mean(axis=1)
@@ -2179,6 +2257,7 @@ class TrackSceneDetector:
         row_peaks = self._peak_count(row_fill, 0.18, max(3, roi_h // 18))
         col_peaks = self._peak_count(col_fill, 0.16, max(4, roi_w // 16))
         stripe_count = max(row_peaks, col_peaks)
+        self.cw_reason += f' r{row_peaks} c{col_peaks}'
         if stripe_count < self.min_crosswalk_stripes:
             return False, stripe_count, 0.0, black
 
@@ -2196,6 +2275,7 @@ class TrackSceneDetector:
             if active.size and (active[-1] - active[0]) >= 0.28 * roi_w:
                 span_ok = True
         if not span_ok:
+            self.cw_reason += ' span'
             return False, stripe_count, 0.0, black
 
         score = float(
@@ -2810,6 +2890,7 @@ class ShiWaiFollower(Node):
         self.crosswalk_bottom_ratio = float(CROSSWALK_BOTTOM_RATIO)
         self.crosswalk_confirm_frames = float(CROSSWALK_CONFIRM_FRAMES)
         self.min_crosswalk_stripes = float(MIN_CROSSWALK_STRIPES)
+        self.crosswalk_max_yellow_frac = float(CROSSWALK_MAX_YELLOW_FRAC)
 
     def _on_bridge_section(self) -> bool:
         # 用 _bridge_engaged 而不是 _passed_bridge：
@@ -3428,11 +3509,24 @@ class ShiWaiFollower(Node):
         """桥上允许可靠单边持续纠偏，保持原速度、限幅与停车逻辑。"""
         b = self._bridge
         if b.state == "exit_hold":
-            # 停车期间仍由 _sync_bridge 检查新 IMU；不是永久 fault。
-            # 此时不累计桥上丢线故障，确认离桥后再交给有时限的找线分支。
-            self._publish_zero("bridge_exit_hold")
+            # 滚行确认回平：不停车，也不累计桥上丢线故障。
+            #
+            # ⚠ 以前这里直接 _publish_zero：2129/211948 实测 4.533s→4.600s
+            # 一帧从 0.24 m/s 砸到 0.00（等效 −3.6 m/s²），接着又从 0 以
+            # max_linear_acceleration(0.25) 爬回 0.16 要 0.64s —— 下桥顿挫全在这。
+            # 现在改为低速滚行；回平判到后照旧进 done，3s 仍不回平仍会 fault。
+            self._have_error = False
+            creep = float(BRIDGE_EXIT_HOLD_SPEED)
+            if self.enable_motion:
+                command = self._rate_limit(creep, 0.0, now)
+                self._publish(*command)
+                self._last_command, self._last_command_valid = command, True
+            else:
+                command = (creep, 0.0)
+                self._publish_zero("motion_disabled")
             self._update_height(now)
-            self._show(result, 0.0, 0.0, False, extra="EXIT HOLD / LEVEL CHECK")
+            self._show(result, *command, self.enable_motion,
+                       extra="EXIT ROLL / LEVEL CHECK")
             return
         if result.valid:
             self._lost_since = None
@@ -3800,6 +3894,14 @@ class ShiWaiFollower(Node):
         )
 
     def _detect_lane(self, frame: np.ndarray) -> DetectionResult:
+        # WAIT 起步后 TURN_WAIT_MIN_SECONDS 秒内不允许入弯（过期即为 0）。
+        wait_elapsed = (
+            0.0 if self._cleared_at is None else time.monotonic() - self._cleared_at
+        )
+        self.line_detector.turn_entry_hold = (
+            max(0.0, TURN_WAIT_MIN_SECONDS - wait_elapsed)
+            if self._cleared_bridge else 0.0
+        )
         # 连续内沿检测内部已处理左右线选择，不需要再扫描一次。
         if self.line_detector.column_scan:
             return self.line_detector.detect(frame)
@@ -3914,7 +4016,9 @@ class ShiWaiFollower(Node):
             grace = self.lost_line_grace_seconds
         search_limit = TURN_SEARCH_SECONDS if searching else grace
         if self.enable_motion and lost_for < search_limit:
-            if turning or searching:
+            # 已锁到左侧海绵后，丢线不再"停住+原地转"，改为重发上一条指令保持前进与姿态（于萧阳 10.29）。
+            # 未锁定时维持原有搜索行为不变。
+            if (turning and not self._left_line_locked) or searching:
                 elapsed = (
                     0.0
                     if self._cleared_at is None
@@ -4029,8 +4133,9 @@ class ShiWaiFollower(Node):
         )
         cv2.putText(
             debug,
-            f"err={result.error:+.3f}   v={linear:.2f}   w={angular:+.2f}   "
-            f"h={self._current_height:.2f}   roll={self._current_roll:+.1f}   "
+            f"err={result.error:+.3f}  v={linear:.2f}  ov={self._bridge.speed:.2f}  "
+            f"w={angular:+.2f}  h={self._current_height:.2f}  "
+            f"roll={self._current_roll:+.1f}  "
             f"pitch={self._current_pitch:+.1f}",
             (12, 52),
             cv2.FONT_HERSHEY_SIMPLEX,
@@ -4222,6 +4327,10 @@ class ShiWaiFollower(Node):
             f" | 线 {result.reason} conf={result.confidence:.2f}"
             f" L={result.left_line_rows} R={result.right_line_rows}"
             f" err={result.error:+.3f}"
+            f" 劲{result.turn_strength:.2f}/{self.line_detector._turn_ff_strength:.2f}"
+            f" dir={result.heading_error:+.2f}"
+            f" slope={result.heading_slope:+.2f}"
+            f" exit={'Y' if self.line_detector._curve_exit_ready else 'N'}"
             f" | 场景 {scenes}"
             f" | h={self._current_height:.2f}"
             f" | imu_roll={self._bridge.roll:+.1f} pitch={self._bridge.pitch:+.1f}"

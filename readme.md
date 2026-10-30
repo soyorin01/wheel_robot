@@ -510,3 +510,180 @@ spole需要改，pos怪怪的
 - `dir` 有 55° 死区，出弯后完全失明，现在靠 slope 顶
 - `bx` 只剩 HUD，可以删
 - 隧道模式 7.6s 偏长，卡在 `hazard_gone_frames = 12.0`
+
+---
+
+# 10.29 `shiwai_lin_line.py` 出弯判定 + 丢线 + 终点 + 出弯惯性   —— 于萧阳
+
+**4327 行 / SHA256 `a74a4367872364d800d32d812260c75f2bf71e9e281ef608f1d695397f82cb72`**
+（基线 10.27：4303 行 / `6302cd52…`）　行号都是**改后**文件的行号。
+
+一共改了 **6 处**：两个坐标 bug、一个丢线行为、一个时间门、一个出弯惯性、一个日志字段。
+
+## ① 第 1471 行 `_detect_columns` —— 出弯判定从来没生效过
+
+```diff
+-        box_measured = np.concatenate([c['measured'] for c in selected])
++        box_measured = np.concatenate([c['measured'] for c in selected]) + [x0, y0]
+```
+
+`measured` 是 **ROI 局部坐标**。第 1340 行的入弯判定换算回了全图，**第 1471 行的出弯判定漏了**，却拿全图比例 `CROSSWALK_*_RATIO*height` 去筛 → 交集只剩 **9 行**，而要求 **≥24 行**（`CURVE_MIN_POINTS`）。**这块出弯判定是死代码**，所以 10.27 把 arming 从 `bx≥480` 改成 `dir≥0.60` 也没反应。
+
+## ② 第 3922 行 `_handle_lost_line` —— 丢线就原地打转
+
+```diff
+-            if turning or searching:
++            if (turning and not self._left_line_locked) or searching:
+```
+
+丢线时下发 `(TURN_LOST_SPEED, _turn_search_dir*0.22)`，而当时 `TURN_LOST_SPEED=0` → **原地旋转**。麻烦是 `turning = _in_right_turn()` 覆盖"下桥 → 人行道停完"**一整段**，把出弯后那截小直线也包进去了：线一闪车就停一下、左转一下（实测 16.0s 5 次、17.0s 3 次）。`_should_search_after_bridge()` 结尾那句 `return not self._left_line_locked` 本意是"锁到线就别再搜"，被 `turning` 绕过去了。
+
+## ③ 第 90 行 `TURN_LOST_SPEED` —— 找线时别停住
+
+```diff
+- TURN_LOST_SPEED = 0.0
++ TURN_LOST_SPEED = 0.10
+```
+
+② 只修了"**已锁定左线**"之后；还没锁定、在搜索的阶段仍是 v=0 原地转。给 0.10 让它一边往前拱一边找线。
+
+## ④ 第 434 行 `FINISH_IN_TUNNEL_MIN_SECONDS` —— 斑马线被当成终点
+
+```diff
+- FINISH_IN_TUNNEL_MIN_SECONDS = 2.0
++ FINISH_IN_TUNNEL_MIN_SECONDS = 5.0
+```
+
+斑马线白条间的黑缝、隧道口那团胶带都满足 `_detect_finish` 的特征（2~6 个黑块、跨度 ≥0.38W、在画面底部带），唯一挡着的是这道时间门（`hz` 全程 Y → `hazard_gone` 永假 → `_passed_tunnel` 基本不置位）。车从斑马线停稳起步 **2 秒只走约 0.3 米**，图案还在画面中间 → 连续 3 帧（`FINISH_CONFIRM_FRAMES`）就误判。真终点字约在下蹲后 6 秒才出现，所以抬到 5.0。
+
+## ⑤ 第 172 行 + 第 1470 行 `_detect_columns` —— 给「劲」加一阶惯性（动态释放）
+
+```diff
+-        applied_strength = stage_strength if turn_ready else 0.0
++        ff_target = stage_strength if turn_ready else 0.0
++        self._turn_ff_strength += (ff_target - self._turn_ff_strength) * TURN_FF_LAG
++        applied_strength = self._turn_ff_strength
++ TURN_FF_LAG = 0.08    # 15fps 下时间常数约 0.8s
+```
+
+`applied_strength` 原来**逐帧等于瞬时值**，而瞬时「劲」在圆弧变对称时自己就塌：1827 圈实测 `dir` **0.9 → 0.7 → 0 只用两帧**，出弯判定在这一瞬把转向权威一刀切掉；接手的 slope 项是**摆正用**的、还硬夹在 `TURN_EXIT_SLOPE_MAX=0.30`，**补不上丢掉的 0.49 转弯力**。
+
+更糟的是紧跟其后**丢线 2 秒**（HUD 整条空白 = `no_yellow_lines`）：丢线走 `lost_hold` 分支，而该分支的动作是**重发"上一条指令"** —— 此时那条已经是 `err≈0` 的直行。**所以不是惯性把车带出去，是重发了一条错的指令。** 惯性项按时间常数朝瞬时值收敛，**永远在收敛，所以不是锁死，是动态释放**；顺带让丢线那一刻 `err` 还是正的，`lost_hold` 重发的就变成继续右转。配套 3 行：第 576 行 `__init__` 加 `self._turn_ff_strength = 0.0`，第 1342 / 1386 行两处相位复位。**出弯判定、slope 项、`TURN_EXIT_*` 一字未动。** 调参：劲太早归零 → 调大（0.08→0.12）；右转过冲 → 调小（0.08→0.05）。**丢线本身没解决**，根治要靠"保持转向意图"而不是"保持最后指令"。
+
+## ⑥ 第 4245 行 —— `[状态]` 日志补观测项
+
+```diff
++ f" 劲{result.turn_strength:.2f}/{self.line_detector._turn_ff_strength:.2f}"
++ f" dir={result.heading_error:+.2f}"
++ f" slope={result.heading_slope:+.2f}"
++ f" exit={'Y' if self.line_detector._curve_exit_ready else 'N'}"
+```
+
+`dir` / `slope` / `exit` 原来只画在 HUD 上，排查要截图肉眼看。`劲` 打**瞬时/惯性两个值**，差值就是惯性的作用量，直接用来调 `TURN_FF_LAG`。
+
+**`self.line_detector.` 前缀不能省**：`_curve_*` / `_turn_ff_*` 属于 `DualYellowLineDetector`（495 行），而这段日志在 `ShiWaiFollower`（2497 行）里。漏掉会在**运行时**抛 `AttributeError` → 被"控制异常，立即停车"捕获 → **每帧发停车指令，车一抖一抖**（实际踩到过）。`py_compile` / `ast.parse` 抓不到这类错误，上机前必须真跑一次。
+
+## 还原
+
+| 想回到 | 怎么做 |
+|---|---|
+| **加 ⑤ 惯性之前**（`43fb10d0`，START_DEG=45、无惯性） | 本地：`bash rollback/revert.sh`。Pi 上手工：第 158 行改回 `45.0`；第 1470-1472 行整块改回 `applied_strength = stage_strength if turn_ready else 0.0`；删掉第 172 行 `TURN_FF_LAG` 和第 576 / 1342 / 1386 三行 `self._turn_ff_strength = 0.0` |
+| **只撤 ⑤、保留 55° 和 ⑥** | 同上，但第 158 行保持 `55.0` |
+| **回到 10.27 基线** | `git checkout -- src/wheel_robot/scripts/shiwai_lin_line.py` |
+
+> 本次改动**未提交 git**。
+
+---
+
+# 10.30 WAIT 最短时间 + 斑马线误拒 + v/w 提取工具
+
+**4375 行，SHA256 `3bb30a6340e7ffce6dcab512db3e555a33dca69827b25e19a85d01252e5d5f0f`**
+
+## 四个改动
+
+| 参数 | 旧 → 新 | 为什么 |
+|---|---:|---|
+| `TURN_WAIT_MIN_SECONDS` | 无 → **0.8** | 从 `_cleared_at`（BRIDGE SETTLE 结束）起算，不够就强制留在 WAIT，计数清零。184532 里出稳定 0.4s 就 TURN，车身没摆正就进弯 |
+| `CROSSWALK_MAX_YELLOW_FRAC` | **0.16 写死** → 0.35 | 164509 第 315 帧斑马线 6 条完整，但左边黄泡沫占框 24%，`yellow_frac>0.16` 直接 early return，HUD 只显示 `CW 0`，一整段没停 |
+| `MIN_CROSSWALK_STRIPES` | 5 → **4** | 那跑最后只数到 4 条。`yaml` 本来写 4，被 `_apply_field_tuning` 覆盖成 5 |
+| `cw_reason`（HUD） | 无 | 原来三道 early return 都 `return False, 0, ...`，`CW` 永远显示 0，看不出被哪道门拒 |
+
+HUD 现在能读出原因：
+
+```
+CW 0 b=0.24 y=0.24      # 黑/黄占比
+CW 0 ... near           # 没进框下 45%
+CW 6 b=0.20 y=0.10 r2 c6  # 行峰/列峰数
+CW 6 HIT                # 通过
+```
+
+## 一个坑
+
+`TrackSceneDetector` 和节点是两个类。**在 `TrackSceneDetector` 方法里读的 `self.xxx`，必须在 `TrackSceneDetector.__init__` 里赋值**。只在节点的 `_apply_field_tuning()` 里赋会运行时 `AttributeError`（`py_compile` 抓不到），现象是日志刷「控制异常，立即停车」、车不动。
+
+## 新工具：从录像提取 v / w
+
+`src/wheel_robot/tools/hud_vw_series.py`
+
+HUD 的 `v=` `w=` 是 `cv2.putText` 画的，用模板匹配认（不需要 tesseract，置信度 0.93~0.99）。
+
+```bash
+python3 src/wheel_robot/tools/hud_vw_series.py recordings/xxx.avi \
+    --csv recordings/vw/vw.csv --plot recordings/vw/vw.png
+# --start 8 --end 20 / --verbose / --w-limit 0.38 / --v-ref 0.18,0.30,0.45
+```
+
+CSV 列：`t, frame, v, w, v_score, w_score`。`*_score` 低于 0.90 的那帧不可信（多半被 mask 白块盖住了）。
+
+跑 `170334`（39.7s 全场）的结果：
+
+```
+v       min 0.00  max 0.45  均值 0.164
+|w|     均值 0.096  最大 0.38
+```
+
+| 时间段 | 阶段 | v | \|w\| |
+|---|---|---|---|
+| 1–5 s | 冲桥 | 0.41–0.45 | 小 |
+| 6 s | BRIDGE SETTLE | 0.10 | 0.01 |
+| 7–9 s | WAIT | 0.16 | 0.01 |
+| 10–17 s | TURN | **0.18 恒定** | **0.38 顶格 5.5 s** |
+| 18–19 s | exit-crawl | 0.12 | 小 |
+| 20–23 s | 斑马线停车 | 0 | 0 |
+| 24–32 s | 隧道 | 0.23→0.36 | 偶发 0.28 |
+| 33–39 s | 终点停车 | 0 | 0 |
+
+提速的三个入口：TURN 段 `TURN_MIN_SPEED` 地板恒生效（v 卡死 0.18）、隧道段被 `weak-line` 拉到 0.31（线检测不稳）、起步受 `max_linear_acceleration=0.25` 限。
+
+```python
+MAX_ANGULAR_SPEED = 0.48   # 原 0.38
+TURN_MIN_SPEED = 0.23      # 原 0.18
+```
+
+# 10.30 晚 提速：下桥不降到 0 + WAIT 推不动 + HUD 实测速度
+
+```python
+BRIDGE_EXIT_TIMEOUT    = 2.00   # 原 1.20
+BRIDGE_EXIT_MAX_DISTANCE = 0.50 # 原 0.25
+BRIDGE_EXIT_HOLD_SPEED = 0.16   # 新增，exit_hold 不再发 0
+TURN_WAIT_SPEED        = 0.24   # 原 0.16
+```
+
+**1. 下桥不再停车。** `exit_hold` 原来 `_publish_zero`，211948 实测 4.533s→4.600s
+一帧从 0.24 砸到 0.00（等效 −3.6 m/s²）。改成低速滚行，HUD 标签 `EXIT ROLL`。
+221612 已验证：4.5→5.2s 是 0.50→0.28→0.16 平滑收敛。
+
+**2. HUD 的 `v` 是指令值，会骗人。** 221612 的 5.2~8.5s 一直画 `v=0.16`，但里程计
+`dist` 在 6.0→8.0s 只涨 0.04m（≈0.02 m/s）—— 车在桥下打滑，根本没走。
+
+HUD 第二行加了 `ov=`（`/odom` 实测速度），`v` 和 `ov` 差太多就是推不动：
+
+```
+err=-0.087  v=0.24  ov=0.02  w=-0.15  h=0.20  roll=+0.0  pitch=+10.0
+```
+
+**3. `TURN_WAIT_SPEED` 0.16 → 0.24。** 同一趟 15–17.5s 用 0.12 在平地上里程正常涨
+0.32m，说明不是速度死区，是桥下静止后 0.16 推不起来。回到 0.30 会甩线（174315），
+0.24 与入弯的 0.23 衔接。
+
+回退：`exit_hold` 改回 `_publish_zero`，`TURN_WAIT_SPEED = 0.16`。
