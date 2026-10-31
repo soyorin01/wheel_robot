@@ -56,8 +56,11 @@ HUD_H = 92             # 顶部压暗条高度；这一块背景是纯黑，不�
 # 与 shiwai_lin_line.py 里的 f-string 保持一致
 ERR_SAMPLE = "err=+0.217"
 V_SAMPLE = "v=0.18"
+OV_SAMPLE = "ov=0.00"
 W_SAMPLE = "w=-0.16"
-GAP = "   "
+# 10.30 晚 HUD 从「3 空格」改成「2 空格」并插入了 ov=，间距必须跟着改，
+# 否则 v= / w= 的模板会整体错位，score 掉到 0.2~0.3 全是乱数。
+GAP = "  "
 
 
 def text_width(text: str) -> int:
@@ -65,7 +68,8 @@ def text_width(text: str) -> int:
 
 
 V_X = ORIGIN_X + text_width(ERR_SAMPLE + GAP)
-W_X = V_X + text_width(V_SAMPLE + GAP)
+OV_X = V_X + text_width(V_SAMPLE + GAP)
+W_X = OV_X + text_width(OV_SAMPLE + GAP)
 # 竖直方向取一整条，保证不同数字（有/无下伸笔画）都能盖住
 CROP_Y0 = BASELINE_Y - 16
 CROP_Y1 = BASELINE_Y + 6
@@ -134,10 +138,10 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     parser.add_argument("--end", type=float, default=None, help="结束秒")
     parser.add_argument("--v-max", type=float, default=0.60,
                         help="v 的搜索上限（默认 0.60）")
-    parser.add_argument("--w-max", type=float, default=0.40,
-                        help="w 的搜索上限（默认 0.40，绝对值）")
-    parser.add_argument("--w-limit", type=float, default=0.38,
-                        help="MAX_ANGULAR_SPEED，用于统计打满比例（默认 0.38）")
+    parser.add_argument("--w-max", type=float, default=0.60,
+                        help="w 的搜索上限（默认 0.60，绝对值）")
+    parser.add_argument("--w-limit", type=float, default=0.48,
+                        help="MAX_ANGULAR_SPEED，用于统计打满比例（默认 0.48）")
     parser.add_argument("--v-ref", default="0.18,0.30,0.45",
                         help="图上画横参考线的 v 值，逗号分隔，空字符串则不画")
     parser.add_argument("--verbose", action="store_true", help="逐帧打印识别置信度")
@@ -153,6 +157,7 @@ def main(argv: Sequence[str]) -> int:
     v_values = np.round(np.arange(0.0, args.v_max + 1e-6, 0.01), 2)
     w_values = np.round(np.arange(-args.w_max, args.w_max + 1e-6, 0.01), 2)
     v_templates = build_templates("v=", v_values, "{:.2f}", V_X)
+    ov_templates = build_templates("ov=", v_values, "{:.2f}", OV_X)
     w_templates = build_templates("w=", w_values, "{:+.2f}", W_X)
 
     cap = cv2.VideoCapture(args.video)
@@ -170,13 +175,17 @@ def main(argv: Sequence[str]) -> int:
         t = index / fps
         if (args.start is None or t >= args.start) and (args.end is None or t <= args.end):
             v, v_score = read_field(frame, V_X, v_templates)
+            ov, ov_score = read_field(frame, OV_X, ov_templates)
             w, w_score = read_field(frame, W_X, w_templates)
             if args.verbose:
                 print(f"f{index:4d} t={t:6.2f}  v={v if v is not None else '?':>4}"
-                      f" ({v_score:.2f})  w={w if w is not None else '?':>6}"
+                      f" ({v_score:.2f})  ov={ov if ov is not None else '?':>4}"
+                      f" ({ov_score:.2f})  w={w if w is not None else '?':>6}"
                       f" ({w_score:.2f})")
             if v is not None and w is not None:
-                rows.append((t, index, v, w, v_score, w_score))
+                rows.append((t, index, v, w,
+                             ov if ov is not None else float("nan"),
+                             v_score, w_score))
         index += 1
     cap.release()
 
@@ -188,10 +197,11 @@ def main(argv: Sequence[str]) -> int:
     if args.csv:
         with open(args.csv, "w", newline="", encoding="utf-8") as fh:
             writer = csv.writer(fh)
-            writer.writerow(["t", "frame", "v", "w", "v_score", "w_score"])
+            writer.writerow(["t", "frame", "v", "w", "ov", "v_score", "w_score"])
             for row in rows:
                 writer.writerow([f"{row[0]:.3f}", row[1], f"{row[2]:.2f}",
-                                 f"{row[3]:+.2f}", f"{row[4]:.3f}", f"{row[5]:.3f}"])
+                                 f"{row[3]:+.2f}", f"{row[4]:.2f}",
+                                 f"{row[5]:.3f}", f"{row[6]:.3f}"])
         print(f"CSV  -> {args.csv}  ({len(rows)} 行)")
 
     # ---- 摘要 ----

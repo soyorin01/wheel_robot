@@ -687,3 +687,49 @@ err=-0.087  v=0.24  ov=0.02  w=-0.15  h=0.20  roll=+0.0  pitch=+10.0
 0.24 与入弯的 0.23 衔接。
 
 回退：`exit_hold` 改回 `_publish_zero`，`TURN_WAIT_SPEED = 0.16`。
+
+# 10.31 巡线黄线阈值重定（白噪点根因）
+
+`shiwai_lin_line.py` 第 305~308 行。**4431 行 / SHA256 `fdfe7baa79ed8cdfaabf5f95efcafe63e7564607a57494cf5c10411e6f3fba09`**
+
+```python
+LANE_YELLOW_H_MIN = 20   # 原 24，泡沫实测最低到 22
+LANE_YELLOW_H_MAX = 40
+LANE_YELLOW_S_MIN = 45   # 原 35，白布 S 最高 38，不能再低
+LANE_YELLOW_V_MIN = 90   # 原 70，压掉暗处杂点
+```
+
+## ① 过桥后减速到 0 —— 速度链全程不能低于启动阈值
+
+```python
+BRIDGE_EXIT_SPEED      = 0.16 → 0.20
+BRIDGE_EXIT_HOLD_SPEED = 0.16 → 0.20
+TURN_WAIT_SPEED        = 0.16 → 0.20
+```
+
+`TURN_WAIT_SPEED` / `TURN_MIN_SPEED` 这些低速值**只在"车已经滚起来"时能用**；
+实测启动阈值 ≈**0.18**，一旦滑行到停就再也起不来。145027 逐帧：
+
+```
+6.2s  exit_slow  v=0.45  ov=0.79  dist=0.67m
+6.6s  done       v=0.16  ov=0.74  dist=1.00m
+7.8s  WAIT       v=0.16  ov=0.09  dist=1.50m
+8.6s  WAIT       v=0.16  ov=-0.00 dist=1.51m   ← 停住，dist 从 7.8s 起冻死
+9.0s  TURN       v=0.18  ov=0.00  dist=1.51m   ← 起不来
+```
+`ov=-0.00` 是停车时车身微退，不是倒车。
+
+## ② `TURN_MIN_SPEED` 保持 0.18
+
+0.23 那档转不过去，回到 0.18（**老参数**）。
+0.18 够用是因为入弯时车是带着速度进的；改大反而半径变大、更容易甩到外侧。
+
+## ③ 人行道前后"大面积白色"
+
+斑马线检测框原来用 `np.maximum(roi, stripe)` 把掩码画成**纯白 255**，和巡线黄线掩码
+（也是纯白）完全分不开。改成**暗青色**（0.38×255≈97）：
+
+以后 **白 = 巡线黄线，青 = 斑马线条纹**。
+
+
+
