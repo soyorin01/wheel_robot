@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
-"""arch-v4：受约束断口关联、弯道中线跳变保护；二值化录像、无窗口。"""
+"""arch-v6：出弯之前完全沿用 shiwai_lin_line.py；出弯后（隧道/终点）才用 ARCH 新视觉。
+
+分工：
+  起步 → 上桥 → 桥上 → BRIDGE SETTLE → WAIT → 大弯 → 出弯判定
+      与 shiwai_lin_line.py 的逻辑一字不差（ArchYellowLineDetector /
+      ArchSceneDetector 在 arch_enabled=False 时全部直通 super()）。
+  出弯之后（_curve_exit_ready 起，含人行道/隧道/终点）
+      才启用 arch_* 的掩膜清理、立柱剔除、双线证据与限速。
+二值化录像、无窗口。
+"""
 
 from dataclasses import dataclass
 from datetime import datetime
@@ -73,6 +82,14 @@ SINGLE_RIGHT_HALF_RATIO = 0.30
 TUNNEL_SINGLE_LEFT_HALF_RATIO = 0.50
 # 隧道里现在只能看到右侧海绵：半宽太小会贴右。还贴右就再加大，例如 0.52、0.55。
 TUNNEL_SINGLE_RIGHT_HALF_RATIO = 0.50
+# 下蹲时相机离地更低，同样的 84cm 车道在画面里宽很多。
+# 11-01 18:07 录像 f299 实测（左右两块泡沫都在画面里）：
+#   同一行左右内沿宽度 433px(远) → 627px(近) = 0.68~0.98 倍画面宽；
+#   而 max_lane_width_ratio=0.82（=525px）把近处一半的行判成不合格，
+#   配对被 inconsistent_width 拒掉 → 退回单边，中线全靠半宽先验拼，
+#   y=304 行真中点 ≈309px、画出来只有 117px，偏了约 190px（err -0.5）。
+# 下蹲档放到 0.98，让真实双边配对能用上；站立/桥/弯档不变。
+TUNNEL_MAX_LANE_WIDTH_RATIO = 0.98
 # 过完单边桥进大弯：只顺着左侧外沿海绵走。
 # 半宽太小贴左海绵，太大会往内圈偏。
 TURN_SINGLE_LEFT_HALF_RATIO = 0.22
@@ -106,7 +123,7 @@ TURN_SPEED_SCALE = 0.55
 # 0.18 → 0.23（提速一档）：转弯耗时 t = 转角/角速度，转角是赛道定的（170334
 # 实测 148.5°），只能加角速度。v 必须跟着 ω 一起加，保持 R = v/ω 不変，
 # 否则走线会变。旧 R = 0.18/0.38 = 0.474，新 R = 0.23/0.48 = 0.479。
-TURN_MIN_SPEED = 0.18  #0.18->0.23（提速一档，要回退改回 0.18）
+TURN_MIN_SPEED = 0.23  #0.18->0.23（提速一档，要回退改回 0.18） 0.26
 POST_BRIDGE_STABLE_SECONDS = 0.60
 POST_BRIDGE_HISTORY_SECONDS = 0.80
 POST_BRIDGE_MAX_SAMPLE_GAP = 0.25
@@ -154,6 +171,14 @@ CURVE_MIN_POINTS = 24
 CURVE_MIN_SPAN_RATIO = 0.12
 CURVE_MAX_GAP_PIXELS = 24
 CURVE_ASSOCIATION_GAP_RATIO = 0.15
+# ---- ARCH 隧道段（下蹲）专用：碎片连接 ----
+# 隧道里白墙反光把同一根泡沫切成很多小块。2026-11-01 第 311 帧实测：
+#   8 块中只有 105x103 那块过了 0.12W(=77px) 预筛，其余 54x28 / 42x38 / 40x14 /
+#   19x71 / 13x25 / 8x37 / 25x25 直接在拟合前就被丢掉，只剩最近一小段残段，
+#   中线几乎全靠半宽先验合成 —— 就是「没连接上、巡线还偏了」。
+# 所以 ARCH + 下蹲时段把单块跨度门槛降到 0.05W；后续 _arch_fit_samples 仍要求
+# >=CURVE_MIN_POINTS 点且跨度 >=0.05W，不会把噪声当成边线。
+ARCH_TUNNEL_MIN_SPAN_RATIO = 0.05   # 相对图像宽度
 CURVE_MAX_FIT_RMS = 8.0
 CURVE_FILL_WEIGHT = 0.25
 CURVE_FILL_TOTAL_RATIO = 0.25
@@ -243,10 +268,24 @@ TURN_EXIT_MAX_LATERAL = 0.35         # pos 也要收敛到中线附近。0.6 太
 # 为什么要改 REF：从 183635 录像里量出近端真实 |slope| = 1.0~2.2 px/row，
 # 旧的 0.45 让它 2~5 倍饱和，恒为 +1.00 —— 这正是 194528 那次把 pos
 # 压到 -0.45 的原因。不是斜率错，是 REF 尺子错了。
+#
+# ⚠ 11-01 16:11 录像重标（138 帧 arch 有效帧，逐帧从 DEBUG 画面取品红中线）：
+#   出弯后巡航段 |slope| 中位 0.47 px/row，82% 的帧 > 0.30，范围 0.44~0.78；
+#   1.0~2.2 只是「正在急转」那几帧的峰值。REF=2.00 等于让典型值只用 23% 量程，
+#   斜率项几乎不起作用——所以 2.00 → 1.00（典型值给到半量程）。
 TURN_EXIT_SLOPE_GAIN = 0.45
-TURN_EXIT_SLOPE_REF = 2.00   # px/row，按实测 1.0~2.2 取满量程
+TURN_EXIT_SLOPE_REF = 1.00   # px/row，按出弯后巡航段实测中位 0.47 给到半量程
 TURN_EXIT_SLOPE_MAX = 0.30   # 斜率项对 err 的最大贡献，防出弯那一帧阶跃到 0.45
-TURN_EXIT_SLOPE_FRAMES = 45  # 3s 后自动归零，绝不允许变成永久横向偏置
+# ⚠ 原为 45（3 s 后归零）。11-01 16:11 录像证明这个时限是错的：
+#   出弯 3 s 后车还斜着横切赛道（近端斜率 -0.57、中线远 377 / 近 305），
+#   而三项恰好同时为 0：
+#     lateral_error ≈ 0  —— 权重按整条路径平均，(近+中+远) 正好压在 target 上
+#     turn_strength  = 0 —— 方向项要 55° 以上，实测路径才 12~30°
+#     slope_term     = 0 —— 被这个 45 帧时限关掉了
+#   结果 err=-0.001、w=+0.00，车笔直开过去，斑马线迟迟不出现。
+#   现在不限时；仍只在 _curve_exit_ready 期间生效，人行道停车后 track_key
+#   变化会自动复位，不会变成隧道/终点的永久偏置。
+TURN_EXIT_SLOPE_FRAMES = 1 << 30  # 不再时限（原 45）
 # 出弯后限速：斑马线就在前方，若让 _post_bridge_speed 判成 stable 会直接加速到
 # forward_speed(0.30)，一路冲过人行道。173351 实测出弯后 4s 内 v 从 0.14 涨到 0.30，
 # 然后 dist 4.20m 仍在下 CRUISE，全程没停。
@@ -314,7 +353,7 @@ MINIMUM_FORWARD_SPEED = 0.2  #0.2
 # 唯一瓶颈（t = 转角/角速度）。0.48 大约让大弯从 7.55s 缩到 6.0s。
 # 风险：泡沫出境更快，若出现 TURN LOST 就先退回 0.43 或把
 # TURN_HEADING_RAMP_FRAMES 从 8 加到 10。回退就是改回 0.38。
-MAX_ANGULAR_SPEED = 0.38  #0.4，0.55，0.45，0.4，0.38 -> 0.48
+MAX_ANGULAR_SPEED = 0.55  #0.4，0.55，0.45，0.4，0.38 -> 0.48 0.55
 
 # 转向比例增益：err=1 时输出的角速度 = STEERING_KP × MAX_ANGULAR_SPEED。
 # 偏大 → 左右画龙（实测峰峰 40cm 以上），冲桥会被甩下去；
@@ -444,7 +483,7 @@ CROUCH_HEIGHT = 0.16
 HEIGHT_RATE = 0.20
 
 # 从开始下蹲算起，至少蹲这么多秒才允许起身。
-MIN_CROUCH_SECONDS = 4.0
+MIN_CROUCH_SECONDS = 2.0  #4
 
 # 隧道入口黄黑胶带离开画面后，再继续蹲行这么多秒，避免洞里起身。
 TUNNEL_PASS_SECONDS =0.1
@@ -470,7 +509,7 @@ FINISH_NEAR_RATIO = 0.40
 # 出隧道后再走这么多秒才允许认终点，避免把隧道口虚线/远处大字当成终点。
 # 8.0 太晚：185159 里 _passed_tunnel 到 30.6s 才置 Y，闸门要到 38.6s 才开，
 # 而终点字 28.0~28.8s 就已经过去了。降到 2.0，配合下面隧道内就开始认。
-FINISH_AFTER_TUNNEL_SECONDS = 2.0
+FINISH_AFTER_TUNNEL_SECONDS = 1.8
 # 隧道内下蹲超过这么多秒后就开始允许认终点：终点字可能就在隧道末段/出口，
 # 等 _passed_tunnel 置位已经太晚（185159 实测差 2.6s）。
 # 4.0 → 2.0：192546 下蹲起于 24.2s，终点字 28.9s 才出现，2.0 已经够用。
@@ -479,9 +518,15 @@ FINISH_AFTER_TUNNEL_SECONDS = 2.0
 # 5.0 → 2.5（204944 实测）：真终点字出现在下蹲后 3.5s，5.0 的闸门比它晚 1.5s，
 # 字一帧都录不到确认就过了；而隧道口胶带那波误报在下蹲后 0.8~1.4s，
 # 2.5 正好卡在两者中间：胶带进不来，真字来得及。
-FINISH_IN_TUNNEL_MIN_SECONDS = 3.5  #2.0->5.0->2.5
+FINISH_IN_TUNNEL_MIN_SECONDS = 2.0  #2.0->5.0->2.5
 # 认出终点后再往前拱这么久再停，把车身开进终点带。太短会停在字前，太长会冲出垫子。
-FINISH_DRIVE_IN_SECONDS = 1.2 #2.0
+# 1.2 -> 2.0（用户 11.01）：倒计时里只发固定速度，整整拱 2 秒，其他都不参与控制。
+FINISH_DRIVE_IN_SECONDS = 1.6  #1.2
+# 倒计时期间的加速斜率，只用于终点拱入。
+# 不能沿用 max_linear_acceleration(0.25)：从 0 爬到 0.30 要 1.2 s，
+# 整段倒计时都在提速，看起来就是「认到终点立刻停住」（184532 就是这个坑）。
+# 0.60 时 0→0.30 只要 0.5 s，剩下 1.5 s 是真的按 FINISH_DRIVE_IN_SPEED 在拱。
+FINISH_DRIVE_IN_ACCEL = 0.60
 # ⚠ 这个值不是"低速"，是"拱入速度"。原来 0.14 比隧道巡航(0.33~0.36)低太多，
 # 加上 _rate_limit 里减速是 3 倍率（lin_step *= 3.0），实测 184532 录像：
 #   f454 v=0.33 → f456 v=0.29 → f458 v=0.18 → f460 v=0.14（0.27s 内掉完）
@@ -489,6 +534,11 @@ FINISH_DRIVE_IN_SECONDS = 1.2 #2.0
 # 而且同一帧 h 从 0.16 抬到 0.20，起身 + 掉速叠在一起更像急刹。
 # 抬到 0.30 后：0.33→0.30 一帧完成，2s × 0.30 = 0.60m，才是真往前走 2 秒。
 FINISH_DRIVE_IN_SPEED = 0.30  #0.14
+# 拱入倒计时结束后再压零这么久才自动退出节点。
+# 不能一到点就直接退出：0.30 m/s 按 3× 减速（0.75 m/s²）刷到停要 0.40 s，
+# 留 0.6 s 才能保证退出前车真的停住。退出后 main() 会调 close()，
+# 那里再补发 10 帧零速度 + 站立姿态，并关掉录像文件。
+FINISH_STOP_HOLD_SECONDS = 0.6
 
 # ---------- 识别画面录像 ----------
 # 默认把带框的调试画面录下来，跑完一圈后把程序停掉即可。
@@ -1151,7 +1201,12 @@ class DualYellowLineDetector:
             order = ids[np.lexsort((stats[ids, cv2.CC_STAT_AREA], reaches_near))[::-1][:6]]
         for label in order:
             bx, by, bw, bh, area = stats[label]
-            if area < 120 or max(bw, bh) < CURVE_MIN_SPAN_RATIO*width:
+            # ARCH 隧道段放宽单块跨度门槛（见 ARCH_TUNNEL_MIN_SPAN_RATIO 注释）。
+            span_ratio = CURVE_MIN_SPAN_RATIO
+            if (getattr(self, "arch_enabled", False)
+                    and getattr(self, "width_profile", "") == "crouched"):
+                span_ratio = min(span_ratio, ARCH_TUNNEL_MIN_SPAN_RATIO)
+            if area < 120 or max(bw, bh) < span_ratio*width:
                 continue
             yy, xx = np.nonzero(labels[by:by+bh, bx:bx+bw] == label)
             xx, yy = xx+bx, yy+by
@@ -2570,28 +2625,23 @@ class BridgeTraversal:
 
 
 
-# arch-v3: 保留桥前/桥上/弯中控制；新视觉区域补充低信息量限速与丢线保护。
-ARCH_VERSION = "arch-v5"
-TURN_GAP_MAX_RATIO = 0.30       # 同一历史弯沿上的最大断口，640px 图像为 192px。
-TURN_GAP_CORRIDOR_RATIO = 0.04  # 当前实测点须接近上一条可信边线。
-TURN_GAP_MIN_SPAN_RATIO = 0.65
-TURN_GAP_POSITION_JUMP = 0.25
-TURN_GAP_CONFIRM_FRAMES = 3
-TURN_GAP_BRAKE_SECONDS = 0.80
-TURN_GAP_BRAKE_DISTANCE = 0.16
-TURN_GAP_BRAKE_DEGREES = 12.0
-TURN_GAP_STOP_SPEED = 0.05
-TURN_GAP_STILL_SECONDS = 0.20
-TURN_GAP_SCAN_SECONDS = 1.0
-TURN_GAP_SCAN_DEGREES = 12.0
-TURN_GAP_SCAN_SPEED = 0.20
-TURN_GAP_OBSERVATION_SECONDS = 0.20
-TURN_GAP_JOINED_SPEED_MAX = 0.14
-ARCH_SINGLE_SPEED_MAX = 0.18  # 单侧只能估算中线，不以高边线置信度当作双边可靠。
-ARCH_DUAL_SPEED_MAX = 0.30
-ARCH_LOST_SPEED_MAX = 0.08
-ARCH_LOST_SECONDS = 0.35
-ARCH_LOST_DISTANCE = 0.04
+# arch-v6：出弯之前（起步→上桥→WAIT→大弯→出弯判定）与 shiwai_lin_line.py 完全一致，
+# 不再插入任何断口关联 / GAP 保护；只有出弯之后（含隧道/终点）才走 ARCH 新逻辑。
+ARCH_VERSION = "arch-v6"
+# 隧道/末段的 ARCH 速度上限已取消（用户 11.01："隧道过的太慢了，要求隧道的速度
+# 和之前一样，不再上限砍掉"）。不要再把这两个常量接回 _follow_command().
+# ARCH_LOST_* 是「出隧道后丢线」的盲行预算，只在 _passed_tunnel 之后生效
+# （隧道内走 lin 的 TUNNEL CREEP），与巡航速度无关。
+#
+# ⚠ 11-01 18:01 录像：黄泡沫走到画面外（导引线用尽）→ 一帧 no_yellow_lines，
+#   原预算 0.04 m ÷ 0.5 m/s = 80 ms ≈ 1 帧就烧完 → 立刻 LOST STOP 硬停。
+#   停稳后车往后退了约 0.2 m（ov 21.6s 起变负，22.4s 到 -0.25），
+#   泡沫重新进画面，REACQUIRE 再起步，到 23.2s 才认出终点 ——
+#   就是用户说的"都到终点了，又退回去再识别"。
+#   0.04 m 是按 0.18~0.30 m/s 定的；现在隧道 0.36~0.54，距离预算必须同步放大。
+ARCH_LOST_SPEED_MAX = 0.15   # 0.08 -> 0.15：从 0.43 一把刹到 0.08 太硬，留点余速往前拱
+ARCH_LOST_SECONDS = 1.20     # 0.35 -> 1.20：0.15 m/s × 1.2 s ≈ 0.18 m 盲行
+ARCH_LOST_DISTANCE = 0.30    # 0.04 -> 0.30：硬上限，防止真的冲过头
 ARCH_RECOVER_SECONDS = 0.20
 ARCH_RECOVER_FRAMES = 3
 ARCH_CFG = dict(h_min=20, h_max=40, s_min=45, v_min=90, lane_top=38,
@@ -2927,14 +2977,6 @@ class ArchYellowLineDetector(DualYellowLineDetector):
         self._arch_x0=0
         self._arch_cfg=dict(ARCH_CFG,h_min=self.yellow_h_min,h_max=self.yellow_h_max,
                             s_min=self.yellow_s_min,v_min=self.yellow_v_min)
-        self.turn_gap_state = "off"
-        self.turn_gap_links = 0
-        self._turn_gap_reference = None
-        self._turn_gap_pending_pos = None
-        self._turn_gap_confirm = 0
-        self.turn_gap_near_ready = False
-        self._turn_gap_near_count = 0
-        self._turn_gap_near_point = None
 
     def set_arch_enabled(self,enabled):
         enabled=bool(enabled)
@@ -2991,177 +3033,13 @@ class ArchYellowLineDetector(DualYellowLineDetector):
 
     def _curve_boundaries(self,mask,x0,full_width,y0,image_height):
         if not self.arch_enabled:
-            edges = super()._curve_boundaries(mask,x0,full_width,y0,image_height)
-            if (self.expected_turn_direction and not self.pre_bridge_guard
-                    and self._curve_turn_entry_ready and not self._curve_exit_ready):
-                edges = self._turn_gap_connect(mask, edges, x0, full_width, y0, image_height)
-            return edges
+            # 出弯之前必须和 shiwai_lin_line.py 完全一致：不插任何断口关联/保护。
+            return super()._curve_boundaries(mask,x0,full_width,y0,image_height)
         self._arch_x0=x0
         self._arch_post_guard=(cv2.dilate(self._arch_post_mask,np.ones((9,9),np.uint8))
                                if self._arch_post_mask is not None else None)
         self._arch_edges=super()._curve_boundaries(mask,x0,full_width,y0,image_height)
         return self._arch_edges
-
-    def _turn_gap_connect(self, mask, edges, x0, width, y0, image_height):
-        """在连通块图上 BFS；只有当前实测片段参与拟合，黑色缺口不填成观测。"""
-        ref = self._turn_gap_reference
-        if ref is None or ref['key'] != self._curve_track_key or not ref['horizontal']:
-            return edges
-        side = ref['side']; seed_edge = edges.get(side)
-        if seed_edge is None or not seed_edge['horizontal']:
-            return edges
-        if np.ptp(seed_edge['measured'][:, 0]) >= .85*ref['span']:
-            return edges
-        previous = ref['measured']
-        count, labels, stats, _ = cv2.connectedComponentsWithStats(mask, connectivity=8)
-        nodes = []
-        corridor = max(12., TURN_GAP_CORRIDOR_RATIO*width)
-        for label in np.argsort(stats[1:, cv2.CC_STAT_AREA])[::-1][:8]+1:
-            bx, by, bw, bh, area = stats[label]
-            if area < 120 or bw < CURVE_MIN_POINTS or bw <= 1.8*bh:
-                continue
-            yy, xx = np.nonzero(labels[by:by+bh, bx:bx+bw] == label)
-            xx, yy = xx+bx, yy+by
-            bottom = np.full(mask.shape[1], -1, dtype=int)
-            np.maximum.at(bottom, xx, yy)
-            xs = np.flatnonzero((bottom >= 0) & (bottom < mask.shape[0]-1))
-            pts = np.column_stack((xs, bottom[xs])).astype(float)
-            overlap = pts[(pts[:, 0] >= previous[0, 0]) & (pts[:, 0] <= previous[-1, 0])]
-            if len(overlap) < CURVE_MIN_POINTS:
-                continue
-            residual = np.abs(overlap[:, 1]-np.interp(overlap[:, 0], previous[:, 0], previous[:, 1]))
-            if np.median(residual) > corridor or np.percentile(residual, 90) > 1.5*corridor:
-                continue
-            nodes.append(dict(points=pts, area=int(area), thickness=float(area/max(1,len(xs)))))
-        if len(nodes) < 2:
-            return edges
-        observed = seed_edge['measured'][:, 0]
-        overlap_counts = [np.count_nonzero(np.isin(n['points'][:, 0], observed)) for n in nodes]
-        seed = int(np.argmax(overlap_counts))
-        if overlap_counts[seed] < CURVE_MIN_POINTS:
-            return edges
-        direction = ref['direction']
-        queue, visited = deque([seed]), {seed}
-        while queue and len(visited) < 3:
-            a = nodes[queue.popleft()]
-            pa = a['points'] if direction > 0 else a['points'][::-1]
-            choices = []
-            for j, b in enumerate(nodes):
-                if j in visited:
-                    continue
-                pb = b['points'] if direction > 0 else b['points'][::-1]
-                dx = pb[0, 0]-pa[-1, 0]
-                if not CURVE_MAX_GAP_PIXELS < direction*dx <= TURN_GAP_MAX_RATIO*width:
-                    continue
-                sa = np.polyfit(pa[-16:, 0], pa[-16:, 1], 1)[0]
-                sb = np.polyfit(pb[:16, 0], pb[:16, 1], 1)[0]
-                deviation = abs(pb[0, 1]-pa[-1, 1]-.5*(sa+sb)*dx)
-                if (abs(sa-sb) <= .65 and deviation <= max(10., .025*width)
-                        and .45 <= b['thickness']/a['thickness'] <= 2.2):
-                    choices.append(j)
-            # 岔路有歧义就拒绝，不猜哪块噪声是远端边线。
-            if len(choices) > 1:
-                return edges
-            if choices:
-                visited.add(choices[0]);queue.append(choices[0])
-        if len(visited) < 2:
-            return edges
-        points = np.vstack([nodes[j]['points'] for j in sorted(visited)])
-        points = points[np.argsort(points[:, 0])]
-        if (np.ptp(points[:, 0]) < TURN_GAP_MIN_SPAN_RATIO*ref['span']
-                or len(points) < .5*len(previous)):
-            return edges
-        joined = self._curve_fit_candidate(points, True, side, mask.shape[1], mask.shape[0], y0, image_height)
-        if joined is None or joined['fit_fraction'] < .85:
-            return edges
-        joined.update(area=sum(nodes[j]['area'] for j in visited), near_x=seed_edge['near_x'],
-                      track_match=True, logic_weight=.85, turn_gap_joined=True)
-        joined['confidence'] = self._curve_edge_confidence(joined, width)
-        edges = dict(edges);edges[side] = joined
-        other = 'right' if side == 'left' else 'left'
-        if edges.get(other) is not None:
-            p = edges[other]['measured']
-            overlap = np.isin(p[:, 0], points[:, 0])
-            if np.count_nonzero(overlap) >= CURVE_MIN_POINTS:
-                residual = abs(p[overlap, 1]-np.interp(p[overlap, 0], points[:, 0], points[:, 1]))
-                if np.median(residual) <= 8:
-                    edges[other] = None  # 同一弯沿两段不能又被当作左右两条线。
-        self._curve_tracks[side] = dict(measured=joined['measured'].copy(), horizontal=True,
-                                        near_x=joined['near_x'])
-        self.turn_gap_links = len(visited)-1
-        return edges
-
-    def _turn_gap_check(self, result, active):
-        self.turn_gap_near_ready = False
-        if not active or not (result.turn_entry_ready or self._curve_turn_entry_ready):
-            self._turn_gap_near_count = 0
-            self._turn_gap_near_point = None
-            self._turn_gap_reference = None
-            self._turn_gap_confirm = 0
-            self._turn_gap_pending_pos = None
-            self.turn_gap_state = 'off'
-            return
-        boundaries = self._curve_debug.get('boundaries', [])
-        candidate = boundaries[0] if len(boundaries) == 1 else None
-        ref = self._turn_gap_reference
-        if ref is not None and ref['key'] != self._curve_track_key:
-            ref = self._turn_gap_reference = None
-        span = (float(np.ptp(candidate['measured'][:, 0 if candidate['horizontal'] else 1]))
-                if candidate is not None else 0.)
-        loss = not result.valid or result.confidence < .65
-        # Short segments may support a bounded search, never a new midpoint.
-        # Use CURRENT observed near-ground points, not extrapolated path samples.
-        measured = candidate['measured'] if candidate is not None else np.empty((0, 2))
-        height, width = result.debug_frame.shape[:2]
-        same_side = candidate is not None and ref is not None and candidate['side'] == ref['side']
-        near_point = (np.median(measured[measured[:, 1] >= np.max(measured[:, 1])-10.], axis=0)
-                      + [self._curve_debug.get('x0', 0), self._curve_debug.get('y0', 0)]
-                      if len(measured) else None)
-        # Global confidence penalizes short coverage; search uses local fit quality.
-        # This lower threshold NEVER authorizes forward driving or midpoint recovery.
-        near = (same_side and result.valid and result.confidence >= .50 and len(measured) >= 40
-                and candidate['rms'] <= 3.0 and candidate['fit_fraction'] >= .85
-                and (candidate['path'][-1, 0]-candidate['path'][0, 0])*ref['direction'] > 0
-                and float(np.max(np.ptp(measured, axis=0))) >= .10*width
-                and near_point[1] >= .78*height)
-        stable_near = (near and (self._turn_gap_near_point is None
-                       or np.linalg.norm(near_point-self._turn_gap_near_point) <= .05*width))
-        self._turn_gap_near_count = self._turn_gap_near_count+1 if stable_near else 0
-        self._turn_gap_near_point = near_point.copy() if near else None
-        self.turn_gap_near_ready = self._turn_gap_near_count >= 4
-        # A corner can turn from horizontal to longitudinal as the robot turns.
-        # Require real depth coverage and repeated observations to release the guard.
-        depth_supported = (same_side and not loss and result.confidence >= .80
-                           and len(measured) >= 60 and near_point[1] >= .78*height
-                           and float(np.ptp(measured[:, 1])) >= .28*height)
-        shrink = ref is not None and (candidate is None or candidate['side'] != ref['side']
-                  or candidate['horizontal'] != ref['horizontal']
-                  or span < TURN_GAP_MIN_SPAN_RATIO*ref['span'])
-        jump = ref is not None and abs(result.lateral_error-ref['pos']) > TURN_GAP_POSITION_JUMP
-        recovering = self.turn_gap_state == 'suspect'
-        suspect = ref is not None and (loss or shrink or jump or recovering)
-        if suspect:
-            consistent = (not loss and (not shrink or depth_supported) and
-                          (self._turn_gap_pending_pos is None
-                           or abs(result.lateral_error-self._turn_gap_pending_pos) <= .08))
-            self._turn_gap_confirm = self._turn_gap_confirm+1 if consistent else 0
-            self._turn_gap_pending_pos = result.lateral_error if consistent else None
-            if self._turn_gap_confirm < TURN_GAP_CONFIRM_FRAMES:
-                self.turn_gap_state = 'suspect'
-                result.valid = False
-                result.confidence = min(result.confidence, .35)
-                result.reason = 'turn_gap_untrusted'
-                # 单帧短段不能借用出弯锁存切换到 ARCH、绕过本保护。
-                self._curve_exit_ready = result.turn_exit_ready = False
-                self._curve_exit_count = self._curve_exit_frames = 0
-                return
-        self.turn_gap_state = 'joined' if self.turn_gap_links else 'clear'
-        self._turn_gap_confirm = 0;self._turn_gap_pending_pos = None
-        if candidate is not None and result.valid:
-            p = candidate['path']
-            self._turn_gap_reference = dict(key=self._curve_track_key, side=candidate['side'],
-                horizontal=candidate['horizontal'], measured=candidate['measured'].copy(), span=span,
-                direction=1 if p[-1, 0] >= p[0, 0] else -1, pos=result.lateral_error)
 
     def _arch_pair_allowed(self,left,right,width,height):
         if not self._arch_cfg['dual_lane']:
@@ -3187,15 +3065,7 @@ class ArchYellowLineDetector(DualYellowLineDetector):
         self._arch_edges={}
         self.arch_pair_reason="no_candidates" if self.arch_enabled else "inactive"
         started=time.perf_counter()
-        guard_active = (self.column_scan and self.expected_turn_direction != 0
-                        and not self.pre_bridge_guard and not self._curve_exit_ready
-                        and not self.arch_enabled)
-        self.turn_gap_links = 0
         result=super().detect(frame)
-        self._turn_gap_check(result, guard_active)
-        if guard_active:
-            cv2.putText(result.debug_frame, f"GAP {self.turn_gap_state} links={self.turn_gap_links}",
-                        (8,145),cv2.FONT_HERSHEY_SIMPLEX,.43,(0,180,255),1,cv2.LINE_AA)
         if self.arch_enabled and result.curve_mode:
             result.debug_frame,_=arch_draw_lane(frame,self,result)
             cv2.rectangle(result.debug_frame,(0,94),(frame.shape[1]-1,138),(18,18,18),-1)
@@ -3634,6 +3504,8 @@ class ShiWaiFollower(Node):
         self._passed_tunnel_at: Optional[float] = None
         self._passed_finish = False
         self._finish_since: Optional[float] = None
+        # 终点拱入完成、已请求退出的标志；防止重复 announce / 重复调用 request_exit。
+        self._finish_exit_sent = False
         self._bridge_started: Optional[float] = None
         self._bridge_near_since: Optional[float] = None
         self._bridge_climb_ended = False
@@ -3669,25 +3541,11 @@ class ShiWaiFollower(Node):
         self._arch_lost_distance = None
         self._arch_recover_since = None
         self._arch_recover_frames = 0
-        self._turn_gap_since = None
-        self._turn_gap_distance = 0.0
-        self._turn_gap_command = (0.0, 0.0)
-        self._turn_gap_stopped = False
-        self._turn_gap_phase = 'off'
-        self._turn_gap_yaw = 0.0
-        self._turn_gap_still_at = None
-        self._turn_gap_scan_at = None
-        self._turn_gap_scan_yaw = 0.0
-        self._turn_gap_scan_distance = 0.0
-        self._turn_gap_observed_at = None
         self._current_height = self.stand_height
         self._target_height = self.stand_height
         self._current_roll = 0.0
         self._current_pitch = 0.0
         self._started_at = time.monotonic()
-        self._startup_io_ready_at = None
-        self._startup_fresh_since = None
-        self._startup_ready = False
         self._height_time = time.monotonic()
         self._video_writer: Optional[cv2.VideoWriter] = None
         self._video_path: Optional[Path] = None
@@ -3756,7 +3614,8 @@ class ShiWaiFollower(Node):
         self._timer = self.create_timer(1.0 / self.control_rate, self._control_timer)
         mode = "运动已启用" if self.enable_motion else "只看画面不发车"
         self._announce(
-            f"shiwai_arch.py arch-v4 (turn-gap guard) 版启动，{mode}。先等待首帧/录像初始化后新的 IMU、odom 和水平基准；无屏幕窗口，全程二值化带标注录像。弯道断口按历史边沿关联，不可靠中线短暂保持原转向后停车。"
+            f"shiwai_arch.py {ARCH_VERSION} 版启动，{mode}。出弯之前与 shiwai_lin_line.py 完全一致；"
+            "出弯之后才启用 ARCH 掩膜清理/立柱剔除/双线证据与限速。无屏幕窗口，全程二值化带标注录像。"
         )
         self._announce(
             f"当前速度 {self.forward_speed:.2f} m/s，"
@@ -3968,6 +3827,13 @@ class ShiWaiFollower(Node):
         )
         self.line_detector.width_profile = (
             "crouched" if self._mode == self.MODE_CROUCH else "standing"
+        )
+        # 双边配对的宽度上限按姿态切档：下蹲时车道在画面里宽得多，
+        # 沿用站立的 0.82 会把真双边判成 inconsistent_width，退回单边合成中线
+        # （见 TUNNEL_MAX_LANE_WIDTH_RATIO 注释）。非下蹲一律恢复 yaml 参数值。
+        self.line_detector.max_lane_width_ratio = (
+            TUNNEL_MAX_LANE_WIDTH_RATIO
+            if self._mode == self.MODE_CROUCH else self.max_lane_width_ratio
         )
         if self._mode == self.MODE_CROUCH:
             self.line_detector.single_left_half_ratio = TUNNEL_SINGLE_LEFT_HALF_RATIO
@@ -4370,8 +4236,14 @@ class ShiWaiFollower(Node):
              and self._passed_tunnel_at is not None
              and (now - self._passed_tunnel_at) >= FINISH_AFTER_TUNNEL_SECONDS)
             # 终点字可能就在隧道末段：下蹲够久就允许认，不再等 _passed_tunnel。
-            or (self._mode == self.MODE_CROUCH
-                and self._crouch_started is not None
+            # ⚠ 这张「通行证」不能再要求 self._mode == MODE_CROUCH。
+            # 上面置 _passed_tunnel 的那段代码同一个 if 里就把 mode 改成了
+            # MODE_FOLLOW，所以车一出隧道这张通行证当场失效，被迫重新等
+            # FINISH_AFTER_TUNNEL_SECONDS 秒 —— 11-01 实测就是出隧道后 HUD 出现
+            # `fn-wait 1.8s`，车在终点字前面又多跑了约 0.5 m 才停。
+            # _crouch_started 全程只置一次、从不重置，所以放开 mode 判断后
+            # 蹲满 FINISH_IN_TUNNEL_MIN_SECONDS 就等于永久放行。
+            or (self._crouch_started is not None
                 and now - self._crouch_started >= FINISH_IN_TUNNEL_MIN_SECONDS)
         )
         finish_confirmed = self._confirm(
@@ -4443,7 +4315,7 @@ class ShiWaiFollower(Node):
                 "exit_slow": "检测到回平趋势：锁定低速离桥确认，不再恢复冲桥；确认后交回弯道循迹",
                 "exit_hold": "离桥前进预算已用完：停止直行并继续回平确认，成功后自动恢复循迹",
                 "done": "姿态与里程共同确认离桥：交回桥后循迹",
-                "fault": f"过桥异常停车（未判定过桥）：{b.reason}；{self._sensor_status(now)}；需检查后重新启动节点",
+                "fault": f"过桥异常停车（未判定过桥）：{b.reason}；需检查后重新启动节点",
             }
             if b.state in messages:
                 self._announce(messages[b.state])
@@ -4620,36 +4492,6 @@ class ShiWaiFollower(Node):
             except Exception:
                 pass
 
-    def _sensor_status(self, now: float) -> str:
-        b = self._bridge
-        def age(stamp):
-            return "missing" if stamp is None else f"{now-stamp:.3f}s"
-        return (f"imu_age={age(b.imu_at)} odom_age={age(b.odom_at)} "
-                f"baseline={'ready' if b.baseline is not None else 'waiting'}")
-
-    def _startup_can_move(self, now: float) -> bool:
-        """初始化时保持零速；之后的桥状态机与超时保护仍沿用原逻辑。"""
-        if self._startup_ready:
-            return True
-        b = self._bridge
-        if b.state == "fault" or self._startup_io_ready_at is None:
-            return False
-        ready = (b.fresh(now) and b.baseline is not None
-                 and b.imu_at > self._startup_io_ready_at
-                 and b.odom_at > self._startup_io_ready_at)
-        if ready:
-            if self._startup_fresh_since is None:
-                self._startup_fresh_since = now
-            if now - self._startup_fresh_since >= 0.20:
-                self._startup_ready = True
-                self._announce("启动就绪：首帧/录像初始化完成，IMU、odom 与水平基准有效，允许进入循迹")
-                return True
-        else:
-            self._startup_fresh_since = None
-        if now - self._startup_io_ready_at > 8.0:
-            b.fail("startup sensors not ready: " + self._sensor_status(now))
-        return False
-
     def _control_cycle(self) -> None:
         now = time.monotonic()
         self._sync_bridge(now)
@@ -4676,13 +4518,12 @@ class ShiWaiFollower(Node):
             self._update_height(now)
             self._log(now, "画面超时，停车")
             return
-        # Check budgets on every control tick, after camera/fault safety checks.
-        if self._turn_gap_since is not None:
-            if self._bridge.state == 'fault' or self._holding_stop():
-                self._turn_gap_phase = 'stop'
-            self._turn_gap_tick(now, allow_scan=False)
         if sequence == self._last_sequence:
-            if self._holding_stop():
+            if self._mode == self.MODE_FINISH:
+                # 终点拱入倒计时里没有新帧也要保持固定速度：
+                # 这里发 0 会让倒计时中途顿一下，等于把「固定速度拱 2 秒」破掉。
+                self._publish(*self._last_command)
+            elif self._holding_stop():
                 self._publish(0.0, 0.0)
             elif self.enable_motion and self._last_command_valid:
                 self._publish(*self._last_command)
@@ -4698,17 +4539,6 @@ class ShiWaiFollower(Node):
             frame, result.debug_frame,
             prefer_finish=(self._passed_tunnel or self._mode == self.MODE_CROUCH),
         )
-        # 首帧检测/编码器打开可能占用数百毫秒；此时只发零速，不提前 arm/boost。
-        # 必须在这些操作之后重新收到传感器回调，才能开始运行状态机。
-        now = time.monotonic()
-        if not self._startup_can_move(now):
-            self._publish_zero("startup_wait")
-            self._update_height(now)
-            self._show(result, 0.0, 0.0, False, scene, extra="STARTUP WAIT")
-            if self._startup_io_ready_at is None:
-                self._startup_io_ready_at = time.monotonic()
-            self._log_status(now, result, scene)
-            return
         self._update_mission(scene, now)
         self._log_status(now, result, scene)
 
@@ -4731,16 +4561,19 @@ class ShiWaiFollower(Node):
             self._bridge_settle_command(result, now)
             return
 
-        if self._handle_turn_gap(result, now):
-            return
         if self._should_search_after_bridge(result, now):
             self._handle_lost_line(result, now, searching=True)
             return
         if not result.valid:
             self._handle_lost_line(result, now)
             return
+        # 隧道内（MODE_CROUCH）不再走 ARCH 的丢线预算：
+        # 2026-11-01 15:53 录像 f155~f157 实测，洞里丢线一帧就 LOST STOP，
+        # 之后 REACQUIRE 要连续 3 帧 + 0.20s 才恢复，车在洞里冻了 3 秒以上
+        # 再也没起来（同一趟 lin 15:56 是 0.46~0.53 m/s 一路过去）。
+        # 现在隧道里沿用 lin 的 TUNNEL CREEP，ARCH 预算只管出隧道后的末段。
         if (self.line_detector.arch_enabled and self._lost_since is not None
-                and (self._mode == self.MODE_CROUCH or self._passed_tunnel)):
+                and self._passed_tunnel):
             if not self._arch_recovered_line(result, now):
                 self._publish_zero("arch_reacquire")
                 self._update_height(now)
@@ -4754,87 +4587,6 @@ class ShiWaiFollower(Node):
         command = self._follow_command(result, now)
         self._update_height(now)
         self._show(result, *command, self.enable_motion, scene)
-
-    def _turn_gap_expired(self, now: float) -> bool:
-        b = self._bridge
-        return (self._turn_gap_since is not None and (
-            now-self._turn_gap_since >= TURN_GAP_BRAKE_SECONDS
-            or b.distance-self._turn_gap_distance >= TURN_GAP_BRAKE_DISTANCE
-            or abs(b.angle_delta(b.yaw, self._turn_gap_yaw)) >= TURN_GAP_BRAKE_DEGREES))
-
-    def _turn_gap_tick(self, now: float, allow_scan: bool = False):
-        """Budget checks also run without new camera frames; never request forward motion."""
-        b = self._bridge
-        phase = self._turn_gap_phase
-        observed = (self._turn_gap_observed_at is not None
-                    and now-self._turn_gap_observed_at <= TURN_GAP_OBSERVATION_SECONDS)
-        if not b.fresh(now) or not self.enable_motion or self._turn_gap_command[1] == 0.0:
-            phase = 'stop'
-        if phase == 'brake' and (self._turn_gap_expired(now) or abs(b.speed) <= TURN_GAP_STOP_SPEED):
-            phase = 'wait'
-        if phase == 'wait':
-            if abs(b.speed) <= TURN_GAP_STOP_SPEED:
-                if self._turn_gap_still_at is None:
-                    self._turn_gap_still_at = now
-                if (allow_scan and observed and self.line_detector.turn_gap_near_ready
-                        and now-self._turn_gap_still_at >= TURN_GAP_STILL_SECONDS):
-                    phase = 'scan'
-                    self._turn_gap_scan_at = now
-                    self._turn_gap_scan_yaw = b.yaw
-                    self._turn_gap_scan_distance = b.distance
-            else:
-                self._turn_gap_still_at = None
-        if phase == 'scan' and (
-                not observed or not self.line_detector.turn_gap_near_ready
-                or now-self._turn_gap_scan_at >= TURN_GAP_SCAN_SECONDS
-                or abs(b.angle_delta(b.yaw, self._turn_gap_scan_yaw)) >= TURN_GAP_SCAN_DEGREES
-                or b.distance-self._turn_gap_scan_distance >= .04 or abs(b.speed) > .08):
-            phase = 'stop'  # One attempt per loss episode, never rearm on a noisy frame.
-        self._turn_gap_phase = phase
-        self._turn_gap_stopped = phase in ('wait', 'stop')
-        angular = (self._turn_gap_command[1] if phase == 'brake' else
-                   math.copysign(TURN_GAP_SCAN_SPEED, self._turn_gap_command[1]) if phase == 'scan' else 0.0)
-        command = (0.0, angular)
-        self._reset_post_bridge_speed('gap-'+phase)
-        if angular:
-            self._publish(*command)
-            self._last_command, self._last_command_valid = command, True
-            self._last_motion_time = now
-        else:
-            self._publish_zero('turn_gap_'+phase)
-        self._have_error = False
-        return command
-
-    def _handle_turn_gap(self, result: DetectionResult, now: float) -> bool:
-        pending = self._in_right_turn() and self.line_detector.turn_gap_state == 'suspect'
-        if not pending:
-            if self._turn_gap_since is not None:
-                self._have_error = False  # 恢复时不把丢失期间的误差差值当成微分冲击。
-                self._lost_since = None
-            self._turn_gap_since = None
-            self._turn_gap_stopped = False
-            self._turn_gap_phase = 'off'
-            self._turn_gap_still_at = None
-            self._turn_gap_observed_at = None
-            return False
-        b = self._bridge
-        if self._turn_gap_since is None:
-            self._turn_gap_since = now
-            self._turn_gap_distance = b.distance
-            self._turn_gap_yaw = b.yaw
-            self._turn_gap_phase = 'brake'
-            self._turn_gap_still_at = None
-            expected_sign = self.steering_sign*self.line_detector.expected_turn_direction
-            safe_previous = (self._last_command_valid
-                             and self._last_command[1]*expected_sign > 0.0)
-            self._turn_gap_command = (0.0, self._last_command[1]) if safe_previous else (0.0, 0.0)
-            self._announce("弯道断线：前进目标立即归零，限时保留可靠转向；停稳且近边线可信才限角找线")
-        self._turn_gap_observed_at = now
-        command = self._turn_gap_tick(now, allow_scan=True)
-        self._update_height(now)
-        self._show(result, *command, abs(command[1]) > 0.0,
-                   extra='GAP '+self._turn_gap_phase.upper()+' / ZERO FORWARD')
-        return True
 
     def _reset_post_bridge_speed(self, mode: str = "wait") -> None:
         self._post_bridge_samples.clear()
@@ -4971,15 +4723,11 @@ class ShiWaiFollower(Node):
         )
         if self._in_right_turn():
             linear = self._post_bridge_speed(result, angular, now)
-            if self.line_detector.turn_gap_state == 'joined':
-                linear = min(linear, TURN_GAP_JOINED_SPEED_MAX)
-        if (self.line_detector.arch_enabled
-                and (self._mode == self.MODE_CROUCH or self._passed_tunnel)):
-            # 双边必须是本帧实测配对；历史宽度与外推都不算第二条边线。
-            paired = (result.boundary_side == "both"
-                      and self.line_detector.arch_pair_reason == "paired_measured")
-            cap = ARCH_DUAL_SPEED_MAX if paired else ARCH_SINGLE_SPEED_MAX
-            linear = min(linear, cap)
+        # 隧道/末段不再加 ARCH 速度上限：
+        # 原来这里用「单边 0.18 / 双边 0.30」封顶，把 tunnel_speed_scale 算出来的
+        # 0.36~0.54 直接砍到 0.18~0.30，实测隧道过得明显变慢。
+        # 隧道速度现在完全由 _speed_scale() 决定，与 shiwai_lin_line.py 一致
+        # （minimum_forward_speed*1.8 = 0.36 起步，最高 forward_speed*1.8 = 0.54）。
         target = (linear, angular)
         if self.enable_motion:
             command = self._rate_limit(*target, now)
@@ -5038,7 +4786,24 @@ class ShiWaiFollower(Node):
         else:
             target = (0.0, 0.0)
             extra = "FINISH STOP"
-        if self.enable_motion:
+        if self.enable_motion and driving_in:
+            # 倒计时期间只发这一个固定速度，转向恒为 0：
+            # 视觉、航向、丢线预算、入弯判定全部不参与（_control_cycle 已提前 return）。
+            # 减速沿用原来的 3× 平滑；加速用 FINISH_DRIVE_IN_ACCEL，
+            # 否则从 0 爬到 0.30 要 1.2 s，整段倒计时都在提速。
+            dt = max(0.0, min(now - self._last_motion_time, 2.0 / self.control_rate))
+            step = FINISH_DRIVE_IN_ACCEL * dt
+            if FINISH_DRIVE_IN_SPEED < self._last_command[0]:
+                step = self.max_linear_acceleration * 3.0 * dt
+            command = (
+                self._approach(self._last_command[0], FINISH_DRIVE_IN_SPEED, step),
+                0.0,
+            )
+            self._last_motion_time = now
+            self._publish(*command)
+            self._last_command = command
+            self._last_command_valid = True
+        elif self.enable_motion:
             command = self._rate_limit(*target, now)
             self._publish(*command)
             self._last_command = command
@@ -5057,6 +4822,15 @@ class ShiWaiFollower(Node):
             None,
             extra=extra,
         )
+        # 拱完 FINISH_DRIVE_IN_SECONDS + 停稳 FINISH_STOP_HOLD_SECONDS 后自动退出节点。
+        # request_exit() 会先发一帧零速度、把姿态恢复成站立，再置 _exit_requested；
+        # main() 的 spin 循环条件里就在看这个标志，随后 close() 补发零速度并关录像。
+        if (not driving_in
+                and elapsed >= FINISH_DRIVE_IN_SECONDS + FINISH_STOP_HOLD_SECONDS
+                and not self._finish_exit_sent):
+            self._finish_exit_sent = True
+            self._announce("终点已停稳，自动退出节点")
+            self.request_exit("finish_done")
 
     def _in_right_turn(self) -> bool:
         return self._cleared_bridge and not self._passed_sidewalk
@@ -5189,7 +4963,7 @@ class ShiWaiFollower(Node):
         lost_for = now - self._lost_since
         extra = ""
         if (self.line_detector.arch_enabled
-                and (self._mode == self.MODE_CROUCH or self._passed_tunnel)):
+                and self._passed_tunnel):
             self._arch_recover_since = None
             self._arch_recover_frames = 0
             command = self._arch_lost_command(now)
@@ -5548,7 +5322,6 @@ class ShiWaiFollower(Node):
         bridge_state = self._bridge.state
         progress = (
             f"bridge={bridge_state}"
-            f" startup={'ready' if self._startup_ready else 'wait'}"
             f" walk={mark(self._passed_sidewalk)}"
             f" tunnel={mark(self._passed_tunnel)}"
             f" finish={mark(self._passed_finish)}"
@@ -5576,7 +5349,6 @@ class ShiWaiFollower(Node):
             f" | h={self._current_height:.2f}"
             f" | imu_roll={self._bridge.roll:+.1f} pitch={self._bridge.pitch:+.1f}"
             f" base={self._bridge.baseline} odom_v={self._bridge.speed:.2f}"
-            f" {self._sensor_status(now)}"
             f" exit_good={self._bridge.exit_good_seconds:.2f}s"
             f" exit_hold={(now-self._bridge.exit_hold_since) if self._bridge.exit_hold_since is not None else 0.0:.2f}s"
             f" search_timeout={self._turn_search_timed_out}"

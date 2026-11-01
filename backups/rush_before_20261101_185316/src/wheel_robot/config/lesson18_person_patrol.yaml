@@ -1,0 +1,154 @@
+/camera/astra_camera:
+  ros__parameters:
+    # Astra Pro 同时开启彩色图和深度图，供人体检测与前方障碍测距使用。
+    enable_color: true
+    enable_depth: true
+
+    # 彩色相机设备与图像参数。
+    color_device: "/dev/v4l/by-id/usb-Astra_Pro_HD_Camera_Astra_Pro_HD_Camera-video-index0"
+    color_width: 640
+    color_height: 480
+    color_fps: 30.0
+    color_pixel_format: "AUTO"
+    color_camera_name: "astra_pro_color"
+    color_camera_info_url: "package://wheel_robot/config/calibration/astra_pro_color.yaml"
+
+    # 深度图参数。depth_unit_mm 表示一个深度单位对应的毫米数。
+    depth_width: 640
+    depth_height: 480
+    depth_fps: 30
+    depth_unit_mm: 10.0
+
+    # 发布到 TF / Image header 的光学坐标系名称。
+    color_frame_id: "camera_color_optical_frame"
+    depth_frame_id: "camera_depth_optical_frame"
+
+/camera/depth_distance:
+  ros__parameters:
+    # ===== 开关 =====
+    visualization_auto_range: true
+
+    # ROI 只看画面中间区域，轮足车体较宽，宽度先按保守值取。
+    roi_width: 180
+    # ROI 略高于画面中心，减少低头安装时把近处地面误判为障碍。
+    roi_height: 150
+    roi_center_y_ratio: 0.42
+
+    # 距离统计：取较近一侧的分位数，要求最少有效点，短时平滑减少抖动。
+    distance_percentile: 0.10
+    min_valid_pixels: 50
+    temporal_window: 3
+
+    # 有效测距范围与障碍判定阈值。
+    min_distance_m: 0.15
+    max_distance_m: 8.0
+    field_of_view_rad: 0.27
+    stop_distance_m: 0.60
+    caution_distance_m: 1.00
+
+    # 调试可视化参数。
+    visualization_max_distance_m: 1.50
+    visualization_median_size: 5
+
+lesson18_person_patrol:
+  ros__parameters:
+    # ===== 开关 =====
+    # 运动总开关。实车调试前先架空或干跑确认检测、避障和转向。
+    enable_motion: true
+    # 是否显示 RGB 调试窗口；关闭后不影响人体检测和跟随。
+    show_debug: true
+    # 是否要求相机在线；开启后相机超时会停车。
+    require_camera: true
+    # 是否允许人体过近时倒车；关闭时只停车不倒退。
+    allow_reverse: false
+    # 无障碍时是否偶尔做小弧线巡航。
+    random_turn_enabled: true
+
+    # ===== 速度与加速度 =====
+    # 人体跟随速度：检测到人后使用这组上限，倒车默认关闭。
+    person_max_linear_speed: 0.40
+    person_max_reverse_speed: 0.20
+
+    # 普通巡逻速度：无人体目标时前进，CAUTION 状态自动降速。
+    cruise_speed: 0.40
+    caution_speed: 0.20
+
+    # 避障脱困速度：转向扫描后，用低速短距离驶出障碍区域。
+    avoid_escape_speed: 0.10
+
+    # 随机小弧线的前进速度，仅 random_turn_enabled 为 true 时生效。
+    random_turn_linear_speed: 0.10
+
+    # 角速度上限：巡逻微调、避障转向、最终全局限幅分开配置。
+    patrol_max_angular_speed: 0.18
+    turn_speed: 0.28
+    max_angular_speed: 0.35
+
+    # 加速度限幅：避免速度指令突变导致车体晃动。
+    max_linear_acceleration: 0.20
+    max_angular_acceleration: 0.75
+
+    # ===== 话题 =====
+    image_topic: "/camera/color/image_raw"
+    obstacle_topic: "/camera/depth/obstacle_status"
+    odom_topic: "/odom"
+
+    # ===== 频率与窗口名称 =====
+    control_rate: 20.0
+    display_rate: 15.0
+    debug_window_name: "Lesson 18 - Person Aware Patrol"
+
+    # ===== 输入超时保护 =====
+    # 任一关键数据超时后会进入更保守的控制状态。
+    camera_timeout: 0.60
+    obstacle_timeout: 0.45
+    odom_timeout: 0.50
+
+    # ===== 人体检测 =====
+    model_directory: ""  # 留空表示使用安装在脚本旁边的 models/。
+    person_confidence: 0.48
+    person_nms_threshold: 0.35
+    person_min_area_ratio: 0.003
+    # 推理线程自行限速；每次都处理最新帧比按帧号跳帧响应更稳定。
+    person_detect_interval: 1
+    person_confirm_frames: 2
+    person_smoothing_alpha: 0.45
+    person_acquire_hold_seconds: 0.25
+    person_lost_timeout: 0.70
+    person_resume_delay: 1.00
+
+    # ===== 人体跟随控制 =====
+    # 用人体框高度比例近似跟随距离。数值越大，跟随距离越近。
+    person_target_height_ratio: 0.42
+    person_distance_deadband: 0.040
+    person_center_deadband: 0.07
+    person_forward_center_limit: 0.32
+    person_linear_kp: 0.55
+    person_angular_kp: 0.70
+    person_angular_sign: -1.0
+    person_center_stop_exemption: 0.18
+
+    # ===== 巡逻转向控制 =====
+    # 正常巡逻不再盲目直行：利用左右测距持续向空间较大的一侧修正。
+    patrol_steering_kp: 0.32
+    patrol_steering_deadband_m: 0.10
+
+    # ===== 分段避障扫描 =====
+    # 分段扫描最多约100度；找到 CAUTION 级可通行走廊后低速驶离，不再要求三侧全 CLEAR。
+    stop_hold_seconds: 0.20
+    verify_hold_seconds: 0.20
+    turn_step_rad: 0.35
+    max_avoid_steps: 5
+    turn_timeout_scale: 1.60
+    avoid_escape_seconds: 1.20
+
+    # ===== 随机弧线巡航 =====
+    # 无障碍时偶尔做小弧线巡航，而不是停车原地随机转向。
+    random_turn_min_interval: 14.0
+    random_turn_max_interval: 24.0
+    random_turn_min_angle: 0.10
+    random_turn_max_angle: 0.25
+    random_seed: 18
+
+    # 状态日志输出周期，方便现场调参时观察行为切换。
+    status_log_period: 1.0

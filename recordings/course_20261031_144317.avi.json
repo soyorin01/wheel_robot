@@ -1,0 +1,16 @@
+{
+  "video_path": "/home/orangepi/wheel_robot/recordings/course_20261031_144317.avi",
+  "started_at": "2026-10-31T14:43:18.959078+08:00",
+  "duration_seconds": 9.642389833999914,
+  "frame_count": 279,
+  "measured_capture_fps": 28.93473555862899,
+  "video_fps": 30.0,
+  "width": 640,
+  "height": 480,
+  "codec": "MJPG",
+  "camera_backend": "V4L2",
+  "camera_device": "/dev/video0",
+  "pixel_format": "YUYV",
+  "rotation_degrees": 0,
+  "mirror_mode": "none"
+}

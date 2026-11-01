@@ -1,0 +1,464 @@
+{
+  "baseline_sha256": "995412482d5222bd7bc83d078ae299edae5cb29249df8779da5871eee4728692",
+  "new_sha256": "1b995972a47b6443af57c91ae37fc874dd6cea219a536dfe25dadf698360eb49",
+  "target": "/home/orangepi/wheel_robot/src/wheel_robot/scripts/shiwai_arch.py",
+  "backup": "/home/orangepi/wheel_robot/backups/arch_20261031_172711",
+  "validation": {
+    "source_sha256": "995412482d5222bd7bc83d078ae299edae5cb29249df8779da5871eee4728692",
+    "candidate_sha256": "1b995972a47b6443af57c91ae37fc874dd6cea219a536dfe25dadf698360eb49",
+    "ros_import": "OK, no node or motion started",
+    "stats": {
+      "lin": {
+        "median_ms": 42.88076600005297,
+        "p95_ms": 49.717029249904954,
+        "frames": [
+          {
+            "sec": 1,
+            "valid": true,
+            "error": -0.4305925414037833,
+            "side": "left",
+            "pair": "original",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 2,
+            "valid": true,
+            "error": -0.42831739348453846,
+            "side": "left",
+            "pair": "original",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 4,
+            "valid": true,
+            "error": -0.4075146599649365,
+            "side": "left",
+            "pair": "original",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 5,
+            "valid": true,
+            "error": -0.40206890559722996,
+            "side": "left",
+            "pair": "original",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 6,
+            "valid": true,
+            "error": -0.36819131675041117,
+            "side": "left",
+            "pair": "original",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 8,
+            "valid": true,
+            "error": -0.7514059213598079,
+            "side": "left",
+            "pair": "original",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 12,
+            "valid": true,
+            "error": -0.24909375854316912,
+            "side": "left",
+            "pair": "original",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 16,
+            "valid": true,
+            "error": -0.368978247202041,
+            "side": "right",
+            "pair": "original",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 1,
+            "valid": true,
+            "error": -0.4305925414037833,
+            "side": "left",
+            "pair": "original",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 2,
+            "valid": true,
+            "error": -0.42831739348453846,
+            "side": "left",
+            "pair": "original",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 4,
+            "valid": true,
+            "error": -0.4075146599649365,
+            "side": "left",
+            "pair": "original",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 5,
+            "valid": true,
+            "error": -0.40206890559722996,
+            "side": "left",
+            "pair": "original",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 6,
+            "valid": true,
+            "error": -0.36819131675041117,
+            "side": "left",
+            "pair": "original",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 8,
+            "valid": true,
+            "error": -0.7514059213598079,
+            "side": "left",
+            "pair": "original",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 12,
+            "valid": true,
+            "error": -0.24909375854316912,
+            "side": "left",
+            "pair": "original",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 16,
+            "valid": true,
+            "error": -0.368978247202041,
+            "side": "right",
+            "pair": "original",
+            "entry": false,
+            "exit": false
+          }
+        ]
+      },
+      "arch_inactive": {
+        "median_ms": 42.57471849996364,
+        "p95_ms": 49.72898775008616,
+        "frames": [
+          {
+            "sec": 1,
+            "valid": true,
+            "error": -0.4305925414037833,
+            "side": "left",
+            "pair": "inactive",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 2,
+            "valid": true,
+            "error": -0.42831739348453846,
+            "side": "left",
+            "pair": "inactive",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 4,
+            "valid": true,
+            "error": -0.4075146599649365,
+            "side": "left",
+            "pair": "inactive",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 5,
+            "valid": true,
+            "error": -0.40206890559722996,
+            "side": "left",
+            "pair": "inactive",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 6,
+            "valid": true,
+            "error": -0.36819131675041117,
+            "side": "left",
+            "pair": "inactive",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 8,
+            "valid": true,
+            "error": -0.7514059213598079,
+            "side": "left",
+            "pair": "inactive",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 12,
+            "valid": true,
+            "error": -0.24909375854316912,
+            "side": "left",
+            "pair": "inactive",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 16,
+            "valid": true,
+            "error": -0.368978247202041,
+            "side": "right",
+            "pair": "inactive",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 1,
+            "valid": true,
+            "error": -0.4305925414037833,
+            "side": "left",
+            "pair": "inactive",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 2,
+            "valid": true,
+            "error": -0.42831739348453846,
+            "side": "left",
+            "pair": "inactive",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 4,
+            "valid": true,
+            "error": -0.4075146599649365,
+            "side": "left",
+            "pair": "inactive",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 5,
+            "valid": true,
+            "error": -0.40206890559722996,
+            "side": "left",
+            "pair": "inactive",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 6,
+            "valid": true,
+            "error": -0.36819131675041117,
+            "side": "left",
+            "pair": "inactive",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 8,
+            "valid": true,
+            "error": -0.7514059213598079,
+            "side": "left",
+            "pair": "inactive",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 12,
+            "valid": true,
+            "error": -0.24909375854316912,
+            "side": "left",
+            "pair": "inactive",
+            "entry": false,
+            "exit": false
+          },
+          {
+            "sec": 16,
+            "valid": true,
+            "error": -0.368978247202041,
+            "side": "right",
+            "pair": "inactive",
+            "entry": false,
+            "exit": false
+          }
+        ]
+      },
+      "arch_active": {
+        "median_ms": 84.41854600005172,
+        "p95_ms": 89.42675099990538,
+        "frames": [
+          {
+            "sec": 1,
+            "valid": true,
+            "error": 0.07554092732591638,
+            "side": "both",
+            "pair": "paired_measured",
+            "entry": true,
+            "exit": true
+          },
+          {
+            "sec": 2,
+            "valid": true,
+            "error": -0.3558328289081929,
+            "side": "left",
+            "pair": "one_side",
+            "entry": true,
+            "exit": true
+          },
+          {
+            "sec": 4,
+            "valid": true,
+            "error": -0.2918562255632279,
+            "side": "left",
+            "pair": "one_side",
+            "entry": true,
+            "exit": true
+          },
+          {
+            "sec": 5,
+            "valid": true,
+            "error": -0.2328059485690356,
+            "side": "left",
+            "pair": "weak_side",
+            "entry": true,
+            "exit": true
+          },
+          {
+            "sec": 6,
+            "valid": true,
+            "error": -0.22227792939423002,
+            "side": "left",
+            "pair": "weak_side",
+            "entry": true,
+            "exit": true
+          },
+          {
+            "sec": 8,
+            "valid": true,
+            "error": -0.7309795418600931,
+            "side": "left",
+            "pair": "one_side",
+            "entry": true,
+            "exit": true
+          },
+          {
+            "sec": 12,
+            "valid": true,
+            "error": -0.11409994239147181,
+            "side": "left",
+            "pair": "one_side",
+            "entry": true,
+            "exit": true
+          },
+          {
+            "sec": 16,
+            "valid": true,
+            "error": -0.1801736047326446,
+            "side": "right",
+            "pair": "horizontal_bend",
+            "entry": true,
+            "exit": true
+          },
+          {
+            "sec": 1,
+            "valid": true,
+            "error": 0.050622911325916384,
+            "side": "both",
+            "pair": "paired_measured",
+            "entry": true,
+            "exit": true
+          },
+          {
+            "sec": 2,
+            "valid": true,
+            "error": -0.3329082541881929,
+            "side": "left",
+            "pair": "one_side",
+            "entry": true,
+            "exit": true
+          },
+          {
+            "sec": 4,
+            "valid": true,
+            "error": -0.2707656168208279,
+            "side": "left",
+            "pair": "one_side",
+            "entry": true,
+            "exit": true
+          },
+          {
+            "sec": 5,
+            "valid": true,
+            "error": -0.2134025885260276,
+            "side": "left",
+            "pair": "weak_side",
+            "entry": true,
+            "exit": true
+          },
+          {
+            "sec": 6,
+            "valid": true,
+            "error": -0.20442683815466267,
+            "side": "left",
+            "pair": "weak_side",
+            "entry": true,
+            "exit": true
+          },
+          {
+            "sec": 8,
+            "valid": true,
+            "error": -0.7065565379196911,
+            "side": "left",
+            "pair": "one_side",
+            "entry": true,
+            "exit": true
+          },
+          {
+            "sec": 12,
+            "valid": true,
+            "error": -0.095310778766302,
+            "side": "left",
+            "pair": "one_side",
+            "entry": true,
+            "exit": true
+          },
+          {
+            "sec": 16,
+            "valid": true,
+            "error": -0.16627317419748838,
+            "side": "right",
+            "pair": "horizontal_bend",
+            "entry": true,
+            "exit": true
+          }
+        ]
+      }
+    }
+  },
+  "no_robot_start": true
+}

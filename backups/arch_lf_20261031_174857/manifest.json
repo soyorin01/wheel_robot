@@ -1,0 +1,11 @@
+{
+  "backup": "/home/orangepi/wheel_robot/backups/arch_lf_20261031_174857",
+  "before_sha256": "3792d63cc99e6a5387da59ca8722caa226e1f5ef188b5284877e1d35fedf9747",
+  "after_sha256": "15dc6865de4ac90de5c82e5caa5251a222772b04ed885f00ee1746a9730f464c",
+  "source": "/home/orangepi/wheel_robot/src/wheel_robot/scripts/shiwai_arch.py",
+  "installed": "/home/orangepi/wheel_robot/install/wheel_robot/lib/wheel_robot/shiwai_arch.py",
+  "logic_unchanged": true,
+  "probe": "SHEBANG_OK /usr/bin/python3",
+  "original_unchanged": true,
+  "no_robot_start": true
+}

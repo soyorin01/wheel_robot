@@ -1,0 +1,97 @@
+/step_detector:
+  ros__parameters:
+    depth_topic: "/camera/depth/image_raw"
+    camera_info_topic: "/camera/depth/camera_info"
+    detection_topic: "/step_detector/detection"
+    debug_image_topic: "/step_detector/debug_image"
+
+    depth_scale_m: 0.001
+    float_depth_scale_m: 1.0
+    fallback_horizontal_fov_deg: 58.0
+    fallback_vertical_fov_deg: 45.0
+
+    roi_x_min: 0.12
+    roi_x_max: 0.88
+    roi_y_min: 0.18
+    roi_y_max: 0.90
+    ground_roi_y_min: 0.58
+    ground_roi_y_max: 0.98
+    min_distance_m: 0.15
+    max_distance_m: 1.60
+    sample_stride: 4
+
+    ransac_iterations: 80
+    ransac_sample_points: 2500
+    ground_distance_threshold_m: 0.012
+    min_ground_points: 120
+    min_ground_normal_y_abs: 0.45
+
+    step_height_min_m: 0.03
+    step_height_max_m: 0.075
+    target_step_height_m: 0.05
+    min_step_pixels: 35
+    min_step_width_px: 7
+    min_step_height_px: 4
+    min_step_width_m: 0.10
+    edge_band_depth_m: 0.025
+    front_edge_percentile: 0.12
+    min_edge_pose_points: 12
+    edge_pose_max_rmse_m: 0.020
+    morph_kernel_size: 3
+    min_confidence: 0.50
+    confirm_frames: 5
+
+    publish_debug_image: true
+    visualization_max_distance_m: 1.40
+    terminal_log_period_s: 1.0
+    enable_file_log: true
+    log_dir: "/home/orangepi/wheel_robot/log/step_approach"
+
+/step_approach_test:
+  ros__parameters:
+    detection_topic: "/step_detector/detection"
+    odom_topic: "/odom"
+    cmd_vel_topic: "/cmd_vel"
+    cmd_posture_topic: "/cmd_posture"
+    cmd_jump_topic: "/cmd_jump"
+    cmd_jump_profile_topic: "/cmd_jump_profile"
+    status_topic: "/step_approach/status"
+    control_rate_hz: 30.0
+    detection_timeout_s: 0.50
+    odom_timeout_s: 0.50
+
+    stop_distance_m: 0.20
+    position_tolerance_m: 0.015
+    search_speed_m_s: 0.06
+    approach_speed_m_s: 0.50
+    trigger_distance_source: "commanded"
+    max_approach_seconds: 12.0
+    lock_hold_seconds: 0.0
+
+    # 与 jump_height_test.launch.py 保持一致：到起跳距离后直接低跳。
+    jump_enabled: true
+    use_low_jump_profile: true
+    jump_min_height_m: 0.18
+    jump_max_height_m: 0.30
+    stand_height_m: 0.25
+    forward_speed_m_s: 0.50
+    landing_forward_seconds: 2.0
+    landing_speed_scale: 0.60
+    jump_pulse_seconds: 0.20
+    recover_seconds: 3.0
+    terminal_log_period_s: 0.5
+    enable_file_log: true
+    log_dir: "/home/orangepi/wheel_robot/log/step_approach"
+
+/step_preview:
+  ros__parameters:
+    show_display: true
+    fullscreen: true
+    window_name: "Step approach preview (Q/Esc to close)"
+    debug_image_topic: "/step_detector/debug_image"
+    detection_topic: "/step_detector/detection"
+    approach_status_topic: "/step_approach/status"
+    stale_timeout_s: 1.0
+    panel_height_px: 132
+    fallback_width: 640
+    fallback_height: 480

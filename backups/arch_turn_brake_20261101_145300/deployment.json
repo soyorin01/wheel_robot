@@ -1,0 +1,8 @@
+{
+  "backup": "/home/orangepi/wheel_robot/backups/arch_turn_brake_20261101_145300",
+  "head": "8a72ddf39348648630aa6559158c490cc06ce9cb",
+  "branch": "codex/arch-turn-gap-20261101",
+  "commit": "d801657ebc8b3bf3c2a4bf37c1f66dcda7367d15",
+  "sha256": "598a1cbe798a38f4f4358018b80b6e367e373c196baca1baf5cc0261bba2f3fc",
+  "no_robot_start": true
+}

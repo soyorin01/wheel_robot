@@ -1,0 +1,9 @@
+{
+  "before": {
+    "/home/orangepi/wheel_robot/src/wheel_robot/scripts/shiwai_arch.py": "1b995972a47b6443af57c91ae37fc874dd6cea219a536dfe25dadf698360eb49",
+    "/home/orangepi/wheel_robot/src/wheel_robot/scripts/shiwai_lin_line.py": "995412482d5222bd7bc83d078ae299edae5cb29249df8779da5871eee4728692",
+    "/home/orangepi/wheel_robot/src/wheel_robot/CMakeLists.txt": "f21d80c83be4e3014fef524c77103514e8f86cd026905dbfcfa24fe185fee773",
+    "/home/orangepi/wheel_robot/readme.md": "9d8b7700223da8015d3a3ccf38f0bfc323e96a07dc4a588b96fbf58b3efecbe3"
+  },
+  "installed_previously": false
+}

@@ -1,0 +1,8 @@
+{
+  "branch": "codex/arch-turn-gap-20261101",
+  "baseline_commit": "d58ad5d31b9ab7efa13adc23cf9285024c8415c7",
+  "fix_commit": "8a72ddf39348648630aa6559158c490cc06ce9cb",
+  "backup": "/home/orangepi/wheel_robot/backups/arch_turn_gap_20261101_142356",
+  "sha256": "a2018f54fca4b861d37775a1be99ac9ba9ca062642321f17bb191ea5b6931156",
+  "no_robot_start": true
+}

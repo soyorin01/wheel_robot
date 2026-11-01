@@ -106,7 +106,7 @@ TURN_SPEED_SCALE = 0.55
 # 0.18 → 0.23（提速一档）：转弯耗时 t = 转角/角速度，转角是赛道定的（170334
 # 实测 148.5°），只能加角速度。v 必须跟着 ω 一起加，保持 R = v/ω 不変，
 # 否则走线会变。旧 R = 0.18/0.38 = 0.474，新 R = 0.23/0.48 = 0.479。
-TURN_MIN_SPEED = 0.23  #0.18->0.23（提速一档，要回退改回 0.18）
+TURN_MIN_SPEED = 0.18  #0.18->0.23（提速一档，要回退改回 0.18）
 POST_BRIDGE_STABLE_SECONDS = 0.60
 POST_BRIDGE_HISTORY_SECONDS = 0.80
 POST_BRIDGE_MAX_SAMPLE_GAP = 0.25
@@ -200,11 +200,15 @@ TURN_WAIT_HEADING_KP = 1.0  # 航向误差用弧度。
 # 而 HUD 画的是指令值所以一直显示 0.16 —— 看着像停住。
 # 同一趟 15~17.5s 用 0.12 在平地上里程涨了 0.32m，说明不是速度死区，
 # 是桥下那一段需要更大的劲儿才能从静止推起来（入弯用的 0.23 实测能推动）。
-TURN_WAIT_SPEED = 0.24  # 0.16 -> 0.24，前提是桥下那段能一直滚着不起来。
+#
+# 145027 再次坐实：6.6s 下桥指令降到 0.16，ov 从 0.74 一路衰减
+# 0.59→0.22→0.09→0.01→-0.00，dist 冻在 1.51m 整整 1.5 秒没动，
+# 直到 9.0s TURN 把指令抬到 0.18 才重新起步。0.16 就是这台车的静摩擦阈值。
+TURN_WAIT_SPEED = 0.20  # 0.16 推不动（实测 0.18 能从静止起步）；别再往下降。
 # WAIT 至少跑这么久才允许入弯。_cleared_at 是离开 BRIDGE SETTLE、真正开始
 # WAIT 的时刻；没有这道门时，只要 row 一过线就立刻 TURN，车身还没摆正就进弯。
 # 184532 实测：10.0s 刚出稳定、10.4s 就 entry=TURN，WAIT 只跑了 0.4s。
-TURN_WAIT_MIN_SECONDS = 1.8 #0.8
+TURN_WAIT_MIN_SECONDS = 2.2 #0.8，1.8
 # ---- 出弯判定 + 出弯摆正 ----
 # 旧方案靠「框内最右端 bx」两步：先 bx>=0.75W(=480) 置 armed，再 bx<0.50W(=320)
 # 才计数。实测这个 arming 根本到不了，四条录像 bx 峰值：
@@ -283,10 +287,11 @@ TARGET_OFFSET_PIXELS = 0.0
 # ---------- 黄色赛道边缘 HSV（仅巡线，不改变场景识别） ----------
 # OpenCV 8 位 HSV：H=0~179，S/V=0~255。
 # 这里是节点默认值；config/shiwai.yaml 的 lane_yellow_* 参数优先。
-LANE_YELLOW_H_MIN = 24
+
+LANE_YELLOW_H_MIN = 20   # 原 24，泡沫实测最低到 22
 LANE_YELLOW_H_MAX = 40
-LANE_YELLOW_S_MIN = 35
-LANE_YELLOW_V_MIN = 70
+LANE_YELLOW_S_MIN = 45   # 原 35，白布 S 最高 38，不能再低
+LANE_YELLOW_V_MIN = 90   # 原 70，压掉暗处杂点
 
 # ---------- 巡线掩膜中的黄黑条纹排除（不影响场景识别） ----------
 # 不再把"靠近暗地面"的黄边当作警示胶带；必须有局部重复的黄/黑交替。
@@ -309,7 +314,7 @@ MINIMUM_FORWARD_SPEED = 0.2  #0.2
 # 唯一瓶颈（t = 转角/角速度）。0.48 大约让大弯从 7.55s 缩到 6.0s。
 # 风险：泡沫出境更快，若出现 TURN LOST 就先退回 0.43 或把
 # TURN_HEADING_RAMP_FRAMES 从 8 加到 10。回退就是改回 0.38。
-MAX_ANGULAR_SPEED = 0.48  #0.4，0.55，0.45，0.4，0.38 -> 0.48
+MAX_ANGULAR_SPEED = 0.38  #0.4，0.55，0.45，0.4，0.38 -> 0.48
 
 # 转向比例增益：err=1 时输出的角速度 = STEERING_KP × MAX_ANGULAR_SPEED。
 # 偏大 → 左右画龙（实测峰峰 40cm 以上），冲桥会被甩下去；
@@ -341,7 +346,10 @@ BRIDGE_RETURN_DELTA_DEG = 2.0
 BRIDGE_EXIT_ROLL_RATE_DEG = 15.0
 BRIDGE_EXIT_PITCH_RATE_DEG = 20.0
 BRIDGE_EXIT_STABLE_SECONDS = 0.30  # 有效新 IMU 样本的累计平稳时间。
-BRIDGE_EXIT_SPEED = 0.16          # m/s，离桥确认不再请求冲桥速度。
+# 0.16 → 0.20。0.16 只在「已经滚起来」时能用；车一旦滑行到停就再也起不来
+# （实测启动阈值 ≈0.18）。145027 实测：exit_slow 6.2s 还在 ov=0.79，
+# 指令降到 0.16 后一路滑到 0.00，dist 从 7.8s 起冻在 1.51m 不动了。
+BRIDGE_EXIT_SPEED = 0.20          # m/s，离桥确认不再请求冲桥速度。
 # exit_slow 的前进预算。预算用完进 exit_hold，以前那里是直接发 0。
 # 1.20 → 2.00 / 0.25 → 0.50：给够时间让它在滚动中确认回平、直接进 done，
 # 尽量连 exit_hold 都不进。
@@ -350,7 +358,8 @@ BRIDGE_EXIT_MAX_DISTANCE = 0.50   # 轮式里程仅限制继续直冲，不单�
 # exit_hold 不再停车：保持这个速度滚行，一边滚一边回平确认。
 # 211948 实测原来那里直接发 0，4.533s→4.600s 一帧从 0.24 砸到 0.00
 # （等效 −3.6 m/s²），接着又从 0 以 0.25 m/s² 爬回 0.16 —— 这就是下桥顿挫。
-BRIDGE_EXIT_HOLD_SPEED = 0.16
+# 0.16 → 0.20：与 BRIDGE_EXIT_SPEED / TURN_WAIT_SPEED 对齐，全程不低于启动阈值。
+BRIDGE_EXIT_HOLD_SPEED = 0.20
 BRIDGE_EXIT_SETTLE_TIMEOUT = 3.0  # 滚行确认一直不回平才报故障；不强判离桥。
 BRIDGE_EXIT_RETILT_ROLL_DEG = 6.0
 BRIDGE_EXIT_RETILT_PITCH_DEG = 12.0
@@ -2080,7 +2089,11 @@ class TrackSceneDetector:
 
         roi = debug[cw_y0:cw_y1, x0:x1]
         if cw_mask.size > 1 and roi.size > 0 and cw_mask.shape[:2] == roi.shape[:2]:
-            stripe = cv2.cvtColor(cw_mask, cv2.COLOR_GRAY2BGR)
+            # 原来 np.maximum(roi, stripe) 把斑马线掩码画成纯白 255，和巡线的
+            # 黄线掩码（也是纯白）完全分不开，人行道前后看着就是「一片白噪点」
+            # （145027 反馈）。改成暗青色，一眼能区分「白=巡线黄线 / 青=斑马线」。
+            tint = (cw_mask.astype(np.float32) * 0.38).astype(np.uint8)
+            stripe = np.dstack([np.zeros_like(tint), tint, tint])  # BGR 暗青
             debug[cw_y0:cw_y1, x0:x1] = np.maximum(roi, stripe)
         box_tone = 220 if crosswalk else 90
         cv2.rectangle(debug, (x0, cw_y0), (x1, cw_y1), (box_tone, box_tone, box_tone), 1)

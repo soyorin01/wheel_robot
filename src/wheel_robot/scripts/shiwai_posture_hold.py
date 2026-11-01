@@ -43,7 +43,7 @@ shiwai_lane_fixed.py：
 临时改姿态（一般不用）：
 
     ros2 run wheel_robot shiwai_posture_hold.py --ros-args \
-        -p pitch_deg:=15.0 -p height:=0.18
+        -p pitch_deg:=10.0 -p height:=0.2
 """
 
 from __future__ import annotations

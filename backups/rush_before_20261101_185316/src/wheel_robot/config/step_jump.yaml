@@ -1,0 +1,57 @@
+/step_jump_demo:
+  ros__parameters:
+    dry_run: true
+    jump_enabled: false
+
+    depth_topic: "/camera/depth/image_raw"
+    odom_topic: "/odom"
+    control_rate_hz: 30.0
+
+    # 台阶识别 ROI。这个区域对准画面中上部的台阶前沿，避开下半部分大面积地面。
+    roi_x_min: 0.20
+    roi_x_max: 0.80
+    roi_y_min: 0.18
+    roi_y_max: 0.58
+    depth_percentile: 0.10
+    min_valid_fraction: 0.04
+
+    # true 时不用“最近距离”判断台阶，而是找水平深度突变/台阶前沿。
+    use_step_edge_detector: true
+    step_edge_gap_rows: 8
+    step_edge_smooth_rows: 5
+    step_edge_min_jump_m: 0.06
+    step_edge_min_row_valid_fraction: 0.20
+
+    # 看到台阶在这个距离范围内，连续确认后开始靠近。
+    detect_min_distance_m: 0.18
+    arm_distance_m: 1.00
+    confirm_frames: 5
+
+    # 默认逻辑：台阶前沿在画面中逐渐下移；到达阈值后停车确认/起跳。
+    # edge_takeoff_y_norm 是 ROI 内部的纵向比例，越大越靠近画面下方，也就是车越靠近台阶。
+    use_edge_position_trigger: true
+    edge_takeoff_y_norm: 0.78
+
+    # 备用逻辑：如果以后改成等台阶消失，再打开这个。
+    use_lost_step_trigger: false
+    lost_confirm_frames: 5
+    depth_timeout_seconds: 0.50
+    blind_takeoff_distance_m: 0.15
+
+    # 备用旧逻辑：use_lost_step_trigger=false 时，按“距离台阶正面多远”算起跳点。
+    takeoff_distance_m: 0.28
+    takeoff_tolerance_m: 0.025
+
+    approach_speed_m_s: 0.12
+    jump_forward_speed_m_s: 0.18
+    max_approach_seconds: 8.0
+    jump_pulse_seconds: 0.20
+    landing_forward_seconds: 0.60
+    final_stop_seconds: 1.00
+    jump_min_height_m: 0.18
+    jump_max_height_m: 0.30
+
+    posture_height_m: 0.25
+    posture_roll_deg: 0.0
+    posture_pitch_deg: 0.0
+    posture_slide_m: 0.0

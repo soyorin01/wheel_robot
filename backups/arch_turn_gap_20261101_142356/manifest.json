@@ -1,0 +1,9 @@
+{
+  "branch": "codex/arch-turn-gap-20261101",
+  "base_head": "8677948fc525f5e878234f0c7f4cee96edc80776",
+  "base_branch": "main",
+  "backup": "/home/orangepi/wheel_robot/backups/arch_turn_gap_20261101_142356",
+  "source_sha256": "d6be5588eee3bf3e6ced7340cf0d4817b523e3be7d2ff4f1a98b179d93b8ce96",
+  "status_before": "M readme.md\n M src/wheel_robot/CMakeLists.txt\n M src/wheel_robot/scripts/shiwai_lin_line.py\n M src/wheel_robot/scripts/shiwai_posture_hold.py\n M src/wheel_robot/tools/hud_vw_series.py\n?? backups/\n?? logs/\n?? recordings/course_20261031_140852.avi.json\n?? recordings/course_20261031_144317.avi.json\n?? recordings/course_20261031_153928.avi.json\n?? src/wheel_robot/scripts/shiwai_arch.py",
+  "baseline_commit": "d58ad5d31b9ab7efa13adc23cf9285024c8415c7"
+}
