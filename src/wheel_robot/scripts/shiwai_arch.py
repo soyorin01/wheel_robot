@@ -2571,15 +2571,21 @@ class BridgeTraversal:
 
 
 # arch-v3: 保留桥前/桥上/弯中控制；新视觉区域补充低信息量限速与丢线保护。
-ARCH_VERSION = "arch-v4"
+ARCH_VERSION = "arch-v5"
 TURN_GAP_MAX_RATIO = 0.30       # 同一历史弯沿上的最大断口，640px 图像为 192px。
 TURN_GAP_CORRIDOR_RATIO = 0.04  # 当前实测点须接近上一条可信边线。
 TURN_GAP_MIN_SPAN_RATIO = 0.65
 TURN_GAP_POSITION_JUMP = 0.25
 TURN_GAP_CONFIRM_FRAMES = 3
-TURN_GAP_HOLD_SECONDS = 0.35
-TURN_GAP_HOLD_DISTANCE = 0.04
-TURN_GAP_SPEED_MAX = 0.10
+TURN_GAP_BRAKE_SECONDS = 0.80
+TURN_GAP_BRAKE_DISTANCE = 0.16
+TURN_GAP_BRAKE_DEGREES = 12.0
+TURN_GAP_STOP_SPEED = 0.05
+TURN_GAP_STILL_SECONDS = 0.20
+TURN_GAP_SCAN_SECONDS = 1.0
+TURN_GAP_SCAN_DEGREES = 12.0
+TURN_GAP_SCAN_SPEED = 0.20
+TURN_GAP_OBSERVATION_SECONDS = 0.20
 TURN_GAP_JOINED_SPEED_MAX = 0.14
 ARCH_SINGLE_SPEED_MAX = 0.18  # 单侧只能估算中线，不以高边线置信度当作双边可靠。
 ARCH_DUAL_SPEED_MAX = 0.30
@@ -2926,6 +2932,9 @@ class ArchYellowLineDetector(DualYellowLineDetector):
         self._turn_gap_reference = None
         self._turn_gap_pending_pos = None
         self._turn_gap_confirm = 0
+        self.turn_gap_near_ready = False
+        self._turn_gap_near_count = 0
+        self._turn_gap_near_point = None
 
     def set_arch_enabled(self,enabled):
         enabled=bool(enabled)
@@ -3083,7 +3092,10 @@ class ArchYellowLineDetector(DualYellowLineDetector):
         return edges
 
     def _turn_gap_check(self, result, active):
+        self.turn_gap_near_ready = False
         if not active or not (result.turn_entry_ready or self._curve_turn_entry_ready):
+            self._turn_gap_near_count = 0
+            self._turn_gap_near_point = None
             self._turn_gap_reference = None
             self._turn_gap_confirm = 0
             self._turn_gap_pending_pos = None
@@ -3097,6 +3109,31 @@ class ArchYellowLineDetector(DualYellowLineDetector):
         span = (float(np.ptp(candidate['measured'][:, 0 if candidate['horizontal'] else 1]))
                 if candidate is not None else 0.)
         loss = not result.valid or result.confidence < .65
+        # Short segments may support a bounded search, never a new midpoint.
+        # Use CURRENT observed near-ground points, not extrapolated path samples.
+        measured = candidate['measured'] if candidate is not None else np.empty((0, 2))
+        height, width = result.debug_frame.shape[:2]
+        same_side = candidate is not None and ref is not None and candidate['side'] == ref['side']
+        near_point = (np.median(measured[measured[:, 1] >= np.max(measured[:, 1])-10.], axis=0)
+                      + [self._curve_debug.get('x0', 0), self._curve_debug.get('y0', 0)]
+                      if len(measured) else None)
+        # Global confidence penalizes short coverage; search uses local fit quality.
+        # This lower threshold NEVER authorizes forward driving or midpoint recovery.
+        near = (same_side and result.valid and result.confidence >= .50 and len(measured) >= 40
+                and candidate['rms'] <= 3.0 and candidate['fit_fraction'] >= .85
+                and (candidate['path'][-1, 0]-candidate['path'][0, 0])*ref['direction'] > 0
+                and float(np.max(np.ptp(measured, axis=0))) >= .10*width
+                and near_point[1] >= .78*height)
+        stable_near = (near and (self._turn_gap_near_point is None
+                       or np.linalg.norm(near_point-self._turn_gap_near_point) <= .05*width))
+        self._turn_gap_near_count = self._turn_gap_near_count+1 if stable_near else 0
+        self._turn_gap_near_point = near_point.copy() if near else None
+        self.turn_gap_near_ready = self._turn_gap_near_count >= 4
+        # A corner can turn from horizontal to longitudinal as the robot turns.
+        # Require real depth coverage and repeated observations to release the guard.
+        depth_supported = (same_side and not loss and result.confidence >= .80
+                           and len(measured) >= 60 and near_point[1] >= .78*height
+                           and float(np.ptp(measured[:, 1])) >= .28*height)
         shrink = ref is not None and (candidate is None or candidate['side'] != ref['side']
                   or candidate['horizontal'] != ref['horizontal']
                   or span < TURN_GAP_MIN_SPAN_RATIO*ref['span'])
@@ -3104,7 +3141,7 @@ class ArchYellowLineDetector(DualYellowLineDetector):
         recovering = self.turn_gap_state == 'suspect'
         suspect = ref is not None and (loss or shrink or jump or recovering)
         if suspect:
-            consistent = (not loss and not shrink and
+            consistent = (not loss and (not shrink or depth_supported) and
                           (self._turn_gap_pending_pos is None
                            or abs(result.lateral_error-self._turn_gap_pending_pos) <= .08))
             self._turn_gap_confirm = self._turn_gap_confirm+1 if consistent else 0
@@ -3636,6 +3673,13 @@ class ShiWaiFollower(Node):
         self._turn_gap_distance = 0.0
         self._turn_gap_command = (0.0, 0.0)
         self._turn_gap_stopped = False
+        self._turn_gap_phase = 'off'
+        self._turn_gap_yaw = 0.0
+        self._turn_gap_still_at = None
+        self._turn_gap_scan_at = None
+        self._turn_gap_scan_yaw = 0.0
+        self._turn_gap_scan_distance = 0.0
+        self._turn_gap_observed_at = None
         self._current_height = self.stand_height
         self._target_height = self.stand_height
         self._current_roll = 0.0
@@ -4609,10 +4653,6 @@ class ShiWaiFollower(Node):
     def _control_cycle(self) -> None:
         now = time.monotonic()
         self._sync_bridge(now)
-        # 时间/里程预算按控制时钟检查，即使摄像头没有新帧也不能继续重发保持指令。
-        if self._turn_gap_since is not None and self._turn_gap_expired(now):
-            self._turn_gap_stopped = True
-            self._publish_zero('turn_gap_budget')
         if self._bridge.state == "fault":
             self._publish_zero("bridge_fault")
         with self._frame_lock:
@@ -4636,6 +4676,11 @@ class ShiWaiFollower(Node):
             self._update_height(now)
             self._log(now, "画面超时，停车")
             return
+        # Check budgets on every control tick, after camera/fault safety checks.
+        if self._turn_gap_since is not None:
+            if self._bridge.state == 'fault' or self._holding_stop():
+                self._turn_gap_phase = 'stop'
+            self._turn_gap_tick(now, allow_scan=False)
         if sequence == self._last_sequence:
             if self._holding_stop():
                 self._publish(0.0, 0.0)
@@ -4711,10 +4756,54 @@ class ShiWaiFollower(Node):
         self._show(result, *command, self.enable_motion, scene)
 
     def _turn_gap_expired(self, now: float) -> bool:
+        b = self._bridge
         return (self._turn_gap_since is not None and (
-            now-self._turn_gap_since >= TURN_GAP_HOLD_SECONDS
-            or self._bridge.distance-self._turn_gap_distance >= TURN_GAP_HOLD_DISTANCE
-            or not self._bridge.fresh(now) or self._turn_gap_command[0] <= 0.0))
+            now-self._turn_gap_since >= TURN_GAP_BRAKE_SECONDS
+            or b.distance-self._turn_gap_distance >= TURN_GAP_BRAKE_DISTANCE
+            or abs(b.angle_delta(b.yaw, self._turn_gap_yaw)) >= TURN_GAP_BRAKE_DEGREES))
+
+    def _turn_gap_tick(self, now: float, allow_scan: bool = False):
+        """Budget checks also run without new camera frames; never request forward motion."""
+        b = self._bridge
+        phase = self._turn_gap_phase
+        observed = (self._turn_gap_observed_at is not None
+                    and now-self._turn_gap_observed_at <= TURN_GAP_OBSERVATION_SECONDS)
+        if not b.fresh(now) or not self.enable_motion or self._turn_gap_command[1] == 0.0:
+            phase = 'stop'
+        if phase == 'brake' and (self._turn_gap_expired(now) or abs(b.speed) <= TURN_GAP_STOP_SPEED):
+            phase = 'wait'
+        if phase == 'wait':
+            if abs(b.speed) <= TURN_GAP_STOP_SPEED:
+                if self._turn_gap_still_at is None:
+                    self._turn_gap_still_at = now
+                if (allow_scan and observed and self.line_detector.turn_gap_near_ready
+                        and now-self._turn_gap_still_at >= TURN_GAP_STILL_SECONDS):
+                    phase = 'scan'
+                    self._turn_gap_scan_at = now
+                    self._turn_gap_scan_yaw = b.yaw
+                    self._turn_gap_scan_distance = b.distance
+            else:
+                self._turn_gap_still_at = None
+        if phase == 'scan' and (
+                not observed or not self.line_detector.turn_gap_near_ready
+                or now-self._turn_gap_scan_at >= TURN_GAP_SCAN_SECONDS
+                or abs(b.angle_delta(b.yaw, self._turn_gap_scan_yaw)) >= TURN_GAP_SCAN_DEGREES
+                or b.distance-self._turn_gap_scan_distance >= .04 or abs(b.speed) > .08):
+            phase = 'stop'  # One attempt per loss episode, never rearm on a noisy frame.
+        self._turn_gap_phase = phase
+        self._turn_gap_stopped = phase in ('wait', 'stop')
+        angular = (self._turn_gap_command[1] if phase == 'brake' else
+                   math.copysign(TURN_GAP_SCAN_SPEED, self._turn_gap_command[1]) if phase == 'scan' else 0.0)
+        command = (0.0, angular)
+        self._reset_post_bridge_speed('gap-'+phase)
+        if angular:
+            self._publish(*command)
+            self._last_command, self._last_command_valid = command, True
+            self._last_motion_time = now
+        else:
+            self._publish_zero('turn_gap_'+phase)
+        self._have_error = False
+        return command
 
     def _handle_turn_gap(self, result: DetectionResult, now: float) -> bool:
         pending = self._in_right_turn() and self.line_detector.turn_gap_state == 'suspect'
@@ -4724,32 +4813,27 @@ class ShiWaiFollower(Node):
                 self._lost_since = None
             self._turn_gap_since = None
             self._turn_gap_stopped = False
+            self._turn_gap_phase = 'off'
+            self._turn_gap_still_at = None
+            self._turn_gap_observed_at = None
             return False
         b = self._bridge
         if self._turn_gap_since is None:
             self._turn_gap_since = now
             self._turn_gap_distance = b.distance
+            self._turn_gap_yaw = b.yaw
+            self._turn_gap_phase = 'brake'
+            self._turn_gap_still_at = None
             expected_sign = self.steering_sign*self.line_detector.expected_turn_direction
             safe_previous = (self._last_command_valid
                              and self._last_command[1]*expected_sign > 0.0)
-            self._turn_gap_command = (
-                min(TURN_GAP_SPEED_MAX, max(0.0, self._last_command[0])), self._last_command[1]
-            ) if safe_previous else (0.0, 0.0)
-            self._announce("弯道边线不连续：暂不采用跳变中线，限时低速保持上一可靠转向")
-        if self._turn_gap_expired(now):
-            self._turn_gap_stopped = True  # 传感器恢复或阶段重复检测不能自行重开预算。
-        self._reset_post_bridge_speed('gap-stop' if self._turn_gap_stopped else 'gap-hold')
-        command = self._turn_gap_command if self.enable_motion and not self._turn_gap_stopped else (0.0, 0.0)
-        if command[0] > 0.0:
-            self._publish(*command)
-            self._last_command, self._last_command_valid = command, True
-            self._last_motion_time = now
-        else:
-            self._publish_zero('turn_gap_stop')
-        self._have_error = False
+            self._turn_gap_command = (0.0, self._last_command[1]) if safe_previous else (0.0, 0.0)
+            self._announce("弯道断线：前进目标立即归零，限时保留可靠转向；停稳且近边线可信才限角找线")
+        self._turn_gap_observed_at = now
+        command = self._turn_gap_tick(now, allow_scan=True)
         self._update_height(now)
-        self._show(result, *command, command[0] > 0.0,
-                   extra='GAP STOP / WAIT RELIABLE LINE' if self._turn_gap_stopped else 'GAP HOLD / NO REVERSE')
+        self._show(result, *command, abs(command[1]) > 0.0,
+                   extra='GAP '+self._turn_gap_phase.upper()+' / ZERO FORWARD')
         return True
 
     def _reset_post_bridge_speed(self, mode: str = "wait") -> None:

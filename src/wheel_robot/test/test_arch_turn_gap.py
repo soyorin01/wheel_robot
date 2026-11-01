@@ -92,7 +92,7 @@ class TurnGapTests(unittest.TestCase):
         self.assertGreater(byid[144]['error'],0.)
         self.assertTrue(all(r['w']<=0 for r in rows if r['frame']>=144))
         self.assertTrue(all(r['v']==0. and r['w']==0. for r in rows if r['frame']>=152))
-        self.assertLessEqual(max(r['v'] for r in rows if r['state']=='suspect'),self.m.TURN_GAP_SPEED_MAX)
+        self.assertEqual(max(r['v'] for r in rows if r['state']=='suspect'),0.)
         self.assertTrue(all(not r['valid'] for r in rows if r['state']=='suspect'))
 
     def test_join_uses_only_observed_pixels_and_does_not_make_two_sides(self):
@@ -120,8 +120,9 @@ class TurnGapTests(unittest.TestCase):
         r=self.detect(o,np.zeros((480,640),np.uint8))
         self.assertEqual(o.line_detector.turn_gap_state,'suspect')
         o._last_command=(.18,-.28);o._last_command_valid=True
-        o._bridge.imu_at=o._bridge.odom_at=10.
-        self.assertTrue(o._handle_turn_gap(r,10.));self.assertEqual(o.sent[-1],(.10,-.28))
+        o._bridge.imu_at=o._bridge.odom_at=10.;o._bridge.speed=.24
+        self.assertTrue(o._handle_turn_gap(r,10.));self.assertEqual(o.sent[-1],(0.,-.28))
+        o._bridge.speed=0.
         o._bridge.imu_at=o._bridge.odom_at=10.4
         self.assertTrue(o._handle_turn_gap(r,10.4));self.assertEqual(o.sent[-1],(0.,0.))
         o._bridge.imu_at=o._bridge.odom_at=10.5
@@ -132,8 +133,8 @@ class TurnGapTests(unittest.TestCase):
         for reason in ('distance','sensor'):
             o=self.new();self.warm(o);r=self.detect(o,self.masks[150])
             o._last_command=(.18,-.28);o._last_command_valid=True
-            o._bridge.imu_at=o._bridge.odom_at=10.;o._handle_turn_gap(r,10.)
-            if reason=='distance':o._bridge.distance=.041
+            o._bridge.imu_at=o._bridge.odom_at=10.;o._bridge.speed=.24;o._handle_turn_gap(r,10.)
+            if reason=='distance':o._bridge.distance=.161
             else:o._bridge.imu_at=9.
             o._handle_turn_gap(r,10.1);self.assertEqual(o.sent[-1],(0.,0.))
             o._bridge.imu_at=o._bridge.odom_at=10.2;o._bridge.distance=0.
@@ -178,5 +179,118 @@ class TurnGapTests(unittest.TestCase):
     def test_lf_and_safe_import(self):
         self.assertNotIn(b'\r',SOURCE.read_bytes())
         self.assertNotIn('rclpy',sys.modules)
+
+
+    def start_gap(self):
+        o=self.new();self.warm(o);r=self.detect(o,self.masks[150])
+        o._last_command=(.18,-.28);o._last_command_valid=True
+        o._bridge.imu_at=o._bridge.odom_at=10.;o._bridge.speed=.24
+        o._handle_turn_gap(r,10.)
+        return o,r
+
+    def test_braking_keeps_right_turn_until_measured_speed_falls(self):
+        o,r=self.start_gap()
+        self.assertEqual(o.sent[-1],(0.,-.28))
+        for t,v in [(10.1,.25),(10.3,.20),(10.5,.09)]:
+            o._bridge.imu_at=o._bridge.odom_at=t;o._bridge.speed=v
+            o._handle_turn_gap(r,t);self.assertEqual(o.sent[-1],(0.,-.28))
+        o._bridge.imu_at=o._bridge.odom_at=10.6;o._bridge.speed=.03
+        o._handle_turn_gap(r,10.6);self.assertEqual(o.sent[-1],(0.,0.))
+        self.assertEqual(o._turn_gap_phase,'wait')
+
+    def test_brake_time_yaw_distance_and_stale_bounds(self):
+        for bound in ('time','yaw','distance','stale'):
+            o,r=self.start_gap();now=10.81 if bound=='time' else 10.1
+            o._bridge.imu_at=o._bridge.odom_at=now
+            if bound=='yaw':o._bridge.yaw=-12.1
+            if bound=='distance':o._bridge.distance=.161
+            if bound=='stale':o._bridge.imu_at=9.
+            o._turn_gap_tick(now)
+            self.assertEqual(o.sent[-1],(0.,0.),bound)
+
+    def test_scan_requires_still_current_near_edge_and_is_one_shot(self):
+        for bound in ('time','yaw','distance','motion','lost','stale_camera','stale_imu'):
+            o,r=self.start_gap();o._bridge.speed=0.
+            o._bridge.imu_at=o._bridge.odom_at=10.1;o._handle_turn_gap(r,10.1)
+            o.line_detector.turn_gap_near_ready=False
+            o._bridge.imu_at=o._bridge.odom_at=10.4;o._handle_turn_gap(r,10.4)
+            self.assertEqual(o.sent[-1],(0.,0.))
+            o.line_detector.turn_gap_near_ready=True;o._handle_turn_gap(r,10.41)
+            self.assertEqual(o.sent[-1],(0.,-.20))
+            now=11.42 if bound=='time' else 10.51
+            o._bridge.imu_at=o._bridge.odom_at=now;o._turn_gap_observed_at=now
+            if bound=='yaw':o._bridge.yaw=-12.1
+            if bound=='distance':o._bridge.distance=.041
+            if bound=='motion':o._bridge.speed=.09
+            if bound=='lost':o.line_detector.turn_gap_near_ready=False
+            if bound=='stale_camera':o._turn_gap_observed_at=now-.21
+            if bound=='stale_imu':o._bridge.imu_at=now-1.
+            o._turn_gap_tick(now);self.assertEqual(o.sent[-1],(0.,0.),bound)
+            o._bridge.speed=0.;o._bridge.yaw=0.;o._bridge.distance=0.
+            o.line_detector.turn_gap_near_ready=True
+            o._bridge.imu_at=o._bridge.odom_at=now+.1;o._handle_turn_gap(r,now+.1)
+            self.assertEqual(o.sent[-1],(0.,0.),bound+' rearmed')
+
+    def test_no_new_frame_stops_rotation_when_speed_falls(self):
+        o,r=self.start_gap();o._bridge.speed=.02
+        o._bridge.imu_at=o._bridge.odom_at=10.1
+        o._camera_ok=True;o._frame=self.frame;o._frame_time=10.1
+        o._sequence=o._last_sequence=5;o._sync_bridge=lambda now:None
+        with patch.object(self.m.time,'monotonic',return_value=10.1):o._control_cycle()
+        self.assertEqual(o.sent[-1],(0.,0.))
+
+    def test_fault_or_missing_camera_never_publishes_transient_rotation(self):
+        for cause in ('fault','camera'):
+            o,r=self.start_gap();o.sent.clear()
+            o._bridge.imu_at=o._bridge.odom_at=10.1
+            o._camera_ok=cause!='camera';o._frame=self.frame;o._frame_time=10.1
+            o._sequence=o._last_sequence=5;o._sync_bridge=lambda now:None
+            if cause=='fault':o._bridge.state='fault'
+            with patch.object(self.m.time,'monotonic',return_value=10.1):o._control_cycle()
+            self.assertTrue(o.sent)
+            self.assertTrue(all(c==(0.,0.) for c in o.sent))
+
+    def test_wrong_previous_steering_or_disabled_motion_cannot_start_scan(self):
+        for disabled in (True,False):
+            o=self.new();self.warm(o);r=self.detect(o,self.masks[150])
+            o.enable_motion=not disabled
+            o._last_command=(.18,-.28 if disabled else .28);o._last_command_valid=True
+            o._bridge.imu_at=o._bridge.odom_at=10.;o._bridge.speed=.24
+            o._handle_turn_gap(r,10.);self.assertEqual(o.sent[-1],(0.,0.))
+            self.assertEqual(o._turn_gap_phase,'stop')
+
+    def test_depth_recovery_needs_real_support_and_three_frames(self):
+        o,r=self.start_gap();d=o.line_detector
+        c=d._curve_debug['boundaries'][0]
+        y0=d._curve_debug['y0'];x0=d._curve_debug['x0']
+        # Depth measured in ROI coordinates; near threshold is in full-image coordinates.
+        c['measured']=np.column_stack((np.linspace(180,60,150),np.linspace(310-y0,459-y0,150)))
+        c['horizontal']=False
+        for i in range(3):
+            q=copy.copy(r);q.valid=True;q.confidence=.90;q.lateral_error=.15
+            d._turn_gap_check(q,True)
+            self.assertEqual(q.valid,i==2)
+        self.assertEqual(d.turn_gap_state,'clear')
+
+    def test_latest_recording_does_not_accept_short_corner_as_midpoint(self):
+        path=HERE/'fixtures/arch_turn_brake_masks.npz'
+        if not path.exists():path=HERE/'arch_turn_brake_masks.npz'
+        data=np.load(path);o=self.new();rows=[]
+        for i,mask in zip(data['frame_ids'],data['masks']):
+            r=self.detect(o,mask)
+            if i==115:
+                o.line_detector._curve_turn_entry_ready=True;o.line_detector._curve_turn_entry_frames=12
+            rows.append((int(i),r.valid,r.error,o.line_detector.turn_gap_state,o.line_detector.turn_gap_near_ready))
+        byid={r[0]:r for r in rows}
+        self.assertTrue(any(r[3]=='joined' for r in rows if 140<=r[0]<=150))
+        self.assertEqual(byid[150][3],'suspect');self.assertFalse(byid[150][1])
+        self.assertFalse(any(r[1] and r[2]<0 for r in rows if 149<=r[0]<=165))
+        # The actual late recording flickers: it must not be promoted into a reliable center.
+        self.assertFalse(any(r[1] for r in rows if r[0]>180))
+        # A stable repeat of a real near segment supports searching, not forward driving.
+        mask=data['masks'][list(data['frame_ids']).index(220)]
+        for _ in range(5):r=self.detect(o,mask)
+        self.assertTrue(o.line_detector.turn_gap_near_ready)
+        self.assertFalse(r.valid)
 
 if __name__=='__main__':unittest.main(verbosity=2)
