@@ -1,4 +1,4 @@
-import math, time
+import math, random, time
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
@@ -26,7 +26,15 @@ class Fake(Node):
         phase = t % 6.5
         roll = 6.0 if 3.5 <= phase < 4.7 else 0.0
         yaw = 0.0 if t < 7.5 else -min(120.0 * (t - 7.5), 130.0)
-        speed = 0.50 if abs(yaw) < 90.0 else 0.0
+        if abs(yaw) < 90.0:
+            speed = 0.50
+        else:
+            # 复刻真实 /odom 停住时的抖动：0.00~0.07 之间，偶尔冒 ±0.14 尖峰。
+            # 旧的自检这里给的是干净的 0.00，所以漏掉了「5 秒计时被噪声反复清零」
+            # 这个实车 bug（11-01 19:19 那趟车停在斑马线前不动）。
+            speed = random.uniform(-0.07, 0.07)
+            if random.random() < 0.08:
+                speed = random.choice([-0.14, 0.14])
         qw, qx, qy, qz = quat(roll, 0.0, yaw)
         stamp = self.get_clock().now().to_msg()
         imu = Imu()

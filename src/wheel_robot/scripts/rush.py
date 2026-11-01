@@ -588,6 +588,16 @@ RUSH_SPEED = 0.60                 # 全程直冲速度（顶格 = 遥控最大�
 RUSH_MIN_SPEED = 0.20             # 对齐段速度下限
 RUSH_BRIDGE_CLIMB_SPEED = 0.60    # 冲桥速度（原 0.50；真掉桥就先降回 0.50）
 RUSH_BRIDGE_ACCEL = 0.60          # 桥区加速上限 m/s²
+# 过桥收尾「等不到回平确认」的兜底（11-01 19:45 实车踩坑）。
+# 原逻辑在 exit_hold 滚行 BRIDGE_EXIT_SETTLE_TIMEOUT=3.0 秒仍等不到
+# dp<=BRIDGE_EXIT_PITCH_DEG(5.0) 就 fail，节点随即停车、整趟报废。
+# 实车：起步基线在平地上学（pitch=-1.6），过桥后 pitch 稳定在 +7.9，
+# dp 永远 ≈ +9.5 > 5.0，3 秒必故障；而横滚已从桥上的 -12.5° 回到 +0.5°、
+# 里程也早过了桥。这时带几度俯仰不确定继续跑，远好过在弯道前停死。
+RUSH_BRIDGE_RESCUE = True         # 关掉就完全回到原工程的硬停车行为
+RUSH_BRIDGE_RESCUE_MIN_DISTANCE = 1.00  # 进桥(crossing)后至少走了这么多米才算过桥
+RUSH_BRIDGE_RESCUE_ROLL_DEG = 4.0       # 横滚回到基线这个范围内（桥上时是 -12.5°）
+RUSH_BRIDGE_RESCUE_PITCH_DEG = 15.0     # 俯仰不超过这么多（防翻车/歪在墙上还硬走）
 RUSH_LINEAR_ACCEL = 0.25          # 线加速度上限（= 现在工程的值，用户要求先不动）
 RUSH_ANGULAR_ACCEL = 12.0         # 角加速度上限（原 1.0 太慢，转弯拉不起来）
 
@@ -609,20 +619,74 @@ STEERING_MAX_W = 0.55             # 对齐段方向盘限幅 rad/s
 # 每次触发都会在终端打印「桥后里程」，可以直接拿来标 RUSH_TURN_START_DISTANCE。
 RUSH_TURN_TRIGGER = "visual"
 RUSH_TURN_START_DISTANCE = 1.20   # m，仅 "odom" 模式使用
+# ★★★ 转弯太早/太晚就改这一行 ★★★
+# 离桥后至少走这么多米，才允许「视觉确认」触发入弯。两种模式都受它保护：
+#   "visual" —— 先满足这个里程，再等视觉确认（推荐：里程防早、视觉防错）
+#   "odom"   —— 只看里程，这个值不参与
+# 实测「视觉确认」在离桥后 0.23~0.27 m 就亮了，比弯道入口早，所以要靠它压住。
+# 标定方法（不用尺子）：跑一趟，在录像里找到车真正该起转的那一帧，
+# 读画面上第三行的「桥后=X.XXm」，把这个数填进来。日志 1 Hz 那行也有。
+RUSH_TURN_MIN_DISTANCE = 0.20     # m，0 = 不额外限制（保持原行为）
 
-RUSH_TURN_V = 0.60                # 转弯前进速度（顶格）
-RUSH_TURN_W = -2.43               # 右转为负。左轮≈1.10 / 右轮≈0.10
-                                  # （原工程转弯是 v=0.23 w=-0.48 => 左0.33 / 右0.13）
+# --------------------------------------------------------------------------
+# 转弯：直接写左右轮速度（m/s），不用再换算 v/w
+# --------------------------------------------------------------------------
+# ★★★ 要调转弯就改这两行 ★★★
+# 右转 = 左轮比右轮快。两数之差决定转多急，两数之和的一半决定前进多快。
+#
+#   硬约束（超了会被 _guard_command 自动夹住，实际轮速就不是你写的值了）：
+#     ① 左轮 + 右轮 <= 1.20        （因为 v=(左+右)/2 不能超过遥控 0.60）
+#     ② 单个轮子   <= 1.218        （遥控单轮上限）
+#   在 ① 成立时 ② 自动满足。
+#
+#   转弯半径 = 0.4118 × (左+右) / (2 × (左-右))
+#   转 90° 耗时 ≈ 1.5708 × 半径 / v，  v = (左+右)/2
+#
+#   左轮   右轮    前进v   角速度w   转弯半径   转90°   说明
+#   1.10   0.10    0.60    -2.43     0.25 m    0.65s   半径太小，实测压成 0.14m 原地打转
+#   1.00   0.20    0.60    -1.94     0.31 m    0.81s
+#   0.95   0.25    0.60    -1.70     0.35 m    0.92s
+#   0.90   0.30    0.60    -1.46     0.41 m    1.08s
+#   0.85   0.35    0.60    -1.21     0.50 m    1.31s   <-- 当前默认，对齐赛道半径
+#   0.80   0.40    0.60    -0.97     0.62 m    1.62s
+#   0.75   0.45    0.60    -0.73     0.82 m    2.15s
+#   0.70   0.50    0.60    -0.49     1.24 m    3.24s
+#   0.65   0.55    0.60    -0.24     2.47 m    6.46s   几乎是直线，转不过弯
+#   0.60   0.60    0.60     0.00     ∞        —       完全不转
+#
+# 想更快通过弯道：把两个数一起加大（但和不能超过 1.20），转得更急就加大差值。
+RUSH_TURN_LEFT = 0.85             # m/s，转弯时左轮速度
+RUSH_TURN_RIGHT = 0.35            # m/s，转弯时右轮速度（右转时比左轮慢）
+
+# 下面两个由上面自动算出，不要手改（改上面的左右轮即可）。
+RUSH_TURN_V = (RUSH_TURN_LEFT + RUSH_TURN_RIGHT) * 0.5
+RUSH_TURN_W = (RUSH_TURN_RIGHT - RUSH_TURN_LEFT) / RC_WHEEL_TRACK
+
 RUSH_TURN_YAW_DEG = 90.0          # IMU 偏航转过这么多度就算转完
 RUSH_TURN_MAX_SECONDS = 8.0       # 兜底超时，防 IMU 异常时一直转圈
 RUSH_TURN_ENTRY_HOLD = 0.20       # 离桥后禁止入弯判定的最短秒数（原 TURN_WAIT_MIN_SECONDS=2.2）
+# 起转前必须先把前进速度拉起来（11-01 19:37 实车踩坑）：
+# 过桥后有一段 BRIDGE_SETTLE_SPEED=0.10 的稳车身阶段，而入弯触发常常离桥后
+# 十几厘米就响，这时 v 还在 0.1~0.4 爬升。v 不够大时「右轮 = v + w*半轮距」
+# 会变成负数（右轮倒转），车就原地打转、不是沿弧线过弯。
+RUSH_TURN_V_READY_TOL = 0.05      # v 至少到 RUSH_TURN_V-这个值才开始旋转
+RUSH_TURN_ENTRY_ACCEL = 0.60      # 起转前拉速度用的加速度（= 原工程桥区 BRIDGE_ACCELERATION）
+RUSH_TURN_ENTRY_MAX_SECONDS = 3.0  # 拉速度兜底：这么久还没到位就照转，不卡死
 
 # --------------------------------------------------------------------------
 # 人行道停车：出弯立即停，不看斑马线
 # --------------------------------------------------------------------------
 SIDEWALK_STANDSTILL_SECONDS = 5.0   # 从「实测速度≈0」起算，保证规则要的静止 5 秒
-RUSH_STANDSTILL_SPEED = 0.03        # ov 小于这个值才算真的停住
-RUSH_STOP_SPEED_EPS = 0.02
+# --- 人行道静止判定（11-01 19:19 实车踩坑后重写）---
+# 实车 /odom 停住时在 0.00~0.07 m/s 之间抖，偶尔还冒 -0.14 的尖峰。
+# 旧逻辑是「任何一个采样超过 0.03 就把 5 秒计时清零」，于是计时反复归零，
+# 车永远凑不满 5 秒、就停在斑马线前不动（录像里 v=0.00 挂了 11.7 秒）。
+# 现在改成：低通滤波 + 累计静止时长，只有「持续明显在动」才清零。
+RUSH_STANDSTILL_SPEED = 0.08        # 滤波后速度低于这个值算静止
+RUSH_MOVING_SPEED = 0.15            # 滤波后速度高于这个值算明显在动
+RUSH_MOVING_RESET_SECONDS = 0.40    # 明显在动持续这么久才清零重计时
+RUSH_STOP_SPEED_FILTER_ALPHA = 0.25  # 速度低通系数：新采样占 25%
+RUSH_SIDEWALK_MAX_SECONDS = 20.0    # 兜底：已命令零速这么久就按停够处理
 
 # --------------------------------------------------------------------------
 # 隧道：巡线对齐 → 下蹲 → 全速盲冲
@@ -2807,12 +2871,22 @@ class RushFollower(Node):
         self._passed_finish = False
         self._finish_since: Optional[float] = None
         self._finish_exit_sent = False
-        self._stable_since: Optional[float] = None
+        # 人行道静止判定状态（详见 RUSH_STANDSTILL_SPEED 处的注释）
+        self._sidewalk_started_at: Optional[float] = None
+        self._stop_sampled_at = 0.0
+        self._stop_speed_filter = 0.0
+        self._standstill_seconds = 0.0
+        self._moving_seconds = 0.0
         self._align_frames = 0
         self._align_since: Optional[float] = None
         self._lost_since: Optional[float] = None
         self._turn_start_yaw: Optional[float] = None
         self._turn_started_at: Optional[float] = None
+        self._turn_spool_started_at: Optional[float] = None
+        self._turn_spooled = False
+        self._turn_spool_announced = False
+        self._turn_low_speed_seconds = 0.0
+        self._turn_slow_warned = False
         self._turn_done_yaw = 0.0
         self._turn_done_seconds = 0.0
         self._tunnel_rush_started: Optional[float] = None
@@ -2894,18 +2968,106 @@ class RushFollower(Node):
         self._timer = self.create_timer(1.0 / self.control_rate, self._control_timer)
 
         mode = "运动已启用" if self.enable_motion else "只看画面不发车"
+        turn_radius = (RUSH_TURN_V / abs(RUSH_TURN_W)) if RUSH_TURN_W else float("inf")
+        turn_seconds = (
+            (math.radians(RUSH_TURN_YAW_DEG) * turn_radius / RUSH_TURN_V)
+            if RUSH_TURN_V > 0 else 0.0
+        )
         self._announce(
             f"rush.py {RUSH_VERSION} 启动，{mode}。"
             f"直冲 {RUSH_SPEED:.2f} m/s，冲桥 {RUSH_BRIDGE_CLIMB_SPEED:.2f} m/s，"
-            f"转弯写死 v={RUSH_TURN_V:.2f} w={RUSH_TURN_W:+.2f}（左轮≈"
-            f"{RUSH_TURN_V - RUSH_TURN_W * RC_WHEEL_TRACK * 0.5:.2f} / 右轮≈"
-            f"{RUSH_TURN_V + RUSH_TURN_W * RC_WHEEL_TRACK * 0.5:.2f} m/s），"
             f"人行道静止 {SIDEWALK_STANDSTILL_SECONDS:.1f}s，"
             f"隧道盲冲 {RUSH_TUNNEL_SECONDS:.1f}s"
         )
         self._announce(
+            f"转弯参数：左轮 {RUSH_TURN_LEFT:+.3f} / 右轮 {RUSH_TURN_RIGHT:+.3f} m/s "
+            f"→ v={RUSH_TURN_V:.3f} w={RUSH_TURN_W:+.3f}，"
+            f"半径 {turn_radius:.2f} m，转 {RUSH_TURN_YAW_DEG:.0f}° 约 {turn_seconds:.2f}s"
+        )
+        # 直接写左右轮时最容易踩的坑：v=(左+右)/2 超过 0.60 会被自动夹住，
+        # 实际轮速就不是你写的值了 —— 开机就说清楚。
+        if abs(RUSH_TURN_LEFT) > RC_MAX_WHEEL_SPEED or abs(RUSH_TURN_RIGHT) > RC_MAX_WHEEL_SPEED:
+            self._announce(
+                f"⚠ 转弯轮速超单轮上限 {RC_MAX_WHEEL_SPEED:.3f} m/s，会被夹住！"
+            )
+        elif abs(RUSH_TURN_V) > RC_MAX_LINEAR + 1e-9:
+            scale = RC_MAX_LINEAR / abs(RUSH_TURN_V)
+            self._announce(
+                f"⚠ 转弯左右轮之和超了：(左+右)/2 = {RUSH_TURN_V:.3f} > {RC_MAX_LINEAR:.2f}，"
+                f"会被整体缩放 {scale:.3f} 倍 → 实际约 左 "
+                f"{RUSH_TURN_LEFT * scale:+.3f} / 右 {RUSH_TURN_RIGHT * scale:+.3f} m/s。"
+                f"把 RUSH_TURN_LEFT + RUSH_TURN_RIGHT 压到 <= 1.20 才准"
+            )
+        else:
+            self._announce(
+                f"转弯红线自检：左+右 = {RUSH_TURN_LEFT + RUSH_TURN_RIGHT:.3f} <= 1.20、"
+                f"单轮 <= {RC_MAX_WHEEL_SPEED:.3f}，未被夹住 OK"
+            )
+        self._announce(
             f"轮速红线：遥控包线 |v|<={RC_MAX_LINEAR:.2f}、|w|<={RC_MAX_ANGULAR:.2f}，"
             f"单轮 <= {RC_MAX_WHEEL_SPEED:.3f} m/s（超了会被自动夹住并告警）"
+        )
+        self._check_stale_install_copy()
+
+    def _check_stale_install_copy(self) -> None:
+        """开机自检：ros2 run 跑的是 install 那份，改了 src 不 build 就不生效。
+
+        实车踩过 —— RUSH_TURN_MIN_DISTANCE 从 0.00 改到 2.20，起转点还是
+        0.22~0.31 m 一动不动，因为跑的一直是 install 里的旧文件。
+        这里把 src 里的值和实际生效的值并排打出来。
+        """
+        try:
+            here = Path(__file__).resolve()
+            parts = here.parts
+            if "install" not in parts:
+                return
+            src = Path(*parts[:parts.index("install")]).joinpath(
+                "src", "wheel_robot", "scripts", "rush.py"
+            )
+            source_text = src.read_text(encoding="utf-8")
+        except (OSError, ValueError):
+            return
+        watched = (
+            "RUSH_TURN_MIN_DISTANCE", "RUSH_TURN_LEFT", "RUSH_TURN_RIGHT",
+            "RUSH_TURN_TRIGGER", "RUSH_TURN_START_DISTANCE",
+            "RUSH_SPEED", "RUSH_BRIDGE_CLIMB_SPEED", "RUSH_TUNNEL_SECONDS",
+            "RUSH_TUNNEL_SPEED", "SIDEWALK_STANDSTILL_SECONDS",
+        )
+        diffs = []
+        for name in watched:
+            running = globals().get(name)
+            if running is None:
+                continue
+            hit = re.search(
+                r"^%s\s*=\s*(.+?)\s*(?:#.*)?$" % re.escape(name),
+                source_text, re.M,
+            )
+            if hit is None:
+                continue
+            text = hit.group(1).strip()
+            if isinstance(running, bool):
+                same = text == str(running)
+            elif isinstance(running, (int, float)):
+                try:
+                    same = abs(float(text) - float(running)) < 1e-9
+                except ValueError:
+                    same = False
+            else:
+                same = text.strip("\"'") == str(running)
+            if not same:
+                diffs.append((name, text, running))
+        if not diffs:
+            self._announce(f"参数自检：正在跑的 install 文件与 src 一致 OK（{len(watched)} 项）")
+            return
+        self._announce(
+            "⚠⚠⚠ 参数没生效！ros2 run 跑的是 install 里的旧文件，改 src 不 build 不变"
+        )
+        for name, text, running in diffs:
+            shown = f"{running:.2f}" if isinstance(running, float) else str(running)
+            self._announce(f"   {name}：src 里是 {text}，实际生效的是 {shown} ← 用的是这个")
+        self._announce(
+            "   修：cd ~/wheel_robot && colcon build --packages-select wheel_robot，"
+            "或直接改 install/wheel_robot/lib/wheel_robot/rush.py"
         )
 
     # ------------------------------------------------------------------
@@ -3201,6 +3363,11 @@ class RushFollower(Node):
         acceleration = self.max_linear_acceleration
         if self._bridge.boost and linear > self._last_command[0]:
             acceleration = RUSH_BRIDGE_ACCEL
+        elif (self._mode in (self.MODE_TURN, self.MODE_WAIT_TURN)
+                and linear > self._last_command[0]):
+            # 离桥一进入 WAIT_TURN 就用桥区那套 0.60 m/s² 把 v 拉回来，
+            # 别等入弯触发才开始（那样会多直冲约 0.2 m，可能冲过入弯点）
+            acceleration = RUSH_TURN_ENTRY_ACCEL
         lin_step = acceleration * dt
         if linear < self._last_command[0]:
             lin_step *= 3.0                     # 减速比加速快，出弯和终点要刹得住
@@ -3287,9 +3454,38 @@ class RushFollower(Node):
         return (self._bridge_engaged and not self._cleared_bridge
                 and not self._passed_sidewalk)
 
+    def _bridge_exit_rescue(self) -> bool:
+        """过桥收尾判故障时，判断能不能按「已离桥」救回来（见 RUSH_BRIDGE_RESCUE）。"""
+        if not RUSH_BRIDGE_RESCUE:
+            return False
+        b = self._bridge
+        if "still unconfirmed after exit hold" not in (b.reason or ""):
+            return False
+        baseline = b.baseline
+        entered = getattr(b, "entered_distance", None)
+        if baseline is None or entered is None:
+            return False
+        roll_delta = abs(b.angle_delta(b.roll, baseline[0]))
+        pitch_delta = abs(b.angle_delta(b.pitch, baseline[1]))
+        travelled = b.distance - entered
+        if (roll_delta <= RUSH_BRIDGE_RESCUE_ROLL_DEG
+                and pitch_delta <= RUSH_BRIDGE_RESCUE_PITCH_DEG
+                and travelled >= RUSH_BRIDGE_RESCUE_MIN_DISTANCE):
+            self.get_logger().warn(
+                "过桥回平确认超时，但横滚已回正(%.1f°)、进桥后已走 %.2f m、"
+                "俯仰差 %.1f° → 按已离桥继续（不再硬停车）"
+                % (roll_delta, travelled, pitch_delta)
+            )
+            return True
+        return False
+
     def _sync_bridge(self, now: float) -> None:
         b = self._bridge
         b.tick(now)
+        # ---- 兜底：过桥收尾等不到「回平确认」时不要停死 ----
+        # 必须放在下面的状态播报之前，否则会先喊一句「异常停车…需重新启动节点」。
+        if b.state == "fault" and self._bridge_exit_rescue():
+            b.state, b.reason = "done", ""     # tick() 对 done 直接返回，不会再 fault
         if b.boost and not self._bridge_engaged:
             self._bridge_engaged = True
             self._bridge_engaged_at = now
@@ -3592,12 +3788,22 @@ class RushFollower(Node):
             trigger = travelled >= RUSH_TURN_START_DISTANCE
             why = f"odom {travelled:.2f}/{RUSH_TURN_START_DISTANCE:.2f} m"
         else:
-            trigger = bool(result.turn_entry_ready)
-            why = f"visual entry={'Y' if result.turn_entry_ready else '-'}"
+            armed = travelled >= RUSH_TURN_MIN_DISTANCE
+            trigger = armed and bool(result.turn_entry_ready)
+            if armed:
+                why = f"visual entry={'Y' if result.turn_entry_ready else '-'}"
+            else:
+                why = (f"里程还没到，还差 {RUSH_TURN_MIN_DISTANCE - travelled:.2f} m"
+                       f"（视觉 entry={'Y' if result.turn_entry_ready else '-'} 先不算）")
         if trigger:
             yaw = float(self._bridge.yaw) if math.isfinite(self._bridge.yaw) else None
             self._turn_start_yaw = yaw
             self._turn_started_at = now
+            self._turn_spool_started_at = now
+            self._turn_spooled = False
+            self._turn_spool_announced = False
+            self._turn_low_speed_seconds = 0.0
+            self._turn_slow_warned = False
             self._mode = self.MODE_TURN
             self._have_error = False
             self._announce(
@@ -3607,10 +3813,12 @@ class RushFollower(Node):
                 f"右轮 {RUSH_TURN_V + RUSH_TURN_W * RC_WHEEL_TRACK * 0.5:.2f} m/s)，"
                 f"IMU 转够 {RUSH_TURN_YAW_DEG:.0f}° 就停"
             )
-            # 顺带打印一下 yaml 里的门槛，方便对照
+            # 顺带打印标定信息，方便对照录像调 RUSH_TURN_MIN_DISTANCE
             self.get_logger().info(
-                f"[标定] 桥后里程 {travelled:.3f} m（要改用 odom 触发就把 "
-                f"RUSH_TURN_START_DISTANCE 设成这个值附近）"
+                f"[标定] 本次起转点在离桥后 {travelled:.3f} m"
+                f"（RUSH_TURN_TRIGGER={RUSH_TURN_TRIGGER}，"
+                f"RUSH_TURN_MIN_DISTANCE={RUSH_TURN_MIN_DISTANCE:.2f}）"
+                f"；太早/太晚就把这个值改成录像里那一帧读到的「桥后」数"
             )
             self._rush_command(result, now, tag="WAIT_TURN -> TURN")
             return
@@ -3618,25 +3826,64 @@ class RushFollower(Node):
 
     def _turn_command(self, result: DetectionResult, now: float) -> None:
         b = self._bridge
-        if self._turn_start_yaw is None:
-            self._turn_start_yaw = float(b.yaw)
         if not math.isfinite(b.yaw) or self._turn_started_at is None:
             # IMU 不可用：不敢盲转，直接停车保命
             self._emit(0.0, 0.0, now)
             self._update_height(now)
             self._show(result, 0.0, 0.0, self.enable_motion, extra="TURN NO IMU -> STOP")
-            self._mode = self.MODE_SIDEWALK
-            self._stable_since = None
+            self._enter_sidewalk(now)
             return
+
+        # ---- 起转前先把前进速度拉到位 ----
+        # 过桥收尾是 BRIDGE_SETTLE_SPEED=0.10 的低速，而入弯触发常常在离桥后
+        # 十几厘米就响，此时 v 还在爬。v 偏小会让「右轮 = v + w*半轮距」变成负数，
+        # 右轮倒转 -> 车原地打转、不沿弧线过弯（19:37 实车就是这样）。
+        # 所以：v 没拉起来之前只直着加速，不旋转、也不计 yaw 和用时。
+        if not self._turn_spooled:
+            if self._turn_spool_started_at is None:
+                self._turn_spool_started_at = now
+            spool = self._emit(RUSH_TURN_V, 0.0, now)
+            spool_done = spool[0] >= RUSH_TURN_V - RUSH_TURN_V_READY_TOL
+            spool_timeout = (
+                now - self._turn_spool_started_at >= RUSH_TURN_ENTRY_MAX_SECONDS
+            )
+            if not spool_done and not spool_timeout:
+                if not self._turn_spool_announced:
+                    self._turn_spool_announced = True
+                    self._announce(
+                        f"转弯先加速：v 现在 {spool[0]:.2f}，拉到 {RUSH_TURN_V:.2f} 再起转"
+                        f"（v 偏小时右轮={spool[0] + RUSH_TURN_W * RC_WHEEL_TRACK * 0.5:+.2f} "
+                        f"会倒转，车原地打转）"
+                    )
+                # 每帧把 yaw 参考点和计时起点重置到当前姿态
+                self._turn_start_yaw = float(b.yaw)
+                self._turn_started_at = now
+                self._target_height = self.stand_height
+                self._update_height(now)
+                self._show(result, *spool, self.enable_motion,
+                           extra=f"TURN 等前进速度 {spool[0]:.2f}/{RUSH_TURN_V:.2f}"
+                                 f" {now - self._turn_spool_started_at:.1f}s")
+                return
+            self._turn_spooled = True
+            # 真正开始旋转的一刻，重新取 yaw 基准和计时起点
+            self._turn_start_yaw = float(b.yaw)
+            self._turn_started_at = now
+            lw0, rw0 = self.wheel_speeds(RUSH_TURN_V, RUSH_TURN_W)
+            self._announce(
+                f"★ 起转（v={spool[0]:.2f}{'，拉速度超时' if spool_timeout and not spool_done else ''}）"
+                f"：yaw0={b.yaw:+.1f}°，左轮 {lw0:+.2f} / 右轮 {rw0:+.2f} m/s"
+                f"{'（右轮仍在倒转，注意）' if rw0 < 0 else ''}"
+            )
+
+        if self._turn_start_yaw is None:
+            self._turn_start_yaw = float(b.yaw)
         delta = abs(b.angle_delta(b.yaw, self._turn_start_yaw))
         elapsed = now - self._turn_started_at
         done = (delta >= RUSH_TURN_YAW_DEG) or (elapsed >= RUSH_TURN_MAX_SECONDS)
         if done:
             self._turn_done_yaw = delta
             self._turn_done_seconds = elapsed
-            self._mode = self.MODE_SIDEWALK
-            self._stable_since = None
-            self._have_error = False
+            self._enter_sidewalk(now)
             self._announce(
                 f"★ 出弯（yaw 转过 {delta:.1f}°，用时 {elapsed:.2f}s）→ 立即停车，"
                 f"静止 {SIDEWALK_STANDSTILL_SECONDS:.1f} 秒（不看斑马线）"
@@ -3644,46 +3891,103 @@ class RushFollower(Node):
             command = self._emit(0.0, 0.0, now)
         else:
             command = self._emit(RUSH_TURN_V, RUSH_TURN_W, now)
+            # 实测速度远低于命令 = 转弯被压成原地打转，吆喝一声（每趟最多一次）
+            if not self._turn_slow_warned:
+                if abs(b.speed) < RUSH_TURN_V * 0.75:
+                    self._turn_low_speed_seconds += 1.0 / max(self.control_rate, 1.0)
+                    if self._turn_low_speed_seconds >= 0.40:
+                        self._turn_slow_warned = True
+                        actual = abs(b.speed) / abs(RUSH_TURN_W) if RUSH_TURN_W else 0.0
+                        self._announce(
+                            f"⚠ 转弯实测速度只有 {abs(b.speed):.2f} m/s"
+                            f"（命令 {RUSH_TURN_V:.2f}）→ 实际半径被压到约 {actual:.2f} m，"
+                            f"会显得在原地打转。把 RUSH_TURN_W 往 0 调（-1.20 = 半径 0.50 m）"
+                            f"可以给右轮更多速度"
+                        )
+                else:
+                    self._turn_low_speed_seconds = 0.0
         self._target_height = self.stand_height
         self._update_height(now)
         lw, rw = self.wheel_speeds(*self._last_published)
         self._show(result, *command, self.enable_motion,
                    extra=f"TURN {delta:4.1f}/{RUSH_TURN_YAW_DEG:.0f}° "
-                         f"{elapsed:4.1f}s L={lw:+.2f} R={rw:+.2f}")
+                         f"{elapsed:4.1f}s v={command[0]:.2f} L={lw:+.2f} R={rw:+.2f}")
+
+    def _enter_sidewalk(self, now: float) -> None:
+        """进入人行道停车段：所有静止判定状态清零。"""
+        self._mode = self.MODE_SIDEWALK
+        self._sidewalk_started_at = now
+        self._stop_sampled_at = now
+        self._stop_speed_filter = abs(self._bridge.speed)
+        self._standstill_seconds = 0.0
+        self._moving_seconds = 0.0
+        self._have_error = False
 
     def _sidewalk_command(self, result: DetectionResult, now: float) -> None:
-        """出弯立即停；从实测速度≈0 起算，静止满 5 秒。"""
+        """出弯立即停；从实测速度≈0 起算，静止满 5 秒。
+
+        实车踩过的坑：/odom 停住时在 0.00~0.07 之间抖，偶尔冒 -0.14 的尖峰。
+        旧逻辑只要有一个采样超阈值就把计时清零，于是 5 秒永远凑不满，车停在
+        斑马线前不动。现在用「低通滤波 + 累计静止时长」，只有持续明显在动才清零。
+        """
         command = self._emit(0.0, 0.0, now)
         self._target_height = self.stand_height
         self._update_height(now)
-        speed = abs(self._bridge.speed)
-        standstill = (
-            abs(command[0]) <= RUSH_STOP_SPEED_EPS
-            and abs(command[1]) <= 0.05
-            and speed <= RUSH_STANDSTILL_SPEED
-        )
-        if standstill or not self.enable_motion:
-            if self._stable_since is None:
-                self._stable_since = now
+
+        if self._sidewalk_started_at is None:
+            self._sidewalk_started_at = now
+            self._stop_sampled_at = now
+        dt = max(0.0, min(now - self._stop_sampled_at, 2.0 / self.control_rate))
+        self._stop_sampled_at = now
+        raw = abs(self._bridge.speed)
+        alpha = RUSH_STOP_SPEED_FILTER_ALPHA
+        self._stop_speed_filter = (1.0 - alpha) * self._stop_speed_filter + alpha * raw
+
+        if not self.enable_motion:
+            self._standstill_seconds = self.sidewalk_stop_seconds  # 干跑直接放行
+        elif self._stop_speed_filter <= RUSH_STANDSTILL_SPEED:
+            # 静止：累加静止时长
+            self._standstill_seconds += dt
+            self._moving_seconds = 0.0
+        else:
+            # 超过门槛：只要「持续」超过 RUSH_MOVING_RESET_SECONDS 才清零。
+            # 单帧抖动（0.14 尖峰经滤波只有 0.03~0.07）撑不到这么久，不会清零。
+            self._moving_seconds += dt
+            if self._moving_seconds >= RUSH_MOVING_RESET_SECONDS:
+                if self._standstill_seconds > 0.3:
+                    self._announce(
+                        f"停车计时清零（滤波速度 {self._stop_speed_filter:.2f} m/s 持续 "
+                        f"{self._moving_seconds:.1f}s），重新计 "
+                        f"{self.sidewalk_stop_seconds:.1f} 秒"
+                    )
+                self._standstill_seconds = 0.0
+                self._moving_seconds = 0.0
+
+        held = now - self._sidewalk_started_at
+        if (self._standstill_seconds >= self.sidewalk_stop_seconds
+                or held >= RUSH_SIDEWALK_MAX_SECONDS):
+            if self._standstill_seconds < self.sidewalk_stop_seconds:
                 self._announce(
-                    f"已停稳（ov={speed:.2f} m/s），开始计时 "
-                    f"{self.sidewalk_stop_seconds:.1f} 秒"
+                    f"警告：一直没量到干净的静止（已命令零速 {held:.1f}s，"
+                    f"滤波速度 {self._stop_speed_filter:.2f} m/s），按已停够处理"
                 )
-            elif now - self._stable_since >= self.sidewalk_stop_seconds:
-                self._passed_sidewalk = True
-                self._stable_since = None
-                self._have_error = False
-                self._mode = self.MODE_TUNNEL_ALIGN
-                self._align_frames = 0
-                self._align_since = None
-                self._announce("★ 人行道停车完成 → 巡线对齐 → 下蹲冲隧道")
-        elif self._stable_since is not None:
-            self._stable_since = None
-            self._announce("停车期间又动了，重新计时")
-        elapsed = 0.0 if self._stable_since is None else now - self._stable_since
+            self._passed_sidewalk = True
+            self._standstill_seconds = 0.0
+            self._moving_seconds = 0.0
+            self._sidewalk_started_at = None
+            self._have_error = False
+            self._mode = self.MODE_TUNNEL_ALIGN
+            self._align_frames = 0
+            self._align_since = None
+            self._announce("★ 人行道停车完成 → 巡线对齐 → 下蹲冲隧道")
+            self._show(result, *command, self.enable_motion,
+                       extra=f"SIDEWALK DONE {self.sidewalk_stop_seconds:.1f}s")
+            return
         self._show(result, *command, self.enable_motion,
-                   extra=f"SIDEWALK STOP {elapsed:.1f}/{self.sidewalk_stop_seconds:.1f}s "
-                         f"ov={speed:.2f}")
+                   extra=f"SIDEWALK 静止 {self._standstill_seconds:.1f}/"
+                         f"{self.sidewalk_stop_seconds:.1f}s "
+                         f"滤波ov={self._stop_speed_filter:.2f} "
+                         f"原始ov={raw:.2f} 总{held:.1f}s")
 
     def _crouch_command(self, result: DetectionResult, now: float) -> None:
         command = self._emit(0.0, 0.0, now)
@@ -3925,6 +4229,12 @@ class RushFollower(Node):
             f"洞{'Y' if self._passed_tunnel else '-'} "
             f"终{'Y' if self._passed_finish else '-'}"
         )
+        # 离桥后走过的里程，标定 RUSH_TURN_MIN_DISTANCE 就看这个数
+        if self._cleared_bridge:
+            progress += (
+                f" 桥后="
+                f"{self._bridge.distance - self._bridge_clear_distance:.2f}m"
+            )
         if extra:
             progress = f"{progress} | {extra}"
         cv2.putText(debug, progress, (12, 78), cv2.FONT_HERSHEY_SIMPLEX, 0.46,
@@ -3953,7 +4263,10 @@ class RushFollower(Node):
             f"道{'Y' if self._passed_sidewalk else '-'} "
             f"洞{'Y' if self._passed_tunnel else '-'} "
             f"终{'Y' if self._passed_finish else '-'} "
-            f"夹={self._guard_clamped_frames}"
+            + (f"桥后={b.distance - self._bridge_clear_distance:5.2f}m "
+               if self._cleared_bridge else "")
+            + f"夹={self._guard_clamped_frames} "
+            f"停={self._standstill_seconds:.1f}s"
         )
 
     def _log(self, now: float, text: str) -> None:
