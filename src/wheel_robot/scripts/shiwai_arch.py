@@ -205,10 +205,8 @@ TURN_WAIT_HEADING_KP = 1.0  # 航向误差用弧度。
 # 0.59→0.22→0.09→0.01→-0.00，dist 冻在 1.51m 整整 1.5 秒没动，
 # 直到 9.0s TURN 把指令抬到 0.18 才重新起步。0.16 就是这台车的静摩擦阈值。
 TURN_WAIT_SPEED = 0.20  # 0.16 推不动（实测 0.18 能从静止起步）；别再往下降。
-# WAIT 至少跑这么久才允许入弯。_cleared_at 是离开 BRIDGE SETTLE、真正开始
-# WAIT 的时刻；没有这道门时，只要 row 一过线就立刻 TURN，车身还没摆正就进弯。
-# 184532 实测：10.0s 刚出稳定、10.4s 就 entry=TURN，WAIT 只跑了 0.4s。
-TURN_WAIT_MIN_SECONDS = 2.2 #0.8，1.8
+# 离桥后不再强制直行等待；仍由近端弯口位置与连续帧确认决定入弯。
+TURN_WAIT_MIN_SECONDS = 0.0
 # ---- 出弯判定 + 出弯摆正 ----
 # 旧方案靠「框内最右端 bx」两步：先 bx>=0.75W(=480) 置 armed，再 bx<0.50W(=320)
 # 才计数。实测这个 arming 根本到不了，四条录像 bx 峰值：
@@ -370,7 +368,7 @@ BRIDGE_EXIT_CLEARANCE = 0.04   # 回平后的小段离桥余量；仍须满足�
 # 过桥后额外要求车身真的稳下来，才把控制权交回桥后 WAIT。
 # BridgeTraversal 的 done 只要求 0.30 s 累计平稳 + 4 cm 余量，实测下桥后仍有
 # 横滚余摆；带着摆动进 WAIT 会把参考航向记歪，直行段一开始就是斜的。
-BRIDGE_SETTLE_SECONDS = 0.0      # 连续平稳这么久才放行0.8
+BRIDGE_SETTLE_SECONDS = 0.0      # 0 表示禁用 done 后的额外姿态等待；保留传感器检查。
 BRIDGE_SETTLE_ROLL_DEG = 2.0
 BRIDGE_SETTLE_PITCH_DEG = 3.0
 BRIDGE_SETTLE_RATE_DEG = 10.0
@@ -2571,7 +2569,7 @@ class BridgeTraversal:
 
 
 # arch-v3: 保留桥前/桥上/弯中控制；新视觉区域补充低信息量限速与丢线保护。
-ARCH_VERSION = "arch-v5"
+ARCH_VERSION = "arch-v6"
 TURN_GAP_MAX_RATIO = 0.30       # 同一历史弯沿上的最大断口，640px 图像为 192px。
 TURN_GAP_CORRIDOR_RATIO = 0.04  # 当前实测点须接近上一条可信边线。
 TURN_GAP_MIN_SPAN_RATIO = 0.65
@@ -4464,8 +4462,12 @@ class ShiWaiFollower(Node):
             self._lost_since = None
 
     def _bridge_settle_ready(self, now: float) -> bool:
-        """done 之后确认车身真的稳了；超过 BRIDGE_SETTLE_TIMEOUT 也放行。"""
+        """done 后可选的额外稳定确认；配置为 0 时只检查传感器有效性。"""
         b = self._bridge
+        if BRIDGE_SETTLE_SECONDS <= 0.0:
+            # done 已完成桥状态机的回平、角速度与离桥里程确认。
+            # 禁用额外等待时，不再用更严姿态阈值把车压到 0.10m/s。
+            return b.fresh(now) and math.isfinite(b.yaw)
         if self._bridge_done_at is None:
             self._bridge_done_at = now
         if now - self._bridge_done_at >= BRIDGE_SETTLE_TIMEOUT:
@@ -4494,9 +4496,7 @@ class ShiWaiFollower(Node):
         if heading is None or not math.isfinite(heading):
             heading = self._turn_wait_heading = (
                 float(b.yaw) if math.isfinite(b.yaw) else 0.0)
-        imu_ok = (b.imu_at is not None
-                  and 0.0 <= now - b.imu_at <= BRIDGE_SENSOR_TIMEOUT
-                  and math.isfinite(b.yaw))
+        imu_ok = b.fresh(now) and math.isfinite(b.yaw)
         if imu_ok:
             error = math.radians(b.angle_delta(heading, b.yaw))
             angular = float(np.clip(TURN_WAIT_HEADING_KP*error,
@@ -4505,13 +4505,13 @@ class ShiWaiFollower(Node):
         else:
             # 没有 IMU 就不动，避免盲走。
             linear = angular = 0.0
-        if self.enable_motion:
+        if self.enable_motion and imu_ok:
             command = self._rate_limit(linear, angular, now)
             self._publish(*command)
             self._last_command, self._last_command_valid = command, True
         else:
             command = (linear, angular)
-            self._publish_zero("motion_disabled")
+            self._publish_zero("bridge_settle_sensor_stale" if not imu_ok else "motion_disabled")
         self._update_height(now)
         dr = 0.0 if b.baseline is None else b.angle_delta(b.roll, b.baseline[0])
         dp = 0.0 if b.baseline is None else b.angle_delta(b.pitch, b.baseline[1])
