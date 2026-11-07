@@ -6,8 +6,9 @@ def load(path, name):
     m = importlib.util.module_from_spec(spec); sys.modules[name] = m
     spec.loader.exec_module(m); return m
 
-def stub(mod, travelled, entry_ready, min_distance):
+def stub(mod, travelled, entry_ready, min_distance, fallback=99.0):
     mod.RUSH_TURN_MIN_DISTANCE = min_distance
+    mod.RUSH_TURN_START_DISTANCE = fallback
     mod.RUSH_TURN_TRIGGER = "visual"
     log = []
     bus = types.SimpleNamespace(distance=10.0 + travelled, yaw=-30.0, state="done",
@@ -65,7 +66,15 @@ line = [m for m in log if m.startswith("[RUSH]")][0]
 print("   " + " ".join(line.split())[-95:])
 print("   含 '桥后= 1.23m' -> %s" % ("✓" if "桥后= 1.23m" in line else "✗"))
 print()
-print("=== 5) 旧逻辑没有这个门槛（对照）===")
+print("=== 5) 兜底：视觉始终不确认，到最晚点必须强制转 ===")
+for dist, fb in ((0.50, 0.90), (0.89, 0.90), (0.95, 0.90)):
+    s, r, sc, log = stub(new, dist, False, 0.60, fb)
+    s._wait_turn_command(r, 0.0)
+    fired = s._mode == new.RushFollower.MODE_TURN
+    print("   桥后 %.2f m 最晚 %.2f 视觉=-  -> %s"
+          % (dist, fb, "起转 ✓(兜底)" if fired else "继续直冲"))
+print()
+print("=== 6) 旧逻辑没有这个门槛（对照）===")
 s, r, sc, log = stub(old, 0.27, True, 0.0)
 s._wait_turn_command(r, 0.0)
 print("   旧逻辑 桥后 0.27 m 视觉确认 -> %s（提前转）"

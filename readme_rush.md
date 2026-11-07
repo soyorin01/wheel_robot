@@ -25,32 +25,42 @@ ros2 run wheel_robot rush.py --ros-args \
 节点名故意沿用 `shiwai`，这样现有的 `shiwai.yaml` 才会被套用；
 脚本顶部的 RUSH 段参数会覆盖 yaml。
 
-### ⚠ 改参数后必须同步 install（最大的坑）
+### 改参数后怎么生效（已配好，不用管）
 
 `ros2 run` 执行的是 **`install/wheel_robot/lib/wheel_robot/rush.py`**，不是 `src` 里那份。
 这个工作空间 **不是 symlink-install**（`AMENT_CMAKE_SYMLINK_INSTALL:BOOL=OFF`），
-所以**只改 `src` 不生效**——实车踩过：`RUSH_TURN_MIN_DISTANCE` 从 0.00 改到 4.00，
-起转点还是 0.22~0.31 m 一动不动。
+所以默认情况下**只改 `src` 不生效**——实车踩过：`RUSH_TURN_MIN_DISTANCE` 从 0.00
+改到 4.00，起转点还是 0.22~0.31 m 一动不动。
 
-**每次改完参数，执行其中一条：**
+**现在已经配好了：`install` 里的 `rush.py` 是一个软链接，指向 `src` 里那份。**
+
+```
+install/wheel_robot/lib/wheel_robot/rush.py
+    -> /home/orangepi/wheel_robot/src/wheel_robot/scripts/rush.py
+```
+
+**所以你只要改 `src/wheel_robot/scripts/rush.py`，下次启动就是新参数，不用编译。**
+启动时会打两行确认：
+
+```
+>>> [RUSH] 参数自检：install 里是软链接 → 改 src 立即生效 OK（/home/orangepi/.../rush.py）
+>>> [RUSH] 入弯触发：visual，离桥后至少 4.00 m 且视觉确认才起转
+```
+
+**只对 `rush.py` 做了软链接，其它文件（尤其王赛的 `shiwai.py` / `shiwai_arch.py`）
+一个字节都没动**——他的 `install` 和 `src` 本来就不一致，所以没用
+`colcon build --symlink-install`（那会把整个包都换成软链接，等于悄悄改掉他跑的版本）。
+
+#### 万一软链接被覆盖了
+
+跑过 `colcon build` 之后，软链接会被覆盖成普通文件拷贝，改 src 又会不生效。
+**跑一下就修回来：**
 
 ```bash
-# 方法一：编译（推荐，正规）
-cd ~/wheel_robot && colcon build --packages-select wheel_robot
-
-# 方法二：直接覆盖（最快，不用编译）
-cp ~/wheel_robot/src/wheel_robot/scripts/rush.py \
-   ~/wheel_robot/install/wheel_robot/lib/wheel_robot/rush.py
-
-# 方法三：永久解决，以后改 src 立刻生效（需要重新构建一次）
-cd ~/wheel_robot && colcon build --packages-select wheel_robot --symlink-install
+~/wheel_robot/rush_symlink.sh
 ```
 
-**不用记**：程序启动时会自动比对两份文件，不一致就直接喊出来：
-
-```
->>> [RUSH] 参数自检：正在跑的 install 文件与 src 一致 OK（10 项）
-```
+不用记也行——启动自检会立刻报警：
 
 ```
 >>> [RUSH] ⚠⚠⚠ 参数没生效！ros2 run 跑的是 install 里的旧文件，改 src 不 build 不变
@@ -58,7 +68,7 @@ cd ~/wheel_robot && colcon build --packages-select wheel_robot --symlink-install
 >>> [RUSH]    修：cd ~/wheel_robot && colcon build --packages-select wheel_robot，或直接改 install/...
 ```
 
-**看到 `⚠⚠⚠` 就说明你的修改没生效，先同步再跑。**
+**看到 `⚠⚠⚠` 就说明修改没生效。**
 
 ---
 
@@ -93,10 +103,12 @@ cd ~/wheel_robot && colcon build --packages-select wheel_robot --symlink-install
 | `RUSH_BRIDGE_RESCUE_ROLL_DEG` | 4.0 | 横滚回到基线这个范围内才敢救（桥上时是 -12.5°） |
 | `RUSH_BRIDGE_RESCUE_PITCH_DEG` | 15.0 | 俯仰差超过这个就不救（防翻车/歪在墙上还硬走） |
 | `RUSH_ALIGN_FRAMES` | 2 | 连续几帧有效线算「对齐完成」 |
-| `RUSH_TURN_TRIGGER` | `"visual"` | 入弯触发：`"visual"` 沿用现有视觉确认 / `"odom"` 纯看里程 |
-| **`RUSH_TURN_MIN_DISTANCE`** | 0.00 | **离桥后至少走这么多米才允许入弯 —— 转太早改这一行** |
-| `RUSH_TURN_START_DISTANCE` | 1.20 | 仅 `"odom"` 模式用，看下面标定日志填 |
-| `RUSH_TURN_ENTRY_HOLD` | 0.20 | 离桥后禁止累计视觉判定的最短**秒数**（时间门槛，不如里程准） |
+| **`RUSH_TURN_START_DISTANCE`** | 0.47 | **入弯：离桥基准点后走这么多米就转（就改这一行）** |
+| `RUSH_TURN_TRIGGER` | `"odom"` | 固定纯里程，别改（视觉 entry 是闪烁噪声） |
+| `BRIDGE_SETTLE_DISTANCE` | 0.25 | 离桥后稳车身的固定里程 = 「桥后里程 0」的位置 |
+| `RUSH_TURN_LOCK_MIN_YAW_DEG` | 45.0 | 出弯：最小盲转角度，之后才认视觉 |
+| `RUSH_TURN_LOCK_ERROR` | 0.18 | 出弯：线回到中间判据 |
+| `RUSH_TURN_YAW_DEG` | 110.0 | 出弯：角度安全上限 |
 | `RUSH_TURN_V` | 0.60 | 转弯前进速度 |
 | **`RUSH_TURN_LEFT`** | 0.85 | **转弯时左轮速度 m/s —— 要调转弯就改这两行** |
 | **`RUSH_TURN_RIGHT`** | 0.35 | **转弯时右轮速度 m/s（右转时比左轮慢）** |
@@ -185,48 +197,69 @@ RUSH_TURN_RIGHT = 0.35   # 转弯时右轮速度 m/s
 
 **v 被红线卡死在 0.60，所以「半径够大」和「左轮顶格」只能二选一。**
 
-### 入弯判定怎么调（转太早 / 转太晚改这里）
+### 入弯 / 出弯怎么调
 
-判定在 `rush.py` 的 `_wait_turn_command()` 里。两种模式：
+判定在 `rush.py` 的 `_wait_turn_command()`（入弯）和 `_turn_command()`（出弯）里。
 
-| 模式 | 判定依据 | 相关参数 |
+#### 入弯：纯里程，不看视觉
+
+**改这一行（`rush.py` 第 632 行）：**
+
+```python
+RUSH_TURN_START_DISTANCE = 0.47   # 离桥基准点之后走这么多米就起转
+```
+
+`RUSH_TURN_TRIGGER` 固定用 `"odom"`。**为什么不用视觉**：2026-11-01 实车测出来
+后桥段的 `entry=Y` 是**闪烁噪声**——过桥前就在零星出现，过桥后每 4 帧闪一次，
+一解除封锁就凑够帧数触发，所以每次都在 0.27 m 同一个位置转，而且一旦不亮车就
+永远不转、直接冲出赛道。
+
+**里程的 0 点在哪**：过桥后按**固定 0.25 m** 稳车身（`BRIDGE_SETTLE_DISTANCE`），
+走完那一刻就是基准点。每次启动日志和录像第三行的「桥后=X.XXm」都从这里算。
+
+> 原来是靠 `BRIDGE_SETTLE_TIMEOUT = 2.5 秒` 超时放行的，而「车身平稳」判据用的
+> 俯仰基线是上桥前在平地学的，过桥后俯仰停在 +7.9° 永远不满足——所以每次都跑满
+> 2.5 秒，那段时间车在低速爬，**基准点会随速度漂**。改成按里程后 0 点就固定了。
+
+**怎么量这个数**：跑一趟让它直冲出去，回放录像，找到车真正该起转的那一帧，
+读画面第三行的「桥后=X.XXm」，填进来。日志也会打：
+
+```
+[标定] 本次起转点在离桥基准点后 0.470 m（RUSH_TURN_TRIGGER=odom，RUSH_TURN_START_DISTANCE=0.47）
+```
+
+#### 出弯：看视觉（王赛的逻辑）
+
+**不再靠固定角度硬切**，改成「转到重新看见线、并且线回到画面中间就停」。
+
+王赛原版 `shiwai.py::_has_left_foam()`：
+
+```python
+result.valid 且 left_line_rows >= 18 且 8 < left_edge_x < 0.42*画面宽
+# 而且要盲转够 TURN_MIN_SPIN_SECONDS = 1.6 秒才认
+```
+
+他锁到「左侧海绵」后就不再盲转，改为顺着线走。我们右转出弯时的对应判据是
+「新的一段线回到画面中间」，所以换成 `线有效 + 行数够 + |err| 小`：
+
+| 常量 | 默认 | 作用 |
 |---|---|---|
-| `RUSH_TURN_TRIGGER = "visual"`（默认） | **先满足最小里程，再等视觉确认** | `RUSH_TURN_MIN_DISTANCE` |
-| `RUSH_TURN_TRIGGER = "odom"` | 只看里程，不看画面 | `RUSH_TURN_START_DISTANCE` |
+| `RUSH_TURN_LOCK_MIN_YAW_DEG` | 45.0 | 至少要转过这么多度才认视觉（= 王赛那 1.6 秒最小盲转） |
+| `RUSH_TURN_LOCK_ERROR` | 0.18 | `|err|` 落在这范围内算「线回到中间」 |
+| `RUSH_TURN_LOCK_ROWS` | 18 | 线的有效行数（王赛用的就是 18） |
+| `RUSH_TURN_LOCK_FRAMES` | 2 | 连续这么多帧才算锁定 |
+| `RUSH_TURN_YAW_DEG` | 110.0 | **安全上限**：视觉一直锁不到就按角度停（原来是 90 硬切） |
+| `RUSH_TURN_MAX_SECONDS` | 8.0 | 兜底超时 |
+
+优先级：**视觉锁定 > 角度上限 > 超时**。出弯时会打印是哪一种：
 
 ```
-travelled = 当前桥后里程 - 离桥时的里程
-visual 模式： travelled >= RUSH_TURN_MIN_DISTANCE  且  视觉 entry=Y
-odom   模式： travelled >= RUSH_TURN_START_DISTANCE
+★ 出弯——视觉锁定（转过 78°，线回来了），转过 78.4°，用时 1.02s
+★ 出弯——转够 110°（视觉没锁到，按角度兜底），转过 110.2°，用时 1.44s
 ```
 
-**转太早 → 把 `RUSH_TURN_MIN_DISTANCE` 调大。这就是你要改的参数。**
-
-（还有一个 `RUSH_TURN_ENTRY_HOLD = 0.20` 是**秒**级的门槛，实车证明太小，
-里程门槛更准，所以建议只用 `RUSH_TURN_MIN_DISTANCE`。）
-
-#### 怎么标定（不用尺子）
-
-程序会在**录像第三行**和 **1 Hz 日志**里持续显示「桥后=X.XXm」：
-
-```
->>> [RUSH] WAIT_TURN bridge=done v=+0.60 w=+0.00 ov=+0.55 ... dist= 6.10m yaw= -22.0
-           ... | 桥Y 道- 洞- 终- 桥后= 1.23m 夹=0 停=0.0s
-```
-
-录像画面第三行同样有 `桥后=1.23m`。步骤：
-
-1. 先按默认 `RUSH_TURN_MIN_DISTANCE = 0.00` 跑一趟
-2. 在录像里找到车**真正该起转**的那一帧
-3. 读那一帧画面上的 `桥后=X.XXm`，填给 `RUSH_TURN_MIN_DISTANCE`
-4. 再跑一趟确认；日志会打 `[标定] 本次起转点在离桥后 X.XXX m`
-
-实测视觉确认在**离桥后 0.23~0.27 m 就亮了**，明显比弯道入口早——所以要靠这个
-里程把它压住。日志还会在没到里程时告诉你还差多少：
-
-```
-直冲:WAIT_TURN 里程还没到，还差 0.73 m（视觉 entry=Y 先不算） dist=0.27m
-```
+看到第二条说明视觉没锁到，要么是 `RUSH_TURN_LOCK_ERROR` 太严，要么是
+`RUSH_TURN_LOCK_MIN_YAW_DEG` 太大。
 
 ---
 
@@ -400,11 +433,18 @@ install/wheel_robot/lib/wheel_robot/rush.py: RUSH_TURN_MIN_DISTANCE = 0.00   ←
 改 `src` 不会同步过去。所以三次跑的都是 **0.00** 的行为，起转点自然一模一样。
 
 **修法**：
-1. 加了**开机自检** `_check_stale_install_copy()`：启动时比对两份文件的 10 个关键
-   参数，不一致就按上面那样把「src 里是多少、实际生效是多少」并排打出来。
-2. 文档第 1 节写清了三种同步方法（`colcon build` / 直接 `cp` / `--symlink-install`）。
+1. **把 `install` 里的 `rush.py` 改成指向 `src` 的软链接**（只动这一个文件）。
+   以后改 `src` 立即生效，不用编译。没有用 `colcon build --symlink-install`，
+   因为那会连带把王赛的文件也换成软链接——他的 src/install 本来就不一致，
+   等于悄悄改掉他实际跑的版本。
+2. 加了**开机自检** `_check_stale_install_copy()`：启动时先判断是不是软链接；
+   不是就比对两份文件的 10 个关键参数，不一致就把「src 里是多少、实际生效是多少」
+   并排打出来。
+3. 加了 `~/wheel_robot/rush_symlink.sh`，`colcon build` 覆盖掉软链接后跑一下即可恢复。
+4. 启动横幅新增「入弯触发：visual，离桥后至少 X.XX m 且视觉确认才起转」，
+   每次开机一眼看到实际生效的门槛。
 
-**教训**：以后改完参数先看启动输出有没有 `⚠⚠⚠`；有就说明没生效。
+**教训**：以后改完参数先看启动输出的「入弯触发」那行和有没有 `⚠⚠⚠`。
 
 ## 6. 看录像量速度
 

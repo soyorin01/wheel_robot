@@ -19,6 +19,7 @@ def make(mod, yaw_rate=100.0):
         _turn_start_yaw=0.0, _turn_started_at=0.0, _turn_spool_started_at=0.0,
         _turn_spooled=False, _turn_spool_announced=False,
         _turn_low_speed_seconds=0.0, _turn_slow_warned=False,
+        _turn_lock_frames=0,
         _turn_done_yaw=0.0, _turn_done_seconds=0.0,
         _sidewalk_started_at=None, _stop_sampled_at=0.0, _stop_speed_filter=0.0,
         _standstill_seconds=0.0, _moving_seconds=0.0,
@@ -30,6 +31,11 @@ def make(mod, yaw_rate=100.0):
     )
     s.wheel_speeds = mod.RushFollower.wheel_speeds
     s._approach = mod.RushFollower._approach                    # staticmethod
+    if hasattr(mod.RushFollower, "_turn_vision_locked"):
+        s._turn_vision_locked = types.MethodType(
+            mod.RushFollower._turn_vision_locked, s)
+    else:
+        s._turn_vision_locked = lambda result: False
     for n in ("_rate_limit", "_turn_command"):
         setattr(s, n, types.MethodType(getattr(mod.RushFollower, n), s))
     if hasattr(mod.RushFollower, "_enter_sidewalk"):
@@ -45,6 +51,10 @@ def make(mod, yaw_rate=100.0):
     s._emit = emit
     return s, bus, log
 
+_RES = types.SimpleNamespace(valid=False, left_line_rows=0,
+                             right_line_rows=0, error=0.0,
+                             debug_frame=None, reason="test")
+
 def run(mod, label):
     if not hasattr(mod, "RUSH_TURN_V_READY_TOL"):
         mod.RUSH_TURN_V_READY_TOL = 0.0
@@ -55,7 +65,7 @@ def run(mod, label):
     rot_start = v_at_rot = min_rw = None
     dist = 0.0
     for _ in range(int(8.0/dt)):
-        s._turn_command(None, t)
+        s._turn_command(_RES, t)
         if abs(s._last_published[1]) > 0.10:      # 正在旋转
             if rot_start is None:
                 rot_start, v_at_rot = t, s._last_published[0]

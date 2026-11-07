@@ -420,6 +420,12 @@ BRIDGE_SETTLE_ROLL_DEG = 2.0
 BRIDGE_SETTLE_PITCH_DEG = 3.0
 BRIDGE_SETTLE_RATE_DEG = 10.0
 BRIDGE_SETTLE_TIMEOUT = 2.50      # 长时间稳不下来也要放行，不能一直卡在过桥后
+BRIDGE_SETTLE_DISTANCE = 0.25     # m，离桥后按「固定里程」稳车身。
+                                  # 原来只靠 BRIDGE_SETTLE_TIMEOUT=2.5 秒放行，
+                                  # 而「车身平稳」判据用的俯仰基线是上桥前在平地学的，
+                                  # 过桥后俯仰停在 +7.9° 永远不满足 —— 于是每次都跑满
+                                  # 2.5 秒超时。改成按里程判定后，离桥基准点
+                                  # （= 桥后里程的 0 点）不再随速度/时序漂移。
 BRIDGE_SETTLE_SPEED = 0.10        # 稳定确认期间的低速直行速度
 BRIDGE_PROGRESS_SPEED = 0.04
 BRIDGE_APPROACH_TIMEOUT = 15.0
@@ -613,20 +619,22 @@ STEERING_MAX_W = 0.55             # 对齐段方向盘限幅 rad/s
 # --------------------------------------------------------------------------
 # 写死右转弯
 # --------------------------------------------------------------------------
-# 触发方式：
-#   "visual" = 沿用原工程的视觉入弯确认（推荐，那套门槛已经调好了）
-#   "odom"   = 出桥后走固定里程就转（纯看里程，需先用一趟录像标定下面那个值）
-# 每次触发都会在终端打印「桥后里程」，可以直接拿来标 RUSH_TURN_START_DISTANCE。
-RUSH_TURN_TRIGGER = "visual"
-RUSH_TURN_START_DISTANCE = 1.20   # m，仅 "odom" 模式使用
-# ★★★ 转弯太早/太晚就改这一行 ★★★
-# 离桥后至少走这么多米，才允许「视觉确认」触发入弯。两种模式都受它保护：
-#   "visual" —— 先满足这个里程，再等视觉确认（推荐：里程防早、视觉防错）
-#   "odom"   —— 只看里程，这个值不参与
-# 实测「视觉确认」在离桥后 0.23~0.27 m 就亮了，比弯道入口早，所以要靠它压住。
-# 标定方法（不用尺子）：跑一趟，在录像里找到车真正该起转的那一帧，
-# 读画面上第三行的「桥后=X.XXm」，把这个数填进来。日志 1 Hz 那行也有。
-RUSH_TURN_MIN_DISTANCE = 0.20     # m，0 = 不额外限制（保持原行为）
+# 入弯：纯里程，不看视觉（2026-11-01 实车确认视觉 entry 在后桥段是闪烁噪声，
+#       而且一旦不亮车就永远不转）。走多少米由用户自己填。
+# 出弯：用视觉（王赛的逻辑）——转到重新看见线、且线回到画面中间就停。
+RUSH_TURN_TRIGGER = "odom"        # 只用 "odom"；"visual" 分支保留但已不推荐
+# ★★★ 要走多少米才转弯，改这一行 ★★★
+# 起点是「离桥基准点」，也就是每次启动日志里那行
+#   已离桥基准点 dist=X.XX m（桥后里程从这里算 0）
+# 那之后的里程就是日志、录像 HUD 第三行的「桥后=X.XXm」。
+# 自己量：跑一趟让它直冲出去，回放录像，找到车真正该起转的那一帧，
+#         读画面上的「桥后=X.XXm」，填进来。
+RUSH_TURN_START_DISTANCE = 0.47   # m，离桥基准点之后走这么多米就起转
+
+# legacy：只有 RUSH_TURN_TRIGGER="visual" 时才用得到这两个
+RUSH_TURN_MIN_DISTANCE = 0.00     # m，视觉模式下的「最早」（里程门槛）
+# --------------------------------------------------------------------------
+# 转弯：直接写左右轮速度（m/s），不用再换算 v/w
 
 # --------------------------------------------------------------------------
 # 转弯：直接写左右轮速度（m/s），不用再换算 v/w
@@ -662,7 +670,17 @@ RUSH_TURN_RIGHT = 0.35            # m/s，转弯时右轮速度（右转时比�
 RUSH_TURN_V = (RUSH_TURN_LEFT + RUSH_TURN_RIGHT) * 0.5
 RUSH_TURN_W = (RUSH_TURN_RIGHT - RUSH_TURN_LEFT) / RC_WHEEL_TRACK
 
-RUSH_TURN_YAW_DEG = 90.0          # IMU 偏航转过这么多度就算转完
+# ---- 出弯判据：用视觉（王赛的逻辑）----
+# 王赛原版（shiwai.py _has_left_foam）：转过 TURN_MIN_SPIN_SECONDS=1.6 秒之后，
+# 只要 left_line_rows >= 18 且 8 < left_edge_x < 0.42*画面宽，就认定「锁到左侧海绵」，
+# 停止盲转，改为顺着线走。
+# 这里按右转改成：转过最小角度之后，只要「线重新出现 + 行数够 + 回到画面中间」，
+# 就认定出弯。角度上限和超时只作安全网。
+RUSH_TURN_LOCK_MIN_YAW_DEG = 45.0   # 至少转过这么多度才认视觉锁定（对照王赛的 1.6s 最小盲转）
+RUSH_TURN_LOCK_ERROR = 0.18         # |err| 落在这个范围内算「线回到中间」
+RUSH_TURN_LOCK_ROWS = 18            # 线的有效行数（王赛用的就是 18）
+RUSH_TURN_LOCK_FRAMES = 2           # 连续这么多帧才算锁定
+RUSH_TURN_YAW_DEG = 110.0           # 安全上限：转这么多还没锁到线就强制停
 RUSH_TURN_MAX_SECONDS = 8.0       # 兜底超时，防 IMU 异常时一直转圈
 RUSH_TURN_ENTRY_HOLD = 0.20       # 离桥后禁止入弯判定的最短秒数（原 TURN_WAIT_MIN_SECONDS=2.2）
 # 起转前必须先把前进速度拉起来（11-01 19:37 实车踩坑）：
@@ -2818,6 +2836,7 @@ class RushFollower(Node):
         self._bridge_engaged_at: Optional[float] = None
         self._bridge_started: Optional[float] = None
         self._bridge_done_at: Optional[float] = None
+        self._bridge_done_distance = 0.0
         self._bridge_settle_since: Optional[float] = None
         self._bridge_climb_ended = False
         self._bridge_climb_started_at: Optional[float] = None
@@ -2887,6 +2906,7 @@ class RushFollower(Node):
         self._turn_spool_announced = False
         self._turn_low_speed_seconds = 0.0
         self._turn_slow_warned = False
+        self._turn_lock_frames = 0
         self._turn_done_yaw = 0.0
         self._turn_done_seconds = 0.0
         self._tunnel_rush_started: Optional[float] = None
@@ -2984,6 +3004,27 @@ class RushFollower(Node):
             f"→ v={RUSH_TURN_V:.3f} w={RUSH_TURN_W:+.3f}，"
             f"半径 {turn_radius:.2f} m，转 {RUSH_TURN_YAW_DEG:.0f}° 约 {turn_seconds:.2f}s"
         )
+        if RUSH_TURN_TRIGGER == "odom":
+            trigger_note = (
+                f"纯里程，离桥基准点后走 {RUSH_TURN_START_DISTANCE:.2f} m 就起转"
+            )
+        else:
+            trigger_note = (
+                f"最早 {RUSH_TURN_MIN_DISTANCE:.2f} m（需视觉确认），"
+                f"最晚 {RUSH_TURN_START_DISTANCE:.2f} m 强制起转（兜底）"
+            )
+        self._announce(f"★ 入弯（看里程）：{RUSH_TURN_TRIGGER}，{trigger_note}")
+        self._announce(
+            f"★ 出弯（看视觉，王赛逻辑）：转过 {RUSH_TURN_LOCK_MIN_YAW_DEG:.0f}° 后，"
+            f"线行数>={RUSH_TURN_LOCK_ROWS} 且 |误差|<={RUSH_TURN_LOCK_ERROR:.2f} "
+            f"连续 {RUSH_TURN_LOCK_FRAMES} 帧即停；角度上限 "
+            f"{RUSH_TURN_YAW_DEG:.0f}°、超时 {RUSH_TURN_MAX_SECONDS:.0f}s 兜底"
+        )
+        self._announce(
+            f"★ 离桥基准点：过桥后按固定 {BRIDGE_SETTLE_DISTANCE:.2f} m 稳车身，"
+            f"走完那一刻就是「桥后里程 0」，不随速度漂（兜底 "
+            f"{BRIDGE_SETTLE_TIMEOUT:.1f}s）"
+        )
         # 直接写左右轮时最容易踩的坑：v=(左+右)/2 超过 0.60 会被自动夹住，
         # 实际轮速就不是你写的值了 —— 开机就说清楚。
         if abs(RUSH_TURN_LEFT) > RC_MAX_WHEEL_SPEED or abs(RUSH_TURN_RIGHT) > RC_MAX_WHEEL_SPEED:
@@ -3015,12 +3056,20 @@ class RushFollower(Node):
         实车踩过 —— RUSH_TURN_MIN_DISTANCE 从 0.00 改到 2.20，起转点还是
         0.22~0.31 m 一动不动，因为跑的一直是 install 里的旧文件。
         这里把 src 里的值和实际生效的值并排打出来。
+
+        注意用 .absolute() 而不是 .resolve()：后者会把软链接解开，
+        就分不清 install 里到底是软链接还是真的旧拷贝了。
         """
+        raw = Path(__file__).absolute()
+        parts = raw.parts
+        if "install" not in parts:
+            return
+        if raw.is_symlink():
+            self._announce(
+                f"参数自检：install 里是软链接 → 改 src 立即生效 OK（{raw.resolve()}）"
+            )
+            return
         try:
-            here = Path(__file__).resolve()
-            parts = here.parts
-            if "install" not in parts:
-                return
             src = Path(*parts[:parts.index("install")]).joinpath(
                 "src", "wheel_robot", "scripts", "rush.py"
             )
@@ -3512,31 +3561,26 @@ class RushFollower(Node):
             self._have_error = False
             self._mode = self.MODE_WAIT_TURN
             self._announce(
-                f"已离桥，桥后里程 dist={b.distance:.2f} m，yaw={b.yaw:+.1f}° → 直冲等入弯"
+                f"已离桥基准点：总里程 dist={b.distance:.2f} m，yaw={b.yaw:+.1f}°"
+                f" → 桥后里程从这里算 0，直冲 {RUSH_TURN_START_DISTANCE:.2f} m 后入弯"
             )
 
     def _bridge_settle_ready(self, now: float) -> bool:
-        """done 之后确认车身真的稳了；超过 BRIDGE_SETTLE_TIMEOUT 也放行。"""
+        """done 之后按「固定里程」确认车身稳了，兜底超时才放行。
+
+        主判据是里程：离桥后固定走 BRIDGE_SETTLE_DISTANCE 米。
+        这样「桥后里程 = 0」永远是同一个物理位置，用户填的转弯距离才可复现。
+        原来的「车身平稳就提前放行」判据依赖俯仰基线，实车永远不会满足，
+        只会跑满 2.5 秒超时——那段时间车在低速爬，起点随速度漂。
+        """
         b = self._bridge
         if self._bridge_done_at is None:
             self._bridge_done_at = now
-        if now - self._bridge_done_at >= BRIDGE_SETTLE_TIMEOUT:
+            self._bridge_done_distance = b.distance
+        if b.distance - self._bridge_done_distance >= BRIDGE_SETTLE_DISTANCE:
             return True
-        if b.baseline is None or b.imu_at is None:
-            return False
-        if not 0.0 <= now - b.imu_at <= BRIDGE_SENSOR_TIMEOUT:
-            self._bridge_settle_since = None
-            return False
-        dr = abs(b.angle_delta(b.roll, b.baseline[0]))
-        dp = abs(b.angle_delta(b.pitch, b.baseline[1]))
-        calm = (dr <= BRIDGE_SETTLE_ROLL_DEG and dp <= BRIDGE_SETTLE_PITCH_DEG
-                and abs(b.roll_rate) <= BRIDGE_SETTLE_RATE_DEG)
-        if not calm:
-            self._bridge_settle_since = None
-            return False
-        if self._bridge_settle_since is None:
-            self._bridge_settle_since = now
-        return now - self._bridge_settle_since >= BRIDGE_SETTLE_SECONDS
+        # 兜底：车轮打滑或被挡住时里程不涨，别卡死在桥上
+        return now - self._bridge_done_at >= BRIDGE_SETTLE_TIMEOUT
 
     def _bridge_settle_command(self, result: DetectionResult, now: float) -> None:
         """过桥后低速直行等车身稳住；w=0 交给固件保航向。"""
@@ -3789,8 +3833,13 @@ class RushFollower(Node):
             why = f"odom {travelled:.2f}/{RUSH_TURN_START_DISTANCE:.2f} m"
         else:
             armed = travelled >= RUSH_TURN_MIN_DISTANCE
-            trigger = armed and bool(result.turn_entry_ready)
-            if armed:
+            forced = travelled >= RUSH_TURN_START_DISTANCE
+            # 兜底优先：视觉一直不亮也必须转，否则会一路直冲出赛道
+            trigger = forced or (armed and bool(result.turn_entry_ready))
+            if forced:
+                why = (f"里程兜底 {travelled:.2f}/{RUSH_TURN_START_DISTANCE:.2f} m"
+                       f"（视觉始终没确认，按最晚点强制起转）")
+            elif armed:
                 why = f"visual entry={'Y' if result.turn_entry_ready else '-'}"
             else:
                 why = (f"里程还没到，还差 {RUSH_TURN_MIN_DISTANCE - travelled:.2f} m"
@@ -3804,20 +3853,22 @@ class RushFollower(Node):
             self._turn_spool_announced = False
             self._turn_low_speed_seconds = 0.0
             self._turn_slow_warned = False
+            self._turn_lock_frames = 0
             self._mode = self.MODE_TURN
             self._have_error = False
             self._announce(
-                f"★ 入弯触发（{why}）：桥后已走 {travelled:.2f} m，yaw0={yaw}；"
+                f"★ 入弯触发（{why}）：离桥基准点后已走 {travelled:.2f} m，yaw0={yaw}；"
                 f"写死 v={RUSH_TURN_V:.2f} w={RUSH_TURN_W:+.2f} "
                 f"(左轮 {RUSH_TURN_V - RUSH_TURN_W * RC_WHEEL_TRACK * 0.5:.2f} / "
                 f"右轮 {RUSH_TURN_V + RUSH_TURN_W * RC_WHEEL_TRACK * 0.5:.2f} m/s)，"
-                f"IMU 转够 {RUSH_TURN_YAW_DEG:.0f}° 就停"
+                f"出弯看视觉锁定（最小盲转 {RUSH_TURN_LOCK_MIN_YAW_DEG:.0f}°，"
+                f"角度上限 {RUSH_TURN_YAW_DEG:.0f}°）"
             )
-            # 顺带打印标定信息，方便对照录像调 RUSH_TURN_MIN_DISTANCE
+            # 顺带打印标定信息，方便对照录像调 RUSH_TURN_START_DISTANCE
             self.get_logger().info(
-                f"[标定] 本次起转点在离桥后 {travelled:.3f} m"
+                f"[标定] 本次起转点在离桥基准点后 {travelled:.3f} m"
                 f"（RUSH_TURN_TRIGGER={RUSH_TURN_TRIGGER}，"
-                f"RUSH_TURN_MIN_DISTANCE={RUSH_TURN_MIN_DISTANCE:.2f}）"
+                f"RUSH_TURN_START_DISTANCE={RUSH_TURN_START_DISTANCE:.2f}）"
                 f"；太早/太晚就把这个值改成录像里那一帧读到的「桥后」数"
             )
             self._rush_command(result, now, tag="WAIT_TURN -> TURN")
@@ -3879,14 +3930,29 @@ class RushFollower(Node):
             self._turn_start_yaw = float(b.yaw)
         delta = abs(b.angle_delta(b.yaw, self._turn_start_yaw))
         elapsed = now - self._turn_started_at
-        done = (delta >= RUSH_TURN_YAW_DEG) or (elapsed >= RUSH_TURN_MAX_SECONDS)
+        # 出弯判据（优先级从前到后）：
+        #   1. 视觉锁定 —— 转过最小角度后重新看见线且回到中间（王赛的逻辑）
+        #   2. 角度上限 —— 安全网，视觉一直锁不到就按角度停
+        #   3. 超时     —— 兜底，绝不一直转
+        lock_ready = (
+            delta >= RUSH_TURN_LOCK_MIN_YAW_DEG
+            and self._turn_vision_locked(result)
+        )
+        if elapsed >= RUSH_TURN_MAX_SECONDS:
+            done, why = True, f"超时 {elapsed:.1f}s"
+        elif lock_ready:
+            done, why = True, f"视觉锁定（转过 {delta:.0f}°，线回来了）"
+        elif delta >= RUSH_TURN_YAW_DEG:
+            done, why = True, f"转够 {delta:.0f}°（视觉没锁到，按角度兜底）"
+        else:
+            done, why = False, ""
         if done:
             self._turn_done_yaw = delta
             self._turn_done_seconds = elapsed
             self._enter_sidewalk(now)
             self._announce(
-                f"★ 出弯（yaw 转过 {delta:.1f}°，用时 {elapsed:.2f}s）→ 立即停车，"
-                f"静止 {SIDEWALK_STANDSTILL_SECONDS:.1f} 秒（不看斑马线）"
+                f"★ 出弯——{why}，转过 {delta:.1f}°，用时 {elapsed:.2f}s"
+                f"→ 立即停车，静止 {SIDEWALK_STANDSTILL_SECONDS:.1f} 秒（不看斑马线）"
             )
             command = self._emit(0.0, 0.0, now)
         else:
@@ -3910,8 +3976,33 @@ class RushFollower(Node):
         self._update_height(now)
         lw, rw = self.wheel_speeds(*self._last_published)
         self._show(result, *command, self.enable_motion,
-                   extra=f"TURN {delta:4.1f}/{RUSH_TURN_YAW_DEG:.0f}° "
-                         f"{elapsed:4.1f}s v={command[0]:.2f} L={lw:+.2f} R={rw:+.2f}")
+                   extra=f"TURN {delta:4.1f}/{RUSH_TURN_LOCK_MIN_YAW_DEG:.0f}-"
+                         f"{RUSH_TURN_YAW_DEG:.0f}° {elapsed:4.1f}s "
+                         f"lock={'Y' if lock_ready else '-'} "
+                         f"v={command[0]:.2f} L={lw:+.2f} R={rw:+.2f}")
+
+    def _turn_vision_locked(self, result: DetectionResult) -> bool:
+        """出弯视觉判据（王赛的逻辑，按右转改）。
+
+        王赛原版 shiwai.py::_has_left_foam()：
+            result.valid 且 left_line_rows >= 18 且 8 < left_edge_x < 0.42*宽
+        他要求先盲转够 TURN_MIN_SPIN_SECONDS=1.6 秒才认这个条件。
+
+        我们右转出弯时该看到的是「新的一段线回到画面中间」，所以判据换成
+        「线有效 + 行数够 + |err| 小」，连续 RUSH_TURN_LOCK_FRAMES 帧才算数。
+        最小盲转角度由 RUSH_TURN_LOCK_MIN_YAW_DEG 把关（在调用处判断）。
+        """
+        rows = max(int(result.left_line_rows), int(result.right_line_rows))
+        ok = (
+            bool(result.valid)
+            and rows >= RUSH_TURN_LOCK_ROWS
+            and abs(float(result.error)) <= RUSH_TURN_LOCK_ERROR
+        )
+        if ok:
+            self._turn_lock_frames += 1
+        else:
+            self._turn_lock_frames = 0
+        return self._turn_lock_frames >= RUSH_TURN_LOCK_FRAMES
 
     def _enter_sidewalk(self, now: float) -> None:
         """进入人行道停车段：所有静止判定状态清零。"""
