@@ -1,13 +1,7 @@
 #!/usr/bin/env python3
-"""arch-v6：出弯之前完全沿用 shiwai_lin_line.py；出弯后（隧道/终点）才用 ARCH 新视觉。
-
-分工：
-  起步 → 上桥 → 桥上 → BRIDGE SETTLE → WAIT → 大弯 → 出弯判定
-      与 shiwai_lin_line.py 的逻辑一字不差（ArchYellowLineDetector /
-      ArchSceneDetector 在 arch_enabled=False 时全部直通 super()）。
-  出弯之后（_curve_exit_ready 起，含人行道/隧道/终点）
-      才启用 arch_* 的掩膜清理、立柱剔除、双线证据与限速。
-二值化录像、无窗口。
+"""FullDraw-FN2：全程统一绘图，CW/FN按任务阶段互斥检测。
+桥前/桥上/弯道保留LIN边线算法，出弯后启用ARCH边线算法。
+人行道停稳计时5秒；终点用亮地布上的细黑字组合检测，保留时间门与2帧确认。
 """
 
 from dataclasses import dataclass
@@ -92,7 +86,9 @@ TUNNEL_SINGLE_RIGHT_HALF_RATIO = 0.50
 TUNNEL_MAX_LANE_WIDTH_RATIO = 0.98
 # 过完单边桥进大弯：只顺着左侧外沿海绵走。
 # 半宽太小贴左海绵，太大会往内圈偏。
-TURN_SINGLE_LEFT_HALF_RATIO = 0.22
+# 162855 截图红线标定：左线到期望中线距离约为原先的 1.9 倍。
+# 下桥后至人行道停车结束前使用；偏移仍随图像深度缩放。
+TURN_SINGLE_LEFT_HALF_RATIO = 0.42
 TURN_SINGLE_RIGHT_HALF_RATIO = 0.42
 
 # 下桥后相对中点的偏移。大弯改跟左线，不再额外左拉。
@@ -329,8 +325,19 @@ TARGET_OFFSET_PIXELS = 0.0
 
 LANE_YELLOW_H_MIN = 20   # 原 24，泡沫实测最低到 22
 LANE_YELLOW_H_MAX = 40
-LANE_YELLOW_S_MIN = 45   # 原 35，白布 S 最高 38，不能再低
-LANE_YELLOW_V_MIN = 90   # 原 70，压掉暗处杂点
+LANE_YELLOW_S_MIN = 45   # 常规黄色；低饱和亮黄由下方补偿，勿全局降低 S。
+LANE_YELLOW_V_MIN = 90   # 常规黄色；高饱和暗黄由下方补偿。
+
+# 2026-11-08 录像：亮黄 S 可降至 20，阴影黄 V 可降至 60。
+# 分别约束 V>=150 / S>=80，避免同时放宽 S、V 后把灰地面并入黄线。
+# 只用于巡线；场景识别、黄黑立柱证据仍使用原阈值。
+# lane_yellow_* 仍控制常规档和公共 H 范围；以下补偿档独立在此调节。
+# 设 False 可精确恢复旧巡线颜色掩膜。
+LANE_YELLOW_COMPENSATION = True
+LANE_YELLOW_PALE_S_MIN = 20
+LANE_YELLOW_PALE_V_MIN = 150
+LANE_YELLOW_SHADOW_S_MIN = 80
+LANE_YELLOW_SHADOW_V_MIN = 60
 
 # ---------- 巡线掩膜中的黄黑条纹排除（不影响场景识别） ----------
 # 不再把"靠近暗地面"的黄边当作警示胶带；必须有局部重复的黄/黑交替。
@@ -353,12 +360,12 @@ MINIMUM_FORWARD_SPEED = 0.2  #0.2
 # 唯一瓶颈（t = 转角/角速度）。0.48 大约让大弯从 7.55s 缩到 6.0s。
 # 风险：泡沫出境更快，若出现 TURN LOST 就先退回 0.43 或把
 # TURN_HEADING_RAMP_FRAMES 从 8 加到 10。回退就是改回 0.38。
-MAX_ANGULAR_SPEED = 0.55  #0.4，0.55，0.45，0.4，0.38 -> 0.48 0.55
+MAX_ANGULAR_SPEED = 0.95 #0.55  #0.4，0.55，0.45，0.4，0.38 -> 0.48 0.55
 
 # 转向比例增益：err=1 时输出的角速度 = STEERING_KP × MAX_ANGULAR_SPEED。
 # 偏大 → 左右画龙（实测峰峰 40cm 以上），冲桥会被甩下去；
 # 偏小 → 回正慢、进弯切内圈。画龙降 0.7，抢弯提 0.9。
-STEERING_KP = 0.72  #0.75
+STEERING_KP = 0.82#0.72  #0.75
 
 # 转弯减速比例，范围 0~1。越大，转弯时越慢。
 CURVE_SLOWDOWN = 0.40 #0.6
@@ -497,12 +504,18 @@ POST_TUNNEL_LOST_GRACE_SECONDS = 1.5
 # ---------- 终点 ----------
 # 终点是地上三个大黑字，不是斑马线。过完隧道后认到就停车。
 # TOP 越大越靠近车才停。太小会在终点前就停，太大可能压过终点才停。
-FINISH_TOP_RATIO = 0.80
+FINISH_TOP_RATIO = 0.65  # 细字约在画面 0.77H 即可见，提前纳入搜索。
 FINISH_BOTTOM_RATIO = 0.96
+# 终点黑字可能只有几像素高；不再用大开运算/整框7%黑色占比筛掉笔画。
+# 同时要求文字周边至少75%是明亮低饱和地布，抑制驶出赛道后的暗跑道误检。
+FINISH_INK_GRAY_MAX = 110
+FINISH_INK_CONTRAST = 22
+FINISH_BRIGHT_SUPPORT_MIN = 0.75
+BUILD_ID = "20261108-FULLDRAW-FN2-G1"
 # 6 → 3 → 2。204944 实测：真终点字（`FN 3 HIT`）只活了 410、411 两帧（0.13s），
 # TUNNEL_SPEED_SCALE=2.0 → v=0.59，字在 FINISH 框里一闪就过。3 帧永远差一帧。
-# _detect_finish 自己要求 2~6 个黑块、跨度>=0.38W、平边<=2.4、近端>=8%、
-# 黑像素 0.07~0.62，加上下面 2.5s 时间门挡住隧道口胶带，2 帧够用。
+# _detect_finish 检查亮地布上的3~5个对齐笔画组；它不是OCR，组数不等于字数。
+# 时间门与连续2帧确认仍用于拦截斑马线残留及孤立误检。
 FINISH_CONFIRM_FRAMES = 2.0
 # 黑字必须落到搜索框下部（靠近车）才算到达，只看见远处大字不算。
 FINISH_NEAR_RATIO = 0.40
@@ -518,7 +531,7 @@ FINISH_AFTER_TUNNEL_SECONDS = 2.2  #1.8
 # 5.0 → 2.5（204944 实测）：真终点字出现在下蹲后 3.5s，5.0 的闸门比它晚 1.5s，
 # 字一帧都录不到确认就过了；而隧道口胶带那波误报在下蹲后 0.8~1.4s，
 # 2.5 正好卡在两者中间：胶带进不来，真字来得及。
-FINISH_IN_TUNNEL_MIN_SECONDS = 2.0  #2.0->5.0->2.5
+FINISH_IN_TUNNEL_MIN_SECONDS = 3  #2.0->5.0->2.5
 # 认出终点后再往前拱这么久再停，把车身开进终点带。太短会停在字前，太长会冲出垫子。
 # 1.2 -> 2.0（用户 11.01）：倒计时里只发固定速度，整整拱 2 秒，其他都不参与控制。
 FINISH_DRIVE_IN_SECONDS = 1.6  #1.2
@@ -834,15 +847,26 @@ class DualYellowLineDetector:
         excluded[remove[labels]] = 255
         return excluded
 
-    def _yellow_mask(self, hsv: np.ndarray, local_only: bool = False) -> np.ndarray:
+    def _yellow_color_mask(self, hsv: np.ndarray) -> np.ndarray:
+        """常规黄 + 高亮浅黄 + 阴影浓黄，三档共用可配置的 H 范围。"""
+        upper = (self.yellow_h_max, 255, 255)
         yellow = cv2.inRange(
-            hsv,
-            np.array(
-                (self.yellow_h_min, self.yellow_s_min, self.yellow_v_min),
-                dtype=np.uint8,
-            ),
-            np.array((self.yellow_h_max, 255, 255), dtype=np.uint8),
+            hsv, (self.yellow_h_min, self.yellow_s_min, self.yellow_v_min), upper
         )
+        if LANE_YELLOW_COMPENSATION:
+            pale = cv2.inRange(
+                hsv, (self.yellow_h_min, LANE_YELLOW_PALE_S_MIN,
+                      LANE_YELLOW_PALE_V_MIN), upper
+            )
+            shadow = cv2.inRange(
+                hsv, (self.yellow_h_min, LANE_YELLOW_SHADOW_S_MIN,
+                      LANE_YELLOW_SHADOW_V_MIN), upper
+            )
+            yellow = cv2.bitwise_or(yellow, cv2.bitwise_or(pale, shadow))
+        return yellow
+
+    def _yellow_mask(self, hsv: np.ndarray, local_only: bool = False) -> np.ndarray:
+        yellow = self._yellow_color_mask(hsv)
         black = cv2.inRange(
             hsv,
             np.array((0, 0, 0), dtype=np.uint8),
@@ -1028,11 +1052,12 @@ class DualYellowLineDetector:
 
     @staticmethod
     def _curve_fit_samples(points: np.ndarray, horizontal: bool, side: str,
-                           width: int, height: int):
+                           width: int, height: int, min_axis_span=None):
         """沿可观测方向拟合二次曲线；只补小缺口，不跨大段未知区域。"""
         axis = 0 if horizontal else 1
         u, v = points[:, axis], points[:, 1-axis]
-        if len(u) < CURVE_MIN_POINTS or np.ptp(u) < CURVE_MIN_SPAN_RATIO * width:
+        required_span = CURVE_MIN_SPAN_RATIO * width if min_axis_span is None else min_axis_span
+        if len(u) < CURVE_MIN_POINTS or np.ptp(u) < required_span:
             return None
         # 单点毛刺先按邻域中值剔除，再用整段曲线残差排除成簇的异常点。
         initial_points = len(points)
@@ -1161,7 +1186,19 @@ class DualYellowLineDetector:
                 start, end = max(usable, key=lambda part: points[part[1]-1, 1])
                 far_points = np.vstack((points[:start], points[end:]))
                 points = points[start:end]
-        candidate = self._curve_fit_samples(points, horizontal, side, width, height)
+        cap_points = np.empty((0, 2))
+        if self.pre_bridge_guard and not horizontal:
+            points, cap_points = curve_trim_far_cap(points, width, image_height)
+            if len(cap_points):
+                far_points = (cap_points if far_points is None
+                              else np.vstack((far_points, cap_points)))
+        candidate = self._curve_fit_samples(
+            points, horizontal, side, width, height,
+            min_axis_span=.09*image_height if len(cap_points) else None)
+        if candidate is not None and len(cap_points):
+            candidate['far_cap_cut'] = True
+            # 沿已验证地面段的切线短距离外推；补线不冒充实测点。
+            candidate = arch_extend_ground(candidate, 48*image_height/480, width, height)
         if candidate is not None and far_points is not None:
             candidate['rejected'] = np.vstack((candidate['rejected'], far_points))
             candidate['rejected_points'] += len(far_points)
@@ -1176,7 +1213,8 @@ class DualYellowLineDetector:
         rows = candidate['measured'][:, 1]
         if len(rows) < max(CURVE_MIN_POINTS, int(round(PRE_BRIDGE_MIN_ROWS_RATIO*image_height))):
             return False
-        if rows[-1]-rows[0] < PRE_BRIDGE_MIN_Y_SPAN_RATIO*image_height:
+        minimum_span = .09 if candidate.get('far_cap_cut', False) else PRE_BRIDGE_MIN_Y_SPAN_RATIO
+        if rows[-1]-rows[0] < minimum_span*image_height:
             return False
         near_row = PRE_BRIDGE_NEAR_ROW_RATIO*image_height-y0
         return np.count_nonzero(rows >= near_row) >= max(
@@ -1509,6 +1547,7 @@ class DualYellowLineDetector:
             mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
             mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
         debug[y0:y1, x0:x1] = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+        self._lane_plot_base = debug.copy()  # 仅绘图快照，不参与检测/控制。
         edges = self._curve_boundaries(mask, x0, width, y0, height)
         selected = [c for c in edges.values() if c is not None]
         if not selected:
@@ -1733,6 +1772,7 @@ class DualYellowLineDetector:
         lane_centers: List[float] = []
         lane_weights: List[float] = []
         lane_center_points: List[Tuple[float, int]] = []
+        lane_center_support: List[bool] = []  # 本行是否由双边实测得到。
         lane_widths: List[float] = []
         boundary_widths: List[float] = []
         boundary_lane_contrasts: List[float] = []
@@ -1874,12 +1914,14 @@ class DualYellowLineDetector:
             lane_centers.append(center)
             lane_weights.append(weight)
             lane_center_points.append((center, row_y))
+            lane_center_support.append(used_pair)
             lane_widths.append(lane_width)
             boundary_lane_contrasts.append(contrast)
             previous_center = center
             previous_row = row_y
 
         debug[y0:y1, x0:x1] = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+        self._lane_plot_base = debug.copy()  # 仅绘图快照，不参与检测/控制。
         cv2.rectangle(debug, (x0, y0), (x1, y1), (80, 80, 80), 1)
         cv2.line(
             debug,
@@ -1890,6 +1932,13 @@ class DualYellowLineDetector:
             cv2.LINE_AA,
         )
 
+        # 桥上逐行模式也输出同一套绘图数据；不重新检测或改变中心/权重。
+        self._arch_legacy_geometry = dict(
+            x0=x0, y0=y0, left_mask=left_mask, right_mask=right_mask,
+            center_path=np.asarray(lane_center_points, dtype=float).reshape(-1, 2)+[0, y0],
+            weights=np.asarray(lane_weights, dtype=float), paired=pair_rows > 0,
+            center_support=np.asarray(lane_center_support, dtype=bool),
+        )
         mean_lane_width = float(np.mean(lane_widths)) if lane_widths else 0.0
         left_line_rows = int(np.count_nonzero(np.any(left_mask > 0, axis=1)))
         right_line_rows = int(np.count_nonzero(np.any(right_mask > 0, axis=1)))
@@ -2112,6 +2161,7 @@ class TrackSceneDetector:
         frame: np.ndarray,
         debug: np.ndarray,
         prefer_finish: bool = False,
+        crosswalk_enabled: bool = True,
     ) -> SceneObservation:
         height, width = frame.shape[:2]
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -2124,44 +2174,50 @@ class TrackSceneDetector:
         x0 = margin
         x1 = max(x0 + 8, width - margin)
 
-        crosswalk, stripe_count, cw_score, cw_mask = self._detect_crosswalk(
-            hsv[cw_y0:cw_y1, x0:x1]
-        )
+        # 三种互斥阶段：CW / FN / 两者关闭。关闭的检测器不执行，也不留旧框。
+        crosswalk_enabled = bool(crosswalk_enabled and not prefer_finish)
+        crosswalk, stripe_count, cw_score = False, 0, 0.0
+        cw_mask = np.zeros((1, 1), dtype=np.uint8)
+        finish, blob_count, fn_score, blob_boxes = False, 0, 0.0, []
         fn_y0 = int(height * FINISH_TOP_RATIO)
         fn_y1 = int(height * FINISH_BOTTOM_RATIO)
-        finish, blob_count, fn_score, blob_boxes = self._detect_finish(
-            hsv[fn_y0:fn_y1, x0:x1]
-        )
-        # 过完隧道才认终点。之前斑马线会被大字逻辑抢走，人行道就停不了。
-        if not prefer_finish:
-            finish = False
-        elif finish:
-            crosswalk = False
+        if crosswalk_enabled:
+            crosswalk, stripe_count, cw_score, cw_mask = self._detect_crosswalk(
+                hsv[cw_y0:cw_y1, x0:x1]
+            )
+        else:
+            self.cw_reason = "OFF"
+            self.arch_cw_boxes = []
+        if prefer_finish:
+            finish, blob_count, fn_score, blob_boxes = self._detect_finish(
+                hsv[fn_y0:fn_y1, x0:x1]
+            )
         hazard, hz_score = self._detect_hazard(hsv[hz_y0:hz_y1, x0:x1])
         near_y0 = int(height * BRIDGE_NEAR_TOP_RATIO)
         near_y1 = int(height * BRIDGE_NEAR_BOTTOM_RATIO)
         hazard_near, _ = self._detect_hazard(hsv[near_y0:near_y1, x0:x1])
 
-        roi = debug[cw_y0:cw_y1, x0:x1]
-        if cw_mask.size > 1 and roi.size > 0 and cw_mask.shape[:2] == roi.shape[:2]:
-            # 原来 np.maximum(roi, stripe) 把斑马线掩码画成纯白 255，和巡线的
-            # 黄线掩码（也是纯白）完全分不开，人行道前后看着就是「一片白噪点」
-            # （145027 反馈）。改成暗青色，一眼能区分「白=巡线黄线 / 青=斑马线」。
-            tint = (cw_mask.astype(np.float32) * 0.38).astype(np.uint8)
-            stripe = np.dstack([np.zeros_like(tint), tint, tint])  # BGR 暗青
-            debug[cw_y0:cw_y1, x0:x1] = np.maximum(roi, stripe)
-        box_tone = 220 if crosswalk else 90
-        cv2.rectangle(debug, (x0, cw_y0), (x1, cw_y1), (box_tone, box_tone, box_tone), 1)
-        cv2.putText(
-            debug,
-            f"CW {stripe_count}" + (" HIT" if crosswalk else f" {self.cw_reason}"),
-            (x0 + 8, min(height - 12, cw_y0 + 20)),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.48,
-            (255, 255, 255) if crosswalk else (170, 170, 170),
-            1,
-            cv2.LINE_AA,
-        )
+        if crosswalk_enabled:
+            roi = debug[cw_y0:cw_y1, x0:x1]
+            if cw_mask.size > 1 and roi.size > 0 and cw_mask.shape[:2] == roi.shape[:2]:
+                # 原来 np.maximum(roi, stripe) 把斑马线掩码画成纯白 255，和巡线的
+                # 黄线掩码（也是纯白）完全分不开，人行道前后看着就是「一片白噪点」
+                # （145027 反馈）。改成暗青色，一眼能区分「白=巡线黄线 / 青=斑马线」。
+                tint = (cw_mask.astype(np.float32) * 0.38).astype(np.uint8)
+                stripe = np.dstack([np.zeros_like(tint), tint, tint])  # BGR 暗青
+                debug[cw_y0:cw_y1, x0:x1] = np.maximum(roi, stripe)
+            box_tone = 220 if crosswalk else 90
+            cv2.rectangle(debug, (x0, cw_y0), (x1, cw_y1), (box_tone, box_tone, box_tone), 1)
+            cv2.putText(
+                debug,
+                f"CW {stripe_count}" + (" HIT" if crosswalk else f" {self.cw_reason}"),
+                (x0 + 8, min(height - 12, cw_y0 + 20)),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.48,
+                (255, 255, 255) if crosswalk else (170, 170, 170),
+                1,
+                cv2.LINE_AA,
+            )
 
         if prefer_finish:
             fn_tone = 220 if finish else 90
@@ -2178,7 +2234,7 @@ class TrackSceneDetector:
                 )
             cv2.putText(
                 debug,
-                f"FN {blob_count}" + (" HIT" if finish else ""),
+                f"FN {blob_count}" + (" HIT" if finish else f" {getattr(self, 'fn_reason', '-')}"),
                 (x0 + 8, min(height - 12, fn_y0 + 22)),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.48,
@@ -2223,76 +2279,73 @@ class TrackSceneDetector:
     def _detect_finish(
         self, hsv_roi: np.ndarray
     ) -> Tuple[bool, int, float, List[Tuple[int, int, int, int]]]:
-        empty: List[Tuple[int, int, int, int]] = []
-        if hsv_roi.size == 0:
-            return False, 0, 0.0, empty
-        yellow, black = self._masks(hsv_roi)
-        close_kernel = np.ones((11, 11), dtype=np.uint8)
-        open_kernel = np.ones((5, 5), dtype=np.uint8)
-        black = cv2.morphologyEx(black, cv2.MORPH_CLOSE, close_kernel)
-        black = cv2.morphologyEx(black, cv2.MORPH_OPEN, open_kernel)
-        yellow_frac = float(np.mean(yellow > 0))
-        black_frac = float(np.mean(black > 0))
-        if black_frac < 0.07 or black_frac > 0.62 or yellow_frac > 0.20:
-            return False, 0, 0.0, empty
-
-        binary = (black > 0).astype(np.uint8)
-        roi_h, roi_w = binary.shape
-        near = binary[int(FINISH_NEAR_RATIO * roi_h) :, :]
-        if near.size == 0 or float(np.mean(near)) < 0.08:
-            return False, 0, 0.0, empty
-        num, _labels, stats, _centroids = cv2.connectedComponentsWithStats(
-            binary, connectivity=8
-        )
-        min_area = 0.012 * roi_h * roi_w
-        blobs: List[Tuple[int, int, int, int, int]] = []
-        for index in range(1, num):
-            x = int(stats[index, cv2.CC_STAT_LEFT])
-            y = int(stats[index, cv2.CC_STAT_TOP])
-            w = int(stats[index, cv2.CC_STAT_WIDTH])
-            h = int(stats[index, cv2.CC_STAT_HEIGHT])
-            area = int(stats[index, cv2.CC_STAT_AREA])
-            if area < min_area or h < 0.20 * roi_h or w < 0.06 * roi_w:
+        """细黑字的对齐笔画组 + 明亮地布支持；不把暗地面块当终点。"""
+        self.fn_reason = "empty"
+        h, w = hsv_roi.shape[:2]
+        if h < 5 or w < 5:
+            return False, 0, 0.0, []
+        gray = cv2.cvtColor(cv2.cvtColor(hsv_roi, cv2.COLOR_HSV2BGR), cv2.COLOR_BGR2GRAY)
+        ref = cv2.morphologyEx(gray, cv2.MORPH_CLOSE, np.ones((9, 21), np.uint8))
+        yellow = ((hsv_roi[:, :, 0] >= 12) & (hsv_roi[:, :, 0] <= 45)
+                  & (hsv_roi[:, :, 1] >= 50))
+        ink = ((ref.astype(np.int16)-gray.astype(np.int16) >= FINISH_INK_CONTRAST)
+               & (gray <= FINISH_INK_GRAY_MAX) & ~yellow).astype(np.uint8)*255
+        # 保留细笔画，只连接小缺口；膨胀仅用于笔画分组，不用于占比判断。
+        ink = cv2.morphologyEx(ink, cv2.MORPH_CLOSE, np.ones((2, 2), np.uint8))
+        groups = cv2.dilate(ink, np.ones((3, 7), np.uint8))
+        bright = (hsv_roi[:, :, 1] <= 75) & (hsv_roi[:, :, 2] >= 115)
+        n, _, stats, _ = cv2.connectedComponentsWithStats(groups, 8)
+        candidates = []
+        for index in range(1, n):
+            x, y, bw, bh, _ = map(int, stats[index])
+            part = ink[y:y+bh, x:x+bw]
+            count = int(np.count_nonzero(part))
+            tight = cv2.boundingRect(part)
+            fill = count / max(1, tight[2]*tight[3])
+            if (count < 15 or bw < 5 or bh < 5 or bw < .4*bh
+                    or bw > 8*bh or bh > .55*h or bw > .65*w):
                 continue
-            if w > 3.2 * max(h, 1):
+            if not .12 <= fill <= .75:
+                continue  # 拒绝过稀的褶皱和近乎实心的黑条。
+            pad = max(5, bh//2)
+            surrounding = bright[max(0,y-pad):min(h,y+bh+pad), max(0,x-pad):min(w,x+bw+pad)]
+            support = float(np.mean(surrounding))
+            if support < FINISH_BRIGHT_SUPPORT_MIN:
                 continue
-            blobs.append((x, y, w, h, area))
-
-        blob_count = len(blobs)
-        boxes = [(item[0], item[1], item[2], item[3]) for item in blobs]
-        if blob_count == 1:
-            _x, _y, w, h, area = blobs[0]
-            if w < 0.42 * roi_w or h < 0.26 * roi_h or area < 0.08 * roi_h * roi_w:
-                return False, blob_count, 0.0, boxes
-        elif blob_count < 2 or blob_count > 6:
-            return False, blob_count, 0.0, boxes
-
-        left = min(item[0] for item in blobs)
-        right = max(item[0] + item[2] for item in blobs)
-        span = (right - left) / max(1, roi_w)
-        if span < 0.38:
-            return False, blob_count, 0.0, boxes
-        bottoms = [item[1] + item[3] for item in blobs]
-        if max(bottoms) < FINISH_NEAR_RATIO * roi_h:
-            return False, blob_count, 0.0, boxes
-
-        aspects = [item[2] / max(item[3], 1) for item in blobs]
-        median_aspect = float(np.median(np.array(aspects, dtype=np.float32)))
-        if median_aspect > 2.4:
-            return False, blob_count, 0.0, boxes
-
-        score = float(
-            np.clip(
-                0.40 * min(1.0, blob_count / 3.0)
-                + 0.35 * min(1.0, span / 0.70)
-                + 0.25 * min(1.0, black_frac / 0.28),
-                0.0,
-                1.0,
-            )
-        )
-        if blob_count == 1:
-            score = min(1.0, score + 0.08)
-        return score >= 0.40, blob_count, score, boxes
+            candidates.append((x,y,bw,bh,count,fill,support))
+        best = []
+        self.fn_reason = "no_text_group"
+        for seed in candidates:
+            cy = seed[1]+seed[3]*.5
+            row = [c for c in candidates
+                   if abs(c[1]+c[3]*.5-cy) <= max(4,.35*seed[3])
+                   and .6*seed[3] <= c[3] <= 1.7*seed[3]]
+            row.sort()
+            for start in range(len(row)):
+                group = [row[start]]
+                for c in row[start+1:]:
+                    previous = group[-1]
+                    gap = c[0]-(previous[0]+previous[2])
+                    if gap > max(35,4*max(c[3],previous[3])):
+                        break
+                    group.append(c)
+                    if not 3 <= len(group) <= 5:
+                        continue
+                    span = (group[-1][0]+group[-1][2]-group[0][0])/w
+                    if not .20 <= span <= .85:
+                        continue
+                    if max(v[1]+v[3] for v in group) < FINISH_NEAR_RATIO*h:
+                        continue
+                    if sum(v[4] for v in group) < .0015*h*w:
+                        continue
+                    if len(group) > len(best):
+                        best = group.copy()
+        if not best:
+            return False, 0, 0.0, []
+        self.fn_reason = "text_on_bright_floor"
+        score = min(1.0, .60 + .10*min(len(best)/5.0,1.0)
+                    + .20*float(np.mean([v[6] for v in best])))
+        return True, len(best), score, [tuple(v[:4]) for v in best]
 
     def _detect_crosswalk(
         self, hsv_roi: np.ndarray
@@ -2777,6 +2830,68 @@ def arch_cut_post_points(points,post_mask,x0,y0):
     # not fall back to the known post or invent an observation from prediction.
     return points[keep],points[~keep]
 
+def curve_trim_far_cap(points, width, image_height):
+    """桥前斜向地面边沿接上短竖截面时，保留近端地面，拒绝竖截面。
+
+    仅明确的远端竖段 + 稳定斜地面组合触发；真实弯道不调用此规则。
+    """
+    empty = np.empty((0, 2))
+    if len(points) < 48:
+        return points, empty
+    span = float(np.ptp(points[:, 1]))
+    if span < .15*image_height:
+        return points, empty
+    seed = points[points[:, 1] >= points[-1, 1]-min(72., .65*span)]
+    if len(seed) < 24 or np.ptp(seed[:, 1]) < .06*image_height:
+        return points, empty
+    keep = np.ones(len(seed), bool)
+    for _ in range(3):
+        if np.count_nonzero(keep) < 24:
+            return points, empty
+        slope, intercept = np.polyfit(seed[keep, 1], seed[keep, 0], 1)
+        residual = seed[:, 0]-(slope*seed[:, 1]+intercept)
+        mad = np.median(np.abs(residual[keep]-np.median(residual[keep])))
+        keep = np.abs(residual) <= max(2.5, 3*1.4826*mad)
+    if (np.count_nonzero(keep) < 24 or not .35 <= abs(slope) <= 4.
+            or np.sqrt(np.mean(residual[keep]**2)) > 2.5):
+        return points, empty
+    far = points[points[:, 1] <= points[0, 1]+max(8., .025*image_height)]
+    if len(far) < 8 or np.ptp(far[:, 1]) < 7:
+        return points, empty
+    far_slope = np.polyfit(far[:, 1], far[:, 0], 1)[0]
+    if abs(far_slope) > .20:
+        return points, empty
+    deviation = np.abs(far[:, 0]-(slope*far[:, 1]+intercept))
+    if np.count_nonzero(deviation > max(6., .012*width)) < 6:
+        return points, empty
+    # 必须有短距离内的切线突变；透视下自然逐渐变直的曲线不能截断。
+    abrupt = False
+    for row in np.arange(points[0, 1]+10, points[0, 1]+.45*span, 2):
+        before = points[(points[:, 1] >= row-8) & (points[:, 1] <= row)]
+        after = points[(points[:, 1] >= row) & (points[:, 1] <= row+8)]
+        if len(before) < 6 or len(after) < 6:
+            continue
+        first = np.polyfit(before[:, 1], before[:, 0], 1)[0]
+        second = np.polyfit(after[:, 1], after[:, 0], 1)[0]
+        if (abs(first) <= .25 and abs(second) >= max(.4, .5*abs(slope))
+                and np.sign(second) == np.sign(slope)):
+            abrupt = True
+            break
+    if not abrupt:
+        return points, empty
+    level = float(np.median(far[:, 0]))
+    ground = np.flatnonzero(np.sign(slope)*(points[:, 0]-level) > max(3., .008*width))
+    if not len(ground):
+        return points, empty
+    cut = int(ground[0]); trusted = points[cut:]
+    if (points[cut, 1]-points[0, 1] > .45*span
+            or len(trusted) < max(24, int(.08*image_height))
+            or np.ptp(trusted[:, 1]) < .09*image_height
+            or np.linalg.norm(np.ptp(trusted, axis=0)) < CURVE_MIN_SPAN_RATIO*width):
+        return points, empty
+    return trusted, points[:cut]
+
+
 def arch_extend_ground(edge,limit,width,height):
     if edge is None or edge['horizontal'] or limit<=0:return edge
     measured=edge['measured'];measured=measured[np.argsort(measured[:,1])]
@@ -2863,7 +2978,7 @@ def arch_geometry(line,result):
                               predicted=np.empty((0,2))))
         if result.valid:
             path=d.get('center_path',path);weights=d.get('weights',weights);paired=d.get('paired',False)
-            center_support=np.full(len(path),paired,bool)
+            center_support=np.asarray(d.get('center_support',np.full(len(path),paired,bool)),dtype=bool)
     target=None
     if len(path) and len(weights)==len(path) and np.sum(weights)>0:
         target=np.average(path,axis=0,weights=weights)
@@ -2910,6 +3025,23 @@ def arch_draw_lane(frame,line,result):
     cv2.putText(view,'L green | R cyan | PRED orange | CENTER magenta | TARGET white',(8,h-32),0,.43,(235,235,235),1,cv2.LINE_AA)
     cv2.putText(view,status,(8,h-12),0,.45,(230,170,240) if result.valid else (0,120,255),1,cv2.LINE_AA)
     return view,g
+
+def lane_status_label(result):
+    """只整理显示名称；保留 reason 原值供控制和速度策略使用。"""
+    if result.reason == 'left_line':
+        return 'SINGLE LEFT'
+    if result.reason == 'single_line':
+        if result.boundary_side in ('left', 'right'):
+            return 'SINGLE '+result.boundary_side.upper()
+        if result.left_line_rows and not result.right_line_rows:
+            return 'SINGLE LEFT'
+        if result.right_line_rows and not result.left_line_rows:
+            return 'SINGLE RIGHT'
+        return 'SINGLE MIXED'
+    if result.reason == 'tracking':
+        return 'PAIRED'
+    return result.reason
+
 
 def arch_run_evidence(state,min_run,max_gap,needed=4,max_span=None,balanced=False):
     """Batched run merging and sliding alternating groups, no per-column Python."""
@@ -3011,9 +3143,9 @@ class ArchYellowLineDetector(DualYellowLineDetector):
         before[remove[labels]]=0
         return before
 
-    def _curve_fit_samples(self,points,horizontal,side,width,height):
+    def _curve_fit_samples(self,points,horizontal,side,width,height,min_axis_span=None):
         if not self.arch_enabled:
-            return super()._curve_fit_samples(points,horizontal,side,width,height)
+            return super()._curve_fit_samples(points,horizontal,side,width,height,min_axis_span)
         return self._arch_fit_samples(points,horizontal,side,width,height)
 
     def _curve_fit_candidate(self,points,horizontal,side,width,height,y0,image_height):
@@ -3033,8 +3165,9 @@ class ArchYellowLineDetector(DualYellowLineDetector):
 
     def _curve_boundaries(self,mask,x0,full_width,y0,image_height):
         if not self.arch_enabled:
-            # 出弯之前必须和 shiwai_lin_line.py 完全一致：不插任何断口关联/保护。
-            return super()._curve_boundaries(mask,x0,full_width,y0,image_height)
+            # 沿用原检测，仅缓存返回的边界供统一绘图。
+            self._arch_edges=super()._curve_boundaries(mask,x0,full_width,y0,image_height)
+            return self._arch_edges
         self._arch_x0=x0
         self._arch_post_guard=(cv2.dilate(self._arch_post_mask,np.ones((9,9),np.uint8))
                                if self._arch_post_mask is not None else None)
@@ -3063,14 +3196,25 @@ class ArchYellowLineDetector(DualYellowLineDetector):
 
     def detect(self,frame):
         self._arch_edges={}
+        self._arch_legacy_geometry={}
+        self._lane_plot_base=None
         self.arch_pair_reason="no_candidates" if self.arch_enabled else "inactive"
         started=time.perf_counter()
         result=super().detect(frame)
-        if self.arch_enabled and result.curve_mode:
-            result.debug_frame,_=arch_draw_lane(frame,self,result)
-            cv2.rectangle(result.debug_frame,(0,94),(frame.shape[1]-1,138),(18,18,18),-1)
-            cv2.putText(result.debug_frame,f"ARCH {self.arch_pair_reason} side={result.boundary_side}",
-                        (8,110),cv2.FONT_HERSHEY_SIMPLEX,.43,(80,240,230),1,cv2.LINE_AA)
+        # 只统一渲染；arch_enabled 仍按原阶段决定检测算法。
+        # 使用未叠加旧点线/十字靶的二值底图，丢线帧也不会复用上一帧几何。
+        result.debug_frame=(self._lane_plot_base if self._lane_plot_base is not None
+                            else np.zeros_like(frame))
+        result.debug_frame,_=arch_draw_lane(frame,self,result)
+        cv2.rectangle(result.debug_frame,(0,94),(frame.shape[1]-1,138),(18,18,18),-1)
+        algorithm="ARCH" if self.arch_enabled else "LIN"
+        detail=self.arch_pair_reason if self.arch_enabled else lane_status_label(result)
+        cv2.putText(result.debug_frame,f"VISION {algorithm} {detail} side={result.boundary_side}",
+                    (8,110),cv2.FONT_HERSHEY_SIMPLEX,.43,(80,240,230),1,cv2.LINE_AA)
+        if not self.arch_enabled and result.curve_mode and self.expected_turn_direction:
+            entry="TURN" if self._curve_turn_entry_ready else "WAIT"
+            cv2.putText(result.debug_frame,f"entry={entry} exit={'Y' if self._curve_exit_ready else 'N'}",
+                        (8,127),cv2.FONT_HERSHEY_SIMPLEX,.43,(0,220,255),1,cv2.LINE_AA)
         self.arch_ms=(time.perf_counter()-started)*1000
         return result
 
@@ -3191,6 +3335,7 @@ class ArchYellowLineDetector(DualYellowLineDetector):
             mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
             mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
         debug[y0:y1, x0:x1] = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+        self._lane_plot_base = debug.copy()  # 仅绘图快照，不参与检测/控制。
         edges = self._curve_boundaries(mask, x0, width, y0, height)
         selected = [c for c in edges.values() if c is not None]
         if not selected:
@@ -3389,16 +3534,23 @@ class ArchSceneDetector(TrackSceneDetector):
         if not self.arch_enabled:return super()._detect_hazard(hsv)
         return self._arch_detect_hazard(hsv)
 
-    def detect(self,frame,debug,prefer_finish=False):
-        if not self.arch_enabled:return super().detect(frame,debug,prefer_finish)
-        # Finish thresholds remain the original ones: broaden black only inside
-        # _arch_detect_hazard, never in shared _masks / _detect_finish.
-        result=super().detect(frame,debug,prefer_finish)
+    def detect(self,frame,debug,prefer_finish=False,crosswalk_enabled=True):
+        crosswalk_enabled=bool(crosswalk_enabled and not prefer_finish)
+        # Both the base and ARCH path skip inactive detectors, not just their results.
+        result=super().detect(frame,debug,prefer_finish,crosswalk_enabled)
+        if not self.arch_enabled:return result
         h,w=frame.shape[:2]
         x0=int(w*self.side_margin_ratio);y0=int(h*self.crosswalk_top_ratio)
-        for x,y,bw,bh in getattr(self,'arch_cw_boxes',[]):
-            cv2.rectangle(debug,(x0+x,y0+y),(x0+x+bw,y0+y+bh),(0,220,80) if result.crosswalk else (0,170,220),1)
-        cv2.putText(debug,f"CW {result.stripe_count} {'HIT' if result.crosswalk else '-'} HZ={int(result.hazard)} FN={int(result.finish)}",
+        if crosswalk_enabled:
+            for x,y,bw,bh in getattr(self,'arch_cw_boxes',[]):
+                cv2.rectangle(debug,(x0+x,y0+y),(x0+x+bw,y0+y+bh),(0,220,80) if result.crosswalk else (0,170,220),1)
+        if prefer_finish:
+            label=f"FN {result.finish_blobs} {'HIT' if result.finish else '-'} | CW OFF"
+        elif crosswalk_enabled:
+            label=f"CW {result.stripe_count} {'HIT' if result.crosswalk else '-'} | FN OFF"
+        else:
+            label="CW OFF | FN OFF"
+        cv2.putText(debug,f"{label} HZ={int(result.hazard)}",
                     (8,130),cv2.FONT_HERSHEY_SIMPLEX,.43,(220,220,220),1,cv2.LINE_AA)
         return result
 
@@ -3614,8 +3766,8 @@ class ShiWaiFollower(Node):
         self._timer = self.create_timer(1.0 / self.control_rate, self._control_timer)
         mode = "运动已启用" if self.enable_motion else "只看画面不发车"
         self._announce(
-            f"shiwai_arch.py {ARCH_VERSION} 版启动，{mode}。出弯之前与 shiwai_lin_line.py 完全一致；"
-            "出弯之后才启用 ARCH 掩膜清理/立柱剔除/双线证据与限速。无屏幕窗口，全程二值化带标注录像。"
+            f"build={BUILD_ID} script={Path(__file__).resolve()}，{mode}。"
+            "全程统一ARCH绘图；LIN/ARCH只表示检测算法阶段。人行道停稳5秒后CW切FN。"
         )
         self._announce(
             f"当前速度 {self.forward_speed:.2f} m/s，"
@@ -4150,6 +4302,36 @@ class ShiWaiFollower(Node):
     def _holding_stop(self) -> bool:
         return self._mode in (self.MODE_STOP, self.MODE_FINISH)
 
+    def _scene_detection_flags(self) -> Tuple[bool, bool]:
+        """返回 CW/FN 开关：出弯后查 CW，停稳满 5 秒后才切到 FN。"""
+        if self._passed_finish:
+            return False, False
+        if self._passed_sidewalk:
+            return False, True
+        after_turn = self._cleared_bridge and (
+            self.line_detector.arch_enabled or self.line_detector._curve_exit_ready
+        )
+        return bool(after_turn or self._mode == self.MODE_STOP), False
+
+    def _finish_gate(self, now: float) -> Tuple[bool, str]:
+        """保持原终点时间门，并让 HUD 显示实际未放行的原因。"""
+        if not self._passed_sidewalk:
+            return False, "CW_ONLY"
+        if self._passed_finish:
+            return False, "DONE"
+        waits = []
+        if self._passed_tunnel and self._passed_tunnel_at is not None:
+            waits.append(FINISH_AFTER_TUNNEL_SECONDS - (now-self._passed_tunnel_at))
+        # 下蹲计时一旦满足，出隧道后仍然有效，不能被 MODE_FOLLOW 重置。
+        if self._crouch_started is not None:
+            waits.append(FINISH_IN_TUNNEL_MIN_SECONDS - (now-self._crouch_started))
+        if not waits:
+            return False, "WAIT_TUNNEL"
+        remaining = min(waits)
+        if remaining <= 0.0:
+            return True, "READY"
+        return False, f"WAIT_{remaining:.1f}s"
+
     def _update_mission(self, scene: SceneObservation, now: float) -> None:
         if self._holding_stop():
             return
@@ -4231,21 +4413,7 @@ class ShiWaiFollower(Node):
                 self._target_height = self.stand_height
                 self._announce("已出隧道，恢复站立，继续巡线")
 
-        tunnel_ready_for_finish = (
-            (self._passed_tunnel
-             and self._passed_tunnel_at is not None
-             and (now - self._passed_tunnel_at) >= FINISH_AFTER_TUNNEL_SECONDS)
-            # 终点字可能就在隧道末段：下蹲够久就允许认，不再等 _passed_tunnel。
-            # ⚠ 这张「通行证」不能再要求 self._mode == MODE_CROUCH。
-            # 上面置 _passed_tunnel 的那段代码同一个 if 里就把 mode 改成了
-            # MODE_FOLLOW，所以车一出隧道这张通行证当场失效，被迫重新等
-            # FINISH_AFTER_TUNNEL_SECONDS 秒 —— 11-01 实测就是出隧道后 HUD 出现
-            # `fn-wait 1.8s`，车在终点字前面又多跑了约 0.5 m 才停。
-            # _crouch_started 全程只置一次、从不重置，所以放开 mode 判断后
-            # 蹲满 FINISH_IN_TUNNEL_MIN_SECONDS 就等于永久放行。
-            or (self._crouch_started is not None
-                and now - self._crouch_started >= FINISH_IN_TUNNEL_MIN_SECONDS)
-        )
+        tunnel_ready_for_finish, _ = self._finish_gate(now)
         finish_confirmed = self._confirm(
             "_finish_frames",
             scene.finish
@@ -4535,9 +4703,11 @@ class ShiWaiFollower(Node):
 
         self._update_bridge_target()
         result = self._detect_lane(frame)
+        # _detect_lane 已更新本帧出弯标志；人行道停稳计时完成后才置 passed_sidewalk。
+        check_cw, check_fn = self._scene_detection_flags()
         scene = self.scene_detector.detect(
             frame, result.debug_frame,
-            prefer_finish=(self._passed_tunnel or self._mode == self.MODE_CROUCH),
+            prefer_finish=check_fn, crosswalk_enabled=check_cw,
         )
         self._update_mission(scene, now)
         self._log_status(now, result, scene)
@@ -4760,6 +4930,8 @@ class ShiWaiFollower(Node):
             elif now - self._stable_since >= self.sidewalk_stop_seconds:
                 self._mode = self.MODE_FOLLOW
                 self._passed_sidewalk = True
+                self._crosswalk_frames = 0
+                self._finish_frames = 0
                 self._stable_since = None
                 self._have_error = False
                 self._announce("人行道停车结束，继续出发")
@@ -5135,7 +5307,7 @@ class ShiWaiFollower(Node):
         debug[0:92] = cv2.addWeighted(bar, 0.35, np.zeros_like(bar), 0.65, 0.0)
         cv2.putText(
             debug,
-            f"{state}  {result.reason}  conf={result.confidence:.2f}",
+            f"{state}  {lane_status_label(result)}  conf={result.confidence:.2f}",
             (12, 26),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.58,
@@ -5162,16 +5334,6 @@ class ShiWaiFollower(Node):
             f"tunnel={'Y' if self._passed_tunnel else 'N'} "
             f"finish={'Y' if self._passed_finish else 'N'}"
         )
-        if (
-            self._passed_tunnel
-            and not self._passed_finish
-            and self._passed_tunnel_at is not None
-        ):
-            wait_left = FINISH_AFTER_TUNNEL_SECONDS - (
-                time.monotonic() - self._passed_tunnel_at
-            )
-            if wait_left > 0.0:
-                progress += f" fn-wait {wait_left:.1f}s"
         if self._passed_bridge and not self._passed_sidewalk:
             b = self._bridge
             dr = 0.0 if b.baseline is None else b.angle_delta(b.roll, b.baseline[0])
@@ -5193,6 +5355,12 @@ class ShiWaiFollower(Node):
             1,
             cv2.LINE_AA,
         )
+        cv2.putText(debug, "DRAW ALL | FN2 G1 | STOP 5s", (8, 156),
+                    cv2.FONT_HERSHEY_SIMPLEX, .43, (60, 255, 255), 1, cv2.LINE_AA)
+        if self._passed_sidewalk and not self._passed_finish:
+            _, gate_label = self._finish_gate(time.monotonic())
+            cv2.putText(debug, f"FN gate={gate_label} count={self._finish_frames}/{int(FINISH_CONFIRM_FRAMES)}",
+                        (8, 174), cv2.FONT_HERSHEY_SIMPLEX, .43, (60, 255, 255), 1, cv2.LINE_AA)
         self._record_debug(debug)
         if not self._window_ready:
             return

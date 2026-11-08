@@ -9,6 +9,7 @@ def load(path, name):
 def make(mod, yaw_rate=100.0):
     log = []
     bus = types.SimpleNamespace(yaw=0.0, speed=0.10, boost=False, state="done",
+                                signed_distance=0.0,
                                 angle_delta=lambda a, b: ((a - b + 180.0) % 360.0) - 180.0)
     s = types.SimpleNamespace(
         enable_motion=True, control_rate=15.0,
@@ -19,11 +20,16 @@ def make(mod, yaw_rate=100.0):
         _turn_start_yaw=0.0, _turn_started_at=0.0, _turn_spool_started_at=0.0,
         _turn_spooled=False, _turn_spool_announced=False,
         _turn_low_speed_seconds=0.0, _turn_slow_warned=False,
-        _turn_lock_frames=0,
+        _turn_lock_frames=0, _turn_trace=[], _turn_frames=0,
+        _turn_valid_frames=0, _turn_run_len=0, _turn_run_max=0,
+        _turn_err_min=999.0,
         _turn_done_yaw=0.0, _turn_done_seconds=0.0,
         _sidewalk_started_at=None, _stop_sampled_at=0.0, _stop_speed_filter=0.0,
         _standstill_seconds=0.0, _moving_seconds=0.0,
         _announce=lambda m: log.append(m),
+        _brake_hard=False,
+        get_logger=lambda: types.SimpleNamespace(
+            info=lambda m: log.append(m)),
         _update_height=lambda now: None, _show=lambda *a, **k: None,
         MODE_TURN=mod.RushFollower.MODE_TURN, MODE_SIDEWALK=mod.RushFollower.MODE_SIDEWALK,
         MODE_WAIT_TURN=getattr(mod.RushFollower, 'MODE_WAIT_TURN', 'WAIT_TURN'),
@@ -36,7 +42,7 @@ def make(mod, yaw_rate=100.0):
             mod.RushFollower._turn_vision_locked, s)
     else:
         s._turn_vision_locked = lambda result: False
-    for n in ("_rate_limit", "_turn_command"):
+    for n in ("_rate_limit", "_turn_command", "_dump_turn_trace"):
         setattr(s, n, types.MethodType(getattr(mod.RushFollower, n), s))
     if hasattr(mod.RushFollower, "_enter_sidewalk"):
         s._enter_sidewalk = types.MethodType(mod.RushFollower._enter_sidewalk, s)
@@ -91,12 +97,19 @@ def run(mod, label):
     return min_rw
 
 new = load("/home/orangepi/wheel_robot/src/wheel_robot/scripts/rush.py", "rt_new")
-old = load("/tmp/rush_before_turnfix.py", "rt_old")
+try:
+    old = load("/tmp/rush_before_turnfix.py", "rt_old")
+except Exception:
+    old = None
+    print("  !! 旧版本备份 /tmp/rush_before_turnfix.py 不存在（Pi 重启清空了 /tmp），本文件的新旧对照跳过，只看新逻辑")
+
 print("场景：过桥收尾 v=0.10 m/s，入弯触发立刻响（复现 19:37 那趟）")
 print()
-m_old = run(old, "旧逻辑")
+m_old = run(old, "旧逻辑") if old is not None else None
 m_new = run(new, "新逻辑")
 print()
 print("对照：")
-print("  旧逻辑 转弯中右轮最小 %+.2f m/s  -> %s" % (m_old, "原地打转（= 实车现象）" if m_old < 0 else "正常"))
+if m_old is not None:
+    print("  旧逻辑 转弯中右轮最小 %+.2f m/s  -> %s"
+          % (m_old, "原地打转（= 实车现象）" if m_old < 0 else "正常"))
 print("  新逻辑 转弯中右轮最小 %+.2f m/s  -> %s" % (m_new, "原地打转" if m_new < 0 else "正常"))

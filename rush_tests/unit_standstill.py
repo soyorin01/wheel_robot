@@ -12,7 +12,7 @@ def load(path, name):
 def make_stub(mod, speed_seq):
     """构造一个只够 _sidewalk_command 跑的最小 self。"""
     log = []
-    bus = types.SimpleNamespace(speed=0.0, yaw=0.0)
+    bus = types.SimpleNamespace(speed=0.0, yaw=0.0, signed_distance=0.0)
     self = types.SimpleNamespace(
         enable_motion=True,
         sidewalk_stop_seconds=5.0,
@@ -20,6 +20,7 @@ def make_stub(mod, speed_seq):
         stand_height=0.25, _target_height=0.25,
         _sidewalk_started_at=None, _stop_sampled_at=0.0,
         _stop_speed_filter=0.0, _standstill_seconds=0.0, _moving_seconds=0.0,
+        _hold_distance=0.0, _hold_drift=0.0,
         _passed_sidewalk=False, _have_error=False, _mode="SIDEWALK", _stable_since=None,
         _align_frames=0, _align_since=None,
         _bridge=bus, MODE_TUNNEL_ALIGN="T_ALIGN",
@@ -56,13 +57,18 @@ def noise(seed, n=225):
     return out
 
 new = load("/home/orangepi/wheel_robot/src/wheel_robot/scripts/rush.py", "rush_new")
-old = load("/tmp/rush_before_standstill_fix.py", "rush_old")
+try:
+    old = load("/tmp/rush_before_standstill_fix.py", "rush_old")
+except Exception:
+    old = None
+    print("  !! 旧版本备份 /tmp/rush_before_standstill_fix.py 不存在（Pi 重启清空了 /tmp），本文件的新旧对照跳过，只看新逻辑")
+
 
 print("=== 真实方法体对照（同一段噪声，15Hz，15 秒）===")
 print("%4s  %-26s  %-26s" % ("种子", "旧代码", "新代码"))
 ok_old = ok_new = 0
 for s in range(1, 13):
-    d_old, _, _ = run(old, noise(s))
+    d_old, _, _ = run(old, noise(s)) if old is not None else (None, None, None)
     # 新代码用了新常量；旧文件里没有这些常量，得临时注入
     for k, v in [("RUSH_STANDSTILL_SPEED", 0.08), ("RUSH_MOVING_RESET_SECONDS", 0.40),
                  ("RUSH_STOP_SPEED_FILTER_ALPHA", 0.25), ("RUSH_SIDEWALK_MAX_SECONDS", 20.0)]:

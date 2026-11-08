@@ -14,6 +14,8 @@ def stub(mod, travelled, entry_ready, min_distance, fallback=99.0):
     bus = types.SimpleNamespace(distance=10.0 + travelled, yaw=-30.0, state="done",
                                 speed=0.55, roll=0.0, pitch=0.0)
     s = types.SimpleNamespace(
+        control_rate=15.0,
+        _wait_turn_frames=0, _wait_turn_valid=0,
         _bridge=bus, _bridge_clear_distance=10.0, _cleared_bridge=True,
         _mode=mod.RushFollower.MODE_WAIT_TURN,
         _turn_start_yaw=None, _turn_started_at=None, _turn_spool_started_at=None,
@@ -30,7 +32,8 @@ def stub(mod, travelled, entry_ready, min_distance, fallback=99.0):
     s._rush_command = lambda result, now, tag=None: log.append("直冲:" + str(tag))
     s.get_logger = lambda: types.SimpleNamespace(info=lambda m: log.append(m))
     result = types.SimpleNamespace(turn_entry_ready=entry_ready, reason="left_line",
-                                   confidence=0.9, error=0.05, debug_frame=None)
+                                   confidence=0.9, error=0.05, debug_frame=None,
+                                   valid=True, left_line_rows=24, right_line_rows=24)
     for n in ("_wait_turn_command", "_log_status"):
         setattr(s, n, types.MethodType(getattr(mod.RushFollower, n), s))
     scene = types.SimpleNamespace(hazard_score=0.0, hazard=False, finish_score=0.0,
@@ -38,7 +41,12 @@ def stub(mod, travelled, entry_ready, min_distance, fallback=99.0):
     return s, result, scene, log
 
 new = load("/home/orangepi/wheel_robot/src/wheel_robot/scripts/rush.py", "tt_new")
-old = load("/tmp/rush_before_turnfix.py", "tt_old")
+try:
+    old = load("/tmp/rush_before_turnfix.py", "tt_old")
+except Exception:
+    old = None
+    print("  !! 旧版本备份 /tmp/rush_before_turnfix.py 不存在（Pi 重启清空了 /tmp），本文件的新旧对照跳过，只看新逻辑")
+
 
 print("=== 1) 入弯门槛：视觉已确认(entry=Y)，但里程不够 ===")
 print("   场景：视觉确认在离桥后 0.27 m 就亮了（实车就是这样）")
@@ -74,8 +82,9 @@ for dist, fb in ((0.50, 0.90), (0.89, 0.90), (0.95, 0.90)):
     print("   桥后 %.2f m 最晚 %.2f 视觉=-  -> %s"
           % (dist, fb, "起转 ✓(兜底)" if fired else "继续直冲"))
 print()
-print("=== 6) 旧逻辑没有这个门槛（对照）===")
-s, r, sc, log = stub(old, 0.27, True, 0.0)
-s._wait_turn_command(r, 0.0)
-print("   旧逻辑 桥后 0.27 m 视觉确认 -> %s（提前转）"
-      % ("起转" if s._mode == old.RushFollower.MODE_TURN else "没转"))
+if old is not None:
+    print("=== 6) 旧逻辑没有这个门槛（对照）===")
+    s, r, sc, log = stub(old, 0.27, True, 0.0)
+    s._wait_turn_command(r, 0.0)
+    print("   旧逻辑 桥后 0.27 m 视觉确认 -> %s（提前转）"
+          % ("起转" if s._mode == old.RushFollower.MODE_TURN else "没转"))

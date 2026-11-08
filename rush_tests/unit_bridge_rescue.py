@@ -61,10 +61,15 @@ def check(mod, label, path):
     return r
 
 new = load("/home/orangepi/wheel_robot/src/wheel_robot/scripts/rush.py", "br_new")
-old = load("/tmp/rush_before_rescue.py", "br_old")
+try:
+    old = load("/tmp/rush_before_rescue.py", "br_old")
+except Exception:
+    old = None
+    print("  !! 旧版本备份 /tmp/rush_before_rescue.py 不存在（Pi 重启清空了 /tmp），本文件的新旧对照跳过，只看新逻辑")
+
 print("场景：起步在平地学基线(pitch=-1.6)，过桥后 pitch 停在 +7.9（复现 19:45）")
 print()
-r_old = check(old, "旧逻辑", None)
+r_old = check(old, "旧逻辑", None) if old is not None else None
 print()
 r_new = check(new, "新逻辑", None)
 print()

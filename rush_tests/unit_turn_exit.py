@@ -9,7 +9,12 @@ def load(path, name):
     spec.loader.exec_module(m); return m
 
 new = load("/home/orangepi/wheel_robot/src/wheel_robot/scripts/rush.py", "te_new")
-old = load("/tmp/rush_before_turnfix.py", "te_old")
+try:
+    old = load("/tmp/rush_before_turnfix.py", "te_old")
+except Exception:
+    old = None
+    print("  !! 旧版本备份 /tmp/rush_before_turnfix.py 不存在（Pi 重启清空了 /tmp），本文件的新旧对照跳过，只看新逻辑")
+
 
 print("=== 1) 下桥基准点：按固定里程 ===")
 print("   常量 BRIDGE_SETTLE_DISTANCE=%.2f  TIMEOUT=%.2f"
