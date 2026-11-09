@@ -195,6 +195,9 @@ TURN_HEADING_RAMP_FRAMES = 8
 # 乘以这个系数让它按时间常数朝瞬时值收敛（15fps 下 0.08≈0.8s）：
 # 永远在收敛，所以不是锁死，是动态释放（于萧阳 10.29）。
 TURN_FF_LAG = 0.08
+# 11/9 恢复：离桥姿态确认 -> BRIDGE SETTLE -> WAIT 保航向直行 -> TURN。
+# WAIT 的最短时间/直行速度见下方 TURN_WAIT_MIN_SECONDS / TURN_WAIT_SPEED。
+TURN_DIRECT_AFTER_BRIDGE = False
 # 出桥看见弯道不等于车轮已到弯口：WAIT 保持出桥航向直行，不使用黄线误差。
 # 近处条件只看画面中央 30% 内的实测点，不能用补点或近处的侧边端点触发。
 # 181332 录像实测 row 轨迹（15 fps，这段约 10 px/帧）：8.4s=316 8.6s=335 8.8s=353
@@ -229,7 +232,10 @@ TURN_WAIT_SPEED = 0.20  # 0.16 推不动（实测 0.18 能从静止起步）；�
 # WAIT 至少跑这么久才允许入弯。_cleared_at 是离开 BRIDGE SETTLE、真正开始
 # WAIT 的时刻；没有这道门时，只要 row 一过线就立刻 TURN，车身还没摆正就进弯。
 # 184532 实测：10.0s 刚出稳定、10.4s 就 entry=TURN，WAIT 只跑了 0.4s。
-TURN_WAIT_MIN_SECONDS = 2.2 #0.8，1.8
+TURN_WAIT_MIN_SECONDS = 2.2  # 直行时长主调节量；与速度相乘仅是名义距离。
+# 当前名义距离 0.20*2.2=0.44m；实际受加速、打滑和后续弯口位置确认影响。
+# 增大此值通常会推迟入弯。计时结束后仍需满足 TURN_ENTRY_NEAR_ROW_RATIO，
+# 连续 TURN_ENTRY_CONFIRM_FRAMES 帧才进入 TURN；本模式没有固定米数触发门。
 # ---- 出弯判定 + 出弯摆正 ----
 # 旧方案靠「框内最右端 bx」两步：先 bx>=0.75W(=480) 置 armed，再 bx<0.50W(=320)
 # 才计数。实测这个 arming 根本到不了，四条录像 bx 峰值：
@@ -335,6 +341,10 @@ LANE_YELLOW_V_MIN = 90   # 常规黄色；高饱和暗黄由下方补偿。
 # 设 False 可精确恢复旧巡线颜色掩膜。
 LANE_YELLOW_COMPENSATION = True
 LANE_YELLOW_PALE_S_MIN = 20
+# 桥后弯道 LIN 阶段：减少浅黄地布粘连，避免破坏泡沫拟合后误选场外跑道边沿。
+# 出弯切到 ARCH 后仍用原浅黄补偿，保留较浅的直道/洞口泡沫。
+# 154010 录像 14~15s：S=20 时出现粘连；S=35 能保留泡沫内沿并减少地布噪声。
+LANE_YELLOW_TURN_PALE_S_MIN = 35
 LANE_YELLOW_PALE_V_MIN = 150
 LANE_YELLOW_SHADOW_S_MIN = 80
 LANE_YELLOW_SHADOW_V_MIN = 60
@@ -470,7 +480,10 @@ SIDEWALK_STOP_SECONDS = 5.0 #5
 # TOP 越大，越要斑马线靠近车才停车。太小会在进入停车区之前就停。
 CROSSWALK_TOP_RATIO = 0.72
 CROSSWALK_BOTTOM_RATIO = 0.94
-CROSSWALK_CONFIRM_FRAMES = 6.0
+# CW3：最近 5 帧中命中 4 帧即可，允许中间漏 1 帧；只统计最近 0.6 秒。
+CROSSWALK_CONFIRM_FRAMES = 4.0
+CROSSWALK_WINDOW_FRAMES = 5
+CROSSWALK_WINDOW_SECONDS = 0.60
 # 5 → 4：164509 最后一次只数到 4 条（条数够停车了，是门槛把 4 拒掉了）。
 # yaml 里写的也是 min_crosswalk_stripes: 4，只是被 _apply_field_tuning 覆盖成 5。
 MIN_CROSSWALK_STRIPES = 4
@@ -511,7 +524,7 @@ FINISH_BOTTOM_RATIO = 0.96
 FINISH_INK_GRAY_MAX = 110
 FINISH_INK_CONTRAST = 22
 FINISH_BRIGHT_SUPPORT_MIN = 0.75
-BUILD_ID = "20261108-FULLDRAW-FN2-G1"
+BUILD_ID = "20261109-FULLDRAW-FN2-G1-CW3-WAIT-L1"
 # 6 → 3 → 2。204944 实测：真终点字（`FN 3 HIT`）只活了 410、411 两帧（0.13s），
 # TUNNEL_SPEED_SCALE=2.0 → v=0.59，字在 FINISH 框里一闪就过。3 帧永远差一帧。
 # _detect_finish 检查亮地布上的3~5个对齐笔画组；它不是OCR，组数不等于字数。
@@ -854,8 +867,11 @@ class DualYellowLineDetector:
             hsv, (self.yellow_h_min, self.yellow_s_min, self.yellow_v_min), upper
         )
         if LANE_YELLOW_COMPENSATION:
+            turn_color = self.expected_turn_direction and not getattr(self, 'arch_enabled', False)
+            pale_s_min = (max(LANE_YELLOW_PALE_S_MIN, LANE_YELLOW_TURN_PALE_S_MIN)
+                          if turn_color else LANE_YELLOW_PALE_S_MIN)
             pale = cv2.inRange(
-                hsv, (self.yellow_h_min, LANE_YELLOW_PALE_S_MIN,
+                hsv, (self.yellow_h_min, pale_s_min,
                       LANE_YELLOW_PALE_V_MIN), upper
             )
             shadow = cv2.inRange(
@@ -1486,7 +1502,7 @@ class DualYellowLineDetector:
             self._curve_exit_frames = 0
             self._turn_ff_strength = 0.0
             return False, 0.0
-        if self.turn_entry_hold > 0.0:
+        if not TURN_DIRECT_AFTER_BRIDGE and self.turn_entry_hold > 0.0:
             # WAIT 还没跑够 TURN_WAIT_MIN_SECONDS：计数清零，强制停在 WAIT。
             self._curve_turn_entry_count = 0
             self._curve_turn_entry_ready = False
@@ -1497,6 +1513,14 @@ class DualYellowLineDetector:
             self._curve_turn_entry_frames += 1
             return True, 0.0
         measured = np.concatenate([c['measured'] for c in selected]) + [x0, y0]
+        if TURN_DIRECT_AFTER_BRIDGE:
+            # expected_turn_direction 只在已完成离桥稳定确认后开启。
+            # 调用方已检查边线置信度；此处不再等待 row=336 或另计 2.2 秒。
+            # 方向前馈仍从第 1 帧开始走原有 8 帧渐增，不能直接给满转角。
+            self._curve_turn_entry_ready = True
+            self._curve_turn_entry_count = 1
+            self._curve_turn_entry_frames = 1
+            return True, float(np.median(measured[:, 1]))
         central = measured[np.abs(measured[:, 0] - 0.5*width)
                            <= TURN_ENTRY_CENTER_HALF_RATIO*width]
         supported = (len(central) >= CURVE_MIN_POINTS
@@ -1706,7 +1730,7 @@ class DualYellowLineDetector:
         cv2.putText(debug, f'pos={lateral_error:+.2f} dir={heading_error:+.2f} width={width_source} side={side_label} front={front}',
                     (8, 110), cv2.FONT_HERSHEY_SIMPLEX, .42, (255, 255, 255), 1, cv2.LINE_AA)
         if self.expected_turn_direction:
-            entry = 'TURN' if turn_ready else 'WAIT'
+            entry = 'TURN' if turn_ready else ('LINE' if TURN_DIRECT_AFTER_BRIDGE else 'WAIT')
             row_label = f'{turn_row:.0f}' if turn_row else '-'
             hold = f' hold={self.turn_entry_hold:.1f}s' if self.turn_entry_hold > 0.0 else ''
             cv2.putText(debug, f'entry={entry} row={row_label} need={TURN_ENTRY_NEAR_ROW_RATIO*height:.0f}{hold}'
@@ -2678,7 +2702,7 @@ class BridgeTraversal:
 
 
 
-# arch-v6：出弯之前（起步→上桥→WAIT→大弯→出弯判定）与 shiwai_lin_line.py 完全一致，
+# ARCH 主检测在出弯后启用；离桥稳定确认后先 WAIT 直行，再启动 LIN 弯道循迹，
 # 不再插入任何断口关联 / GAP 保护；只有出弯之后（含隧道/终点）才走 ARCH 新逻辑。
 ARCH_VERSION = "arch-v6"
 # 隧道/末段的 ARCH 速度上限已取消（用户 11.01："隧道过的太慢了，要求隧道的速度
@@ -2700,6 +2724,10 @@ ARCH_RECOVER_FRAMES = 3
 ARCH_CFG = dict(h_min=20, h_max=40, s_min=45, v_min=90, lane_top=38,
                 min_area=80, min_span=10, stripe_span=40, dark_contrast=18,
                 black_ceiling=180, stripe_black_v=150, cw_top=72, cw_bottom=94,
+                # 反光可使中间条纹缺失；仅高覆盖率条纹组允许扩大间距。
+                cw_gap_ratio=4.5, cw_gap_min_ink=.04,
+                # 55% -> 35%：前移停车判定位置；低覆盖率的零碎暗点不计票。
+                cw_near_ratio=.85, cw_min_ink=.025,
                 min_bars=4, remove_posts=1, dual_lane=1, extend_pixels=48)
 ARCH_LEFT_COLOR = (40,230,40)
 ARCH_RIGHT_COLOR = (255,210,0)
@@ -2759,7 +2787,10 @@ def arch_adjacent_transitions(self,yellow,black,axis):
     np.maximum.at(best,rows[np.flatnonzero(chunk_start)],flips)
     return [float(v) for v in best if v>0]
 
-def arch_crosswalk_mask(hsv,cfg):
+def arch_crosswalk_mask(hsv,cfg,diagnostics=None):
+    if diagnostics is not None:
+        diagnostics.clear()
+        diagnostics.update(reason='empty',gap=0.,ink=0.,near=0.,spacing='none')
     if hsv.size==0:return False,0,0.,np.zeros(hsv.shape[:2],np.uint8),[]
     bgr=cv2.cvtColor(hsv,cv2.COLOR_HSV2BGR)
     gray=cv2.cvtColor(bgr,cv2.COLOR_BGR2GRAY).astype(np.float32)
@@ -2790,13 +2821,38 @@ def arch_crosswalk_mask(hsv,cfg):
             if len(group)>len(best):best=group
     clean=np.zeros_like(mask)
     for v in best:clean[labels==v[0]]=255
-    if not best:return False,0,0.,clean,[]
+    if not best:
+        if diagnostics is not None:diagnostics['reason']='no_group'
+        return False,0,0.,clean,[]
     best.sort(key=lambda v:v[1])
     span=(max(v[1]+v[3] for v in best)-min(v[1] for v in best))/w
-    near=max(v[2]+v[4] for v in best)>=.55*h
+    near_ratio=max(v[2]+v[4] for v in best)/h
+    near=near_ratio>=cfg.get('cw_near_ratio',.35)
     gaps=np.diff([v[5] for v in best])
-    spacing_ok=len(gaps)>0 and np.max(gaps)<=3.0*max(1,np.median(gaps))
-    hit=len(best)>=cfg['min_bars'] and span>=.28 and near and spacing_ok
+    typical_gap=max(1.,float(np.median(gaps))) if len(gaps) else 1.
+    gap_ratio=float(np.max(gaps)/typical_gap) if len(gaps) else 0.
+    ink_ratio=float(np.count_nonzero(clean)/clean.size)
+    regular_spacing=len(gaps)>0 and gap_ratio<=3.0
+    # 11/9 原始录像：中间条纹受反光影响缺失，左右仍有 5~6 个条块，
+    # 最大中心间距达到中位间距约 4 倍。保留原规则，仅补充这一种情形：
+    # 最多一处大间隔，且已选条纹的黑像素占整个 ROI 至少 4%。
+    # 覆盖率仅约束新放宽的分支，避免否决原来能检出的较小人行道。
+    relaxed_spacing=(len(gaps)>0 and gap_ratio<=cfg.get('cw_gap_ratio',4.5)
+                     and np.count_nonzero(gaps>2.5*typical_gap)<=1
+                     and ink_ratio>=cfg.get('cw_gap_min_ink',.04))
+    spacing_ok=regular_spacing or relaxed_spacing
+    area_ok=ink_ratio>=cfg.get('cw_min_ink',.025)
+    hit=len(best)>=cfg['min_bars'] and span>=.28 and near and spacing_ok and area_ok
+    if diagnostics is not None:
+        failed=[]
+        if len(best)<cfg['min_bars']:failed.append('bars')
+        if span<.28:failed.append('span')
+        if not near:failed.append('near')
+        if not spacing_ok:failed.append('gap')
+        if not area_ok:failed.append('area')
+        diagnostics.update(reason='+'.join(failed) if failed else 'hit',
+                           gap=gap_ratio,ink=ink_ratio,near=float(near_ratio),
+                           spacing='regular' if regular_spacing else ('relaxed' if relaxed_spacing else 'rejected'))
     score=min(1.,.6*len(best)/6+.4*span/.6) if hit else 0.
     return hit,len(best),score,clean,[tuple(v[1:5]) for v in best]
 
@@ -3212,8 +3268,12 @@ class ArchYellowLineDetector(DualYellowLineDetector):
         cv2.putText(result.debug_frame,f"VISION {algorithm} {detail} side={result.boundary_side}",
                     (8,110),cv2.FONT_HERSHEY_SIMPLEX,.43,(80,240,230),1,cv2.LINE_AA)
         if not self.arch_enabled and result.curve_mode and self.expected_turn_direction:
-            entry="TURN" if self._curve_turn_entry_ready else "WAIT"
-            cv2.putText(result.debug_frame,f"entry={entry} exit={'Y' if self._curve_exit_ready else 'N'}",
+            entry="TURN" if self._curve_turn_entry_ready else ("LINE" if TURN_DIRECT_AFTER_BRIDGE else "WAIT")
+            entry_status=f"entry={entry} exit={'Y' if self._curve_exit_ready else 'N'}"
+            if not self._curve_turn_entry_ready and not TURN_DIRECT_AFTER_BRIDGE:
+                row=f"{result.turn_entry_row:.0f}" if result.turn_entry_row>0.0 else "--"
+                entry_status+=f" hold={self.turn_entry_hold:.1f}s row={row}/{TURN_ENTRY_NEAR_ROW_RATIO*frame.shape[0]:.0f}"
+            cv2.putText(result.debug_frame,entry_status,
                         (8,127),cv2.FONT_HERSHEY_SIMPLEX,.43,(0,220,255),1,cv2.LINE_AA)
         self.arch_ms=(time.perf_counter()-started)*1000
         return result
@@ -3494,7 +3554,7 @@ class ArchYellowLineDetector(DualYellowLineDetector):
         cv2.putText(debug, f'pos={lateral_error:+.2f} dir={heading_error:+.2f} width={width_source} side={side_label} front={front}',
                     (8, 110), cv2.FONT_HERSHEY_SIMPLEX, .42, (255, 255, 255), 1, cv2.LINE_AA)
         if self.expected_turn_direction:
-            entry = 'TURN' if turn_ready else 'WAIT'
+            entry = 'TURN' if turn_ready else ('LINE' if TURN_DIRECT_AFTER_BRIDGE else 'WAIT')
             row_label = f'{turn_row:.0f}' if turn_row else '-'
             hold = f' hold={self.turn_entry_hold:.1f}s' if self.turn_entry_hold > 0.0 else ''
             cv2.putText(debug, f'entry={entry} row={row_label} need={TURN_ENTRY_NEAR_ROW_RATIO*height:.0f}{hold}'
@@ -3522,8 +3582,10 @@ class ArchSceneDetector(TrackSceneDetector):
     def _detect_crosswalk(self,hsv):
         if not self.arch_enabled:return super()._detect_crosswalk(hsv)
         cfg=dict(ARCH_CFG,min_bars=self.min_crosswalk_stripes)
-        hit,n,score,mask,self.arch_cw_boxes=arch_crosswalk_mask(hsv,cfg)
-        self.cw_reason=f"aligned={n}"
+        details={}
+        hit,n,score,mask,self.arch_cw_boxes=arch_crosswalk_mask(hsv,cfg,details)
+        self.cw_reason=(f"{details['reason']} n={details['near']:.2f} "
+                        f"g={details['gap']:.1f} a={details['ink']:.2f}")
         return hit,n,score,mask
 
     def _yellow_black_transitions(self,yellow,black,axis):
@@ -3666,7 +3728,7 @@ class ShiWaiFollower(Node):
         self._bridge_seen_at: Optional[float] = None
         self._bridge_engaged = False
         self._bridge_engaged_at: Optional[float] = None
-        # done 之后的稳定确认：车身平稳够久才交回 WAIT。
+        # done 之后的稳定确认：放行后进入 WAIT 保航向直行。
         self._bridge_done_at: Optional[float] = None
         self._bridge_settle_since: Optional[float] = None
         # 近端胶带「消失」的连续帧计数，用于判定已到桥头
@@ -3682,6 +3744,7 @@ class ShiWaiFollower(Node):
         # 转弯段找线时的旋转方向：+1 左转、-1 右转。按泡沫在画面哪一侧决定。
         self._turn_search_dir = -1.0
         self._crosswalk_frames = 0
+        self._crosswalk_history = deque(maxlen=CROSSWALK_WINDOW_FRAMES)
         self._hazard_frames = 0
         self._hazard_near_frames = 0
         self._hazard_gone_frames = 0
@@ -4299,6 +4362,26 @@ class ShiWaiFollower(Node):
         setattr(self, frames_attr, current)
         return current >= int(needed)
 
+    def _confirm_crosswalk(self, seen: bool, now: float) -> bool:
+        """短窗口投票：漏一帧不清零；关闭 CW 或画面中断后不沿用旧票。"""
+        needed = max(1, int(self.crosswalk_confirm_frames))
+        window = max(needed, CROSSWALK_WINDOW_FRAMES)
+        history = getattr(self, '_crosswalk_history', None)
+        if history is None or history.maxlen != window:
+            history = self._crosswalk_history = deque(maxlen=window)
+        if not self._scene_detection_flags()[0]:
+            history.clear()
+            self._crosswalk_frames = 0
+            return False
+        if history and now <= history[-1][0]:
+            history.clear()
+        while history and now-history[0][0] > CROSSWALK_WINDOW_SECONDS:
+            history.popleft()
+        history.append((now, bool(seen)))
+        self._crosswalk_frames = sum(hit for _, hit in history)
+        # 必须本帧也有证据，不能在条纹已经消失的帧上请求停车。
+        return bool(seen and self._crosswalk_frames >= needed)
+
     def _holding_stop(self) -> bool:
         return self._mode in (self.MODE_STOP, self.MODE_FINISH)
 
@@ -4344,10 +4427,9 @@ class ShiWaiFollower(Node):
             (not scene.hazard) and self._hazard_frames == 0,
             self.hazard_gone_frames,
         )
-        crosswalk_confirmed = self._confirm(
-            "_crosswalk_frames",
+        crosswalk_confirmed = self._confirm_crosswalk(
             scene.crosswalk and not self._passed_sidewalk,
-            self.crosswalk_confirm_frames,
+            now,
         )
 
         near_confirmed = self._confirm(
@@ -4495,7 +4577,7 @@ class ShiWaiFollower(Node):
                 return
             self._cleared_bridge = True
             self._cleared_at = now
-            # 车身已经稳了，用稳定后的航向作为 WAIT 参考，不复用上桥航向。
+            # 以稳定后的航向作为 WAIT 直行参考。
             if math.isfinite(b.yaw):
                 self._turn_wait_heading = float(b.yaw)
             self._bridge_climb_ended = True
@@ -4527,7 +4609,7 @@ class ShiWaiFollower(Node):
         return now - self._bridge_settle_since >= BRIDGE_SETTLE_SECONDS
 
     def _bridge_settle_command(self, result: DetectionResult, now: float) -> None:
-        """过桥后低速直行等车身稳住；稳住后才交回 WAIT。"""
+        """过桥后低速直行等车身稳住；默认稳住后交回 WAIT 保航向直行。"""
         b = self._bridge
         self._have_error = False
         heading = self._turn_wait_heading
@@ -4727,7 +4809,7 @@ class ShiWaiFollower(Node):
             self._bridge_command(result, now)
             return
         if self._bridge.state == "done" and not self._cleared_bridge:
-            # 过桥后先低速直行等车身稳住，再进 WAIT。
+            # 过桥后先低速直行等车身稳住，随后按配置直接启动转弯。
             self._bridge_settle_command(result, now)
             return
 
@@ -4931,6 +5013,7 @@ class ShiWaiFollower(Node):
                 self._mode = self.MODE_FOLLOW
                 self._passed_sidewalk = True
                 self._crosswalk_frames = 0
+                self._crosswalk_history = deque(maxlen=CROSSWALK_WINDOW_FRAMES)
                 self._finish_frames = 0
                 self._stable_since = None
                 self._have_error = False
@@ -5032,13 +5115,13 @@ class ShiWaiFollower(Node):
         )
 
     def _detect_lane(self, frame: np.ndarray) -> DetectionResult:
-        # WAIT 起步后 TURN_WAIT_MIN_SECONDS 秒内不允许入弯（过期即为 0）。
+        # 直接入弯模式不增加离桥后的定时等待；旧模式仍可按配置恢复。
         wait_elapsed = (
             0.0 if self._cleared_at is None else time.monotonic() - self._cleared_at
         )
         self.line_detector.turn_entry_hold = (
             max(0.0, TURN_WAIT_MIN_SECONDS - wait_elapsed)
-            if self._cleared_bridge else 0.0
+            if self._cleared_bridge and not TURN_DIRECT_AFTER_BRIDGE else 0.0
         )
         # 连续内沿检测内部已处理左右线选择，不需要再扫描一次。
         if self.line_detector.column_scan:
@@ -5154,10 +5237,11 @@ class ShiWaiFollower(Node):
             return
         if (turning and self.line_detector.column_scan
                 and not self.line_detector._curve_turn_entry_ready):
-            # 尚未到弯口时丢掉全部可靠边线，不允许旧扫线分支绕过入弯限转。
+            # 初次入弯前仍须看到可靠边线；直接入弯不等于无视觉证据盲转。
             self._publish_zero("turn_entry_no_line")
             self._update_height(now)
-            self._show(result, 0.0, 0.0, False, extra="ENTRY WAIT / NO RELIABLE LINE")
+            label = "TURN / NO RELIABLE LINE" if TURN_DIRECT_AFTER_BRIDGE else "ENTRY WAIT / NO RELIABLE LINE"
+            self._show(result, 0.0, 0.0, False, extra=label)
             return
         # 隧道里白墙/反光经常丢黄线：一直慢速往前拱，不要停在洞口。
         if self._mode == self.MODE_CROUCH:
@@ -5355,9 +5439,12 @@ class ShiWaiFollower(Node):
             1,
             cv2.LINE_AA,
         )
-        cv2.putText(debug, "DRAW ALL | FN2 G1 | STOP 5s", (8, 156),
+        cv2.putText(debug, "DRAW ALL | CW3 WAIT L1 | STOP 5s", (8, 156),
                     cv2.FONT_HERSHEY_SIMPLEX, .43, (60, 255, 255), 1, cv2.LINE_AA)
-        if self._passed_sidewalk and not self._passed_finish:
+        if self._scene_detection_flags()[0]:
+            cv2.putText(debug, f"CW confirm={self._crosswalk_frames}/{int(self.crosswalk_confirm_frames)} in {CROSSWALK_WINDOW_FRAMES}f",
+                        (8, 174), cv2.FONT_HERSHEY_SIMPLEX, .43, (60, 255, 255), 1, cv2.LINE_AA)
+        elif self._passed_sidewalk and not self._passed_finish:
             _, gate_label = self._finish_gate(time.monotonic())
             cv2.putText(debug, f"FN gate={gate_label} count={self._finish_frames}/{int(FINISH_CONFIRM_FRAMES)}",
                         (8, 174), cv2.FONT_HERSHEY_SIMPLEX, .43, (60, 255, 255), 1, cv2.LINE_AA)
